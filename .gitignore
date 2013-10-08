@@ -34,4 +34,4 @@
 *.settings/
 *.classpath
 *.project
-
+/**/**/target
