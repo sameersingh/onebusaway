@@ -30,3 +30,8 @@
 *.vrb
 *.xdy
 *.tdo
+*.class
+*.settings/
+*.classpath
+*.project
+

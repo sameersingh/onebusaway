@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+        http://www.springframework.org/schema/jdbc  
+        http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+	<context:property-placeholder location="classpath:dotgen.properties" />
+
+	<jdbc:embedded-database id="dataSource" type="H2">
+		<jdbc:script location="classpath:schema.sql" />
+	</jdbc:embedded-database>
+
+	<bean id="routePopulator" class="edu.uw.modelab.dao.populators.RoutesPopulator">
+		<constructor-arg value="${input.folder}/routes.txt" />
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+	<bean id="stopTimesPopulator" class="edu.uw.modelab.dao.populators.StopTimesPopulator">
+		<constructor-arg value="${input.folder}/stop_times.txt" />
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+	<bean id="tripsPopulator" class="edu.uw.modelab.dao.populators.TripsPopulator">
+		<constructor-arg value="${input.folder}/trips.txt" />
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+	<bean id="stopsPopulator" class="edu.uw.modelab.dao.populators.StopsPopulator">
+		<constructor-arg value="${input.folder}/stops.txt" />
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+
+	<bean id="dao" class="edu.uw.modelab.dao.impl.JdbcDaoImpl"
+		init-method="init">
+		<constructor-arg ref="dataSource" />
+		<constructor-arg>
+			<list>
+				<!-- order matters -->
+				<ref bean="routePopulator" />
+				<ref bean="tripsPopulator" />
+				<ref bean="stopsPopulator" />
+				<ref bean="stopTimesPopulator" />
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="fileCreator" class="edu.uw.modelab.service.impl.DotCreator">
+		<constructor-arg ref="dao" />
+	</bean>
+
+</beans> 
