@@ -1,21 +1,21 @@
 create table route ( 
        id int not null 
-     , name varchar(80) not null 
-     , agency_id varchar(50) not null
-     , primary key (id, agency_id)
+     , name varchar(20) not null 
+     , agency_id varchar(20) not null
+     , primary key (id)
 ); 
  
 create table trip ( 
        id int not null 
      , route_id int not null 
-     , unique uq_id_route_id (id, route_id) 
+     , unique (id, route_id) 
      , primary key (id) 
      , constraint fk_route_id foreign key (route_id) references route(id) 
 ); 
 
 create table stop ( 
        id int not null 
-     , name varchar(80) not null 
+     , name varchar(50) not null 
      , primary key (id)
 ); 
 

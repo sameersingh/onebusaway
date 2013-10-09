@@ -11,27 +11,38 @@
 
 	<context:property-placeholder location="classpath:dotgen.properties" />
 
-	<jdbc:embedded-database id="dataSource" type="H2">
-		<jdbc:script location="classpath:schema.sql" />
-	</jdbc:embedded-database>
+<!-- 	<jdbc:embedded-database id="dataSource" type="H2"> -->
+<!-- 		<jdbc:script location="classpath:schema.sql" /> -->
+<!-- 	</jdbc:embedded-database> -->
+
+   <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <property name="driverClass" value="org.postgresql.Driver"/>
+        <property name="url" value="jdbc:postgresql://${db.host}:${db.port}/gtfs"/>
+        <property name="username" value="${db.user}"/>
+        <property name="password" value="${db.pass}"/>
+    </bean>
 
 	<bean id="routePopulator" class="edu.uw.modelab.dao.populators.RoutesPopulator">
 		<constructor-arg value="${input.folder}/routes.txt" />
+		<constructor-arg value="${populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
 	<bean id="stopTimesPopulator" class="edu.uw.modelab.dao.populators.StopTimesPopulator">
 		<constructor-arg value="${input.folder}/stop_times.txt" />
+		<constructor-arg value="${populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
 	<bean id="tripsPopulator" class="edu.uw.modelab.dao.populators.TripsPopulator">
 		<constructor-arg value="${input.folder}/trips.txt" />
+		<constructor-arg value="${populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
 	<bean id="stopsPopulator" class="edu.uw.modelab.dao.populators.StopsPopulator">
 		<constructor-arg value="${input.folder}/stops.txt" />
+		<constructor-arg value="${populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
@@ -51,6 +62,7 @@
 	</bean>
 
 	<bean id="fileCreator" class="edu.uw.modelab.service.impl.DotCreator">
+		<constructor-arg value="oba.dot" />
 		<constructor-arg ref="dao" />
 	</bean>
 
