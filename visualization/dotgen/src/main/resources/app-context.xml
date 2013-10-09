@@ -62,7 +62,7 @@
 	</bean>
 
 	<bean id="fileCreator" class="edu.uw.modelab.service.impl.DotCreator">
-		<constructor-arg value="oba.dot" />
+		<constructor-arg value="${output.folder}/oba.dot" />
 		<constructor-arg ref="dao" />
 	</bean>
 
