@@ -1,0 +1,9 @@
+{
+  "nodes":[
+    {"name":"Myriel","group":1, "x":1, "y":1,"details":"Long description of Myriel"},
+    {"name":"Napoleon","group":1, "x":1, "y":2,"details":"Long description of Napoleon"}
+  ],
+  "links":[
+    {"source":1,"target":0,"value":1,"name":"Marriage","details":"Long description of Marriage"}
+  ]
+}
