@@ -62,7 +62,7 @@
 	</bean>
 
 	<bean id="fileCreator" class="edu.uw.modelab.service.impl.D3JSCreator">
-		<constructor-arg value="${output.folder}/oba.json" />
+		<constructor-arg value="${output.folder}/stops.json" />
 		<constructor-arg ref="dao" />
 	</bean>
 
