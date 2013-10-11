@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>edu.uw.modelab</groupId>
-	<artifactId>dotgen</artifactId>
+	<artifactId>graphfilegen</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>DOT Generator</name>
-	<description>Generates a DOT file for graph visualization</description>
+	<description>Generates a file file for graph visualization</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
