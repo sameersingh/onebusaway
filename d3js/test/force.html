@@ -48,7 +48,7 @@ var svg = d3.select("body").append("svg")
     .attr("height", height);
 
 // load stations
-d3.json("oba.json", function(error, graph) {
+d3.json("stops.json", function(error, graph) {
   console.log(graph.nodes)
   console.log(graph.links)
   force

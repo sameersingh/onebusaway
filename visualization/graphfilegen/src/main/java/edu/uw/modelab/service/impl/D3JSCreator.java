@@ -63,7 +63,7 @@ public class D3JSCreator extends AbstractFileCreator {
 			final List<Long> stopIds = entry.getValue();
 			for (int i = 0; i < (stopIds.size() - 1); i++) {
 				final Integer source = stopIdsIndexes.get(stopIds.get(i));
-				final Integer target = stopIdsIndexes.get(stopIds.get(++i));
+				final Integer target = stopIdsIndexes.get(stopIds.get(i + 1));
 				final StringBuilder sb = new StringBuilder("{\"source\":")
 						.append(source)
 						.append(",\"target\":")
@@ -71,7 +71,7 @@ public class D3JSCreator extends AbstractFileCreator {
 						.append(",\"value\":3,\"group\":1,\"name\":\"")
 						.append(entry.getKey())
 						.append("\",\"details\":\"Long description of Segment\"}");
-				if (i != (stopIds.size() - 1)) {
+				if ((i + 1) != (stopIds.size() - 1)) {
 					sb.append(",");
 				}
 				writer.print(sb.toString());

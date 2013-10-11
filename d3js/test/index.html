@@ -132,15 +132,12 @@ svg.selectAll("g")
 
 
 // load stations
-d3.json("oba.json", function(error, graph) {
+d3.json("stops.json", function(error, graph) {
 /*  force
       .nodes(graph.nodes)
       .links(graph.links)
       .start();
 */
-  console.log(error)
-  console.log(graph)
-  console.log(graph.links)
   var link = svg.selectAll(".link")
       .data(graph.links)
     .enter().append("line")
@@ -152,7 +149,6 @@ d3.json("oba.json", function(error, graph) {
       //.style("stroke-width", function(d) { return Math.sqrt(d.value); })
       .style("stroke", function(d) { return routeColors(d.value); });
 
-  console.log(graph.nodes)
   var node = svg.selectAll(".node")
       .data(graph.nodes)
     .enter().append("circle")
