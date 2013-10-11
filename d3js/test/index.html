@@ -6,6 +6,7 @@
   stroke: #000;
   stroke-width: 0.0px;
   fill: #00d;
+  fill-opacity: 0.2;
 }
 
 .route {
@@ -50,7 +51,7 @@ path {
 var width = 960,
     height = 960;
 
-var numRoutes = {min:1, max:10};
+var numRoutes = {min:0, max:2};
 
 var nodeColors = d3.scale.ordinal()
     .range(colorbrewer.Set1[9]);
@@ -80,7 +81,7 @@ var projection = d3.geo.mercator()
     //.rotate([122.2, 0, 0])
     .center([-122.3491, 47.6204])
     //.parallels([47.0, 49.0])
-    .scale(100000)
+    .scale(500000)
     //.scale((1 << 15) / 2 / Math.PI)
 var path = d3.geo.path()
     .projection(projection);
@@ -131,14 +132,16 @@ svg.selectAll("g")
 
 
 // load stations
-d3.json("stations.json", function(error, graph) {
+d3.json("oba.json", function(error, graph) {
 /*  force
       .nodes(graph.nodes)
       .links(graph.links)
       .start();
 */
-
-var link = svg.selectAll(".link")
+  console.log(error)
+  console.log(graph)
+  console.log(graph.links)
+  var link = svg.selectAll(".link")
       .data(graph.links)
     .enter().append("line")
       .attr("class", "route")
@@ -149,6 +152,7 @@ var link = svg.selectAll(".link")
       //.style("stroke-width", function(d) { return Math.sqrt(d.value); })
       .style("stroke", function(d) { return routeColors(d.value); });
 
+  console.log(graph.nodes)
   var node = svg.selectAll(".node")
       .data(graph.nodes)
     .enter().append("circle")
