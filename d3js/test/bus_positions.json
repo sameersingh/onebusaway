@@ -1,0 +1,11 @@
+{
+  "nodes":[
+    {"name":"11:00am","group":1, "coords": { "type": "Point", "coordinates": [-122.1, 47.20] },"details":"Details"},
+    {"name":"11:01am","group":1, "coords": { "type": "Point", "coordinates": [-122.35, 47.63] },"details":"Details"},
+    {"name":"11:02am","group":1, "coords": { "type": "Point", "coordinates": [-122.2, 47.75] },"details":"Details"}
+  ],
+  "links":[
+    {"source":0,"target":1,"value":3,"group":1,"name":"Segment1","details":"Long description of Segment 1"},
+    {"source":1,"target":2,"value":8,"group":2,"name":"Segment2","details":"Long description of Segment 2"}
+  ]
+}

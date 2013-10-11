@@ -1,8 +1,4 @@
 {
-  "config": {
-  	"bounds": { "minx": 100.0, "maxx": 105.0, "miny": 0.0, "maxy": 2.0 },
-  	"routes": { "min": 1, "max": 10 }
-  },
   "nodes":[
     {"name":"SEMANSKI ST & WARNER AVE","group":2, "coords": { "type": "Point", "coordinates": [-122.005424, 47.1924629] },"details":"Long description of Station0"},
     {"name":"Space Needle","group":1, "coords": { "type": "Point", "coordinates": [-122.3491, 47.6204] },"details":"Long description of Station1"},
