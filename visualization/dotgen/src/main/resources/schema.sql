@@ -15,7 +15,9 @@ create table trip (
 
 create table stop ( 
        id int not null 
-     , name varchar(50) not null 
+     , name varchar(50) not null
+     , lat varchar(20) not null
+     , lon varchar(20) not null
      , primary key (id)
 ); 
 

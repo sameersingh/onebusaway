@@ -61,8 +61,8 @@
 		</constructor-arg>
 	</bean>
 
-	<bean id="fileCreator" class="edu.uw.modelab.service.impl.DotCreator">
-		<constructor-arg value="${output.folder}/oba.dot" />
+	<bean id="fileCreator" class="edu.uw.modelab.service.impl.D3JSCreator">
+		<constructor-arg value="${output.folder}/oba.json" />
 		<constructor-arg ref="dao" />
 	</bean>
 

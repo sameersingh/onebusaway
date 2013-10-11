@@ -18,7 +18,7 @@ import edu.uw.modelab.pojo.Stop;
 
 public class JdbcDaoImpl implements Dao {
 
-	private static final String SELECT_ALL_STOPS = "select id, name from stop";
+	private static final String SELECT_ALL_STOPS = "select id, name, lat, lon from stop";
 	private static final String SELECT_STOPS_PER_ROUTE = "select r.name, s.id, t.id from stop AS s "
 			+ "join stop_time AS st on s.id = st.stop_id "
 			+ "join trip AS t on t.id = st.trip_id "
@@ -59,7 +59,8 @@ public class JdbcDaoImpl implements Dao {
 		@Override
 		public Stop mapRow(final ResultSet rs, final int idx)
 				throws SQLException {
-			return new Stop(rs.getLong(1), rs.getString(2));
+			return new Stop(rs.getLong(1), rs.getString(2), rs.getString(3),
+					rs.getString(4));
 		}
 
 	}

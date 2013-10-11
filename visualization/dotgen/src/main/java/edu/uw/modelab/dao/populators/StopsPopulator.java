@@ -18,7 +18,7 @@ import edu.uw.modelab.pojo.Stop;
 
 public class StopsPopulator extends AbstractPopulator {
 
-	private static final String sql = "insert into stop (id, name) values (?, ?)";
+	private static final String sql = "insert into stop (id, name, lat, lon) values (?, ?, ?, ?)";
 
 	private final JdbcTemplate template;
 
@@ -36,7 +36,8 @@ public class StopsPopulator extends AbstractPopulator {
 			public void execute(final Object tokens) {
 				final String[] strTokens = (String[]) tokens;
 				final Stop stop = new Stop(Long.valueOf(unquote(strTokens[0])),
-						unquote(strTokens[2]));
+						unquote(strTokens[2]), unquote(strTokens[4]),
+						unquote(strTokens[5]));
 				stops.add(stop);
 			}
 		});
@@ -48,6 +49,8 @@ public class StopsPopulator extends AbstractPopulator {
 				final Stop stop = stops.get(i);
 				pss.setLong(1, stop.getId());
 				pss.setString(2, stop.getName());
+				pss.setString(3, stop.getLat());
+				pss.setString(4, stop.getLon());
 			}
 
 			@Override
