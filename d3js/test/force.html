@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  stroke: #999;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.geo.tile.v0.min.js"></script>
+<script src="../colorbrewer.js"></script>
+<script>
+
+var width = 960,
+    height = 960;
+
+var numRoutes = {min:0, max:10};
+
+var nodeColors = d3.scale.ordinal()
+    .range(colorbrewer.Set1[9]);
+    //d3.scale.category20();
+var routeColors = d3.scale.linear()
+    .domain([numRoutes.min, numRoutes.max])
+    .range(["black", "steelblue"])
+    .interpolate(d3.interpolateLab);
+var tripColors = d3.scale.linear()
+    .domain([numRoutes.min, numRoutes.max])
+    .range(["black", "red"])
+    .interpolate(d3.interpolateLab);
+
+var force = d3.layout.force()
+    .charge(-5)
+    .linkDistance(5)
+    //.gravity(0.25)
+    .theta(1.0)
+    .size([width, height]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+// load stations
+d3.json("oba.json", function(error, graph) {
+  console.log(graph.nodes)
+  console.log(graph.links)
+  force
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+    .enter().append("line")
+      .attr("class", "link")
+      .attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; })
+      //.style("stroke-width", function(d) { return Math.sqrt(d.value); })
+      .style("stroke", function(d) { return routeColors(d.value); });
+
+  console.log(graph.nodes)
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+    .enter().append("circle")
+      .attr("class", "node")
+      //.attr("cx", function(d) { return projection(d.coords.coordinates)[0]; })
+      //.attr("cy", function(d) { return projection(d.coords.coordinates)[1]; })
+      .attr("r", 3)
+      .style("fill", function(d) { return nodeColors(d.group); })
+
+  node.append("title")
+      .text(function(d) { return d.name; });
+  link.append("title")
+      .text(function(d) { return d.name; });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+      });
+});
+</script>
+</body>
