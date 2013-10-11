@@ -76,6 +76,7 @@ d3.json("oba.json", function(error, graph) {
       //.attr("cy", function(d) { return projection(d.coords.coordinates)[1]; })
       .attr("r", 3)
       .style("fill", function(d) { return nodeColors(d.group); })
+      .call(force.drag);
 
   node.append("title")
       .text(function(d) { return d.name; });
