@@ -1,9 +1,15 @@
 {
+  "config": {
+  	"bounds": { "minx": 100.0, "maxx": 105.0, "miny": 0.0, "maxy": 2.0 },
+  	"routes": { "min": 1, "max": 10 }
+  },
   "nodes":[
-    {"name":"Myriel","group":1, "x":1, "y":1,"details":"Long description of Myriel"},
-    {"name":"Napoleon","group":1, "x":1, "y":2,"details":"Long description of Napoleon"}
+    {"name":"SEMANSKI ST & WARNER AVE","group":2, "coords": { "type": "Point", "coordinates": [-122.005424, 47.1924629] },"details":"Long description of Station0"},
+    {"name":"Space Needle","group":1, "coords": { "type": "Point", "coordinates": [-122.3491, 47.6204] },"details":"Long description of Station1"},
+    {"name":"ASH WAY P&R ACS & I-5 EXPWY RAMP","group":2, "coords": { "type": "Point", "coordinates": [-122.257973, 47.8530769] },"details":"Long description of Station2"}
   ],
   "links":[
-    {"source":1,"target":0,"value":1,"name":"Marriage","details":"Long description of Marriage"}
+    {"source":1,"target":0,"value":3,"group":1,"name":"Segment1","details":"Long description of Segment 1"},
+    {"source":1,"target":2,"value":8,"group":2,"name":"Segment2","details":"Long description of Segment 2"}
   ]
 }
