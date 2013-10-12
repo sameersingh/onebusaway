@@ -16,11 +16,13 @@ public abstract class AbstractPopulator {
 
 	private final String file;
 	private final boolean enabled;
-	private static final String SEPARATOR = ",";
+	private final String separator;
 
-	public AbstractPopulator(final String file, final boolean enabled) {
+	public AbstractPopulator(final String file, final boolean enabled,
+			final String separator) {
 		this.file = file;
 		this.enabled = enabled;
+		this.separator = separator;
 	}
 
 	protected abstract void doPopulate(List<String[]> tokens);
@@ -34,7 +36,7 @@ public abstract class AbstractPopulator {
 				String line = br.readLine(); // discard first line, headers
 				final List<String[]> tokensPerLine = new ArrayList<String[]>();
 				while ((line = br.readLine()) != null) {
-					tokensPerLine.add(line.split(SEPARATOR));
+					tokensPerLine.add(line.split(separator));
 				}
 				doPopulate(tokensPerLine);
 			} catch (final IOException exc) {

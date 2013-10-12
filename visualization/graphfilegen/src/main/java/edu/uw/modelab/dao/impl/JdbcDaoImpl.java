@@ -14,11 +14,14 @@ import org.springframework.jdbc.core.RowMapper;
 
 import edu.uw.modelab.dao.Dao;
 import edu.uw.modelab.dao.populators.AbstractPopulator;
+import edu.uw.modelab.pojo.BusPosition;
 import edu.uw.modelab.pojo.Stop;
 
 public class JdbcDaoImpl implements Dao {
 
 	private static final String SELECT_ALL_STOPS = "select id, name, lat, lon from stop";
+	private static final String SELECT_ALL_BUS_POSITIONS = "select trip_id, service_date, lat, lon from bus_position";
+	private static final String ORDER_BY_TIMESTAMP = " order by timestamp";
 	private static final String SELECT_STOPS_PER_ROUTE = "select r.name, s.id, t.id from stop AS s "
 			+ "join stop_time AS st on s.id = st.stop_id "
 			+ "join trip AS t on t.id = st.trip_id "
@@ -29,6 +32,7 @@ public class JdbcDaoImpl implements Dao {
 	private final List<AbstractPopulator> populators;
 
 	private static final RowMapper<Stop> STOP_ROW_MAPPER = new StopRowMapper();
+	private static final RowMapper<BusPosition> BUS_POSITION_ROW_MAPPER = new BusPositionRowMapper();
 
 	public JdbcDaoImpl(final DataSource dataSource,
 			final List<AbstractPopulator> populators) {
@@ -54,15 +58,35 @@ public class JdbcDaoImpl implements Dao {
 		return result;
 	}
 
-	private static final class StopRowMapper implements RowMapper<Stop> {
+	@Override
+	public List<BusPosition> getBusPositions() {
+		return template
+				.query(SELECT_ALL_BUS_POSITIONS, BUS_POSITION_ROW_MAPPER);
+	}
 
+	private static final class BusPositionRowMapper implements
+			RowMapper<BusPosition> {
+
+		@Override
+		public BusPosition mapRow(final ResultSet rs, final int idx)
+				throws SQLException {
+			final BusPosition bp = new BusPosition();
+			bp.setTripId(rs.getInt(1));
+			bp.setServiceDate(rs.getLong(2));
+			bp.setLat(rs.getString(3));
+			bp.setLon(rs.getString(4));
+			return bp;
+		}
+
+	}
+
+	private static final class StopRowMapper implements RowMapper<Stop> {
 		@Override
 		public Stop mapRow(final ResultSet rs, final int idx)
 				throws SQLException {
 			return new Stop(rs.getInt(1), rs.getString(2), rs.getString(3),
 					rs.getString(4));
 		}
-
 	}
 
 	private static final class RouteStopsMapper implements RowMapper<Object> {

@@ -24,7 +24,7 @@ public class RoutesPopulator extends AbstractPopulator {
 
 	public RoutesPopulator(final String file, final boolean enabled,
 			final DataSource dataSource) {
-		super(file, enabled);
+		super(file, enabled, ",");
 		this.template = new JdbcTemplate(dataSource);
 	}
 

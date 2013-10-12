@@ -24,7 +24,7 @@ public class StopsPopulator extends AbstractPopulator {
 
 	public StopsPopulator(final String file, final boolean enabled,
 			final DataSource dataSource) {
-		super(file, enabled);
+		super(file, enabled, ",");
 		this.template = new JdbcTemplate(dataSource);
 	}
 

@@ -13,7 +13,7 @@ import edu.uw.modelab.dao.Dao;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.service.FileCreator;
 
-public class D3JSCreatorTest {
+public class D3JSStopsCreatorTest {
 
 	private FileCreator fileCreator;
 
@@ -22,7 +22,7 @@ public class D3JSCreatorTest {
 	@Before
 	public void setUp() {
 		mockDao = Mockito.mock(Dao.class);
-		fileCreator = new D3JSCreator("d3js.json", mockDao);
+		fileCreator = new D3JSStopsCreator("test_stops.json", mockDao);
 	}
 
 	private Map<String, List<Integer>> stopsPerRoute() {

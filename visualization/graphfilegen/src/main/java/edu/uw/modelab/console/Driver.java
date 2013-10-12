@@ -9,9 +9,12 @@ public class Driver {
 	public Driver() {
 		final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext(
 				"classpath:app-context.xml");
-		final FileCreator creator = appContext.getBean("fileCreator",
+		final FileCreator stopsCreator = appContext.getBean("stopsCreator",
 				FileCreator.class);
-		creator.create();
+		stopsCreator.create();
+		// final FileCreator busPositionsCreator = appContext.getBean(
+		// "busPositionsCreator", FileCreator.class);
+		// busPositionsCreator.create();
 	}
 
 	public static void main(final String[] args) {

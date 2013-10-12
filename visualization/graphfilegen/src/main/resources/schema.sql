@@ -38,6 +38,5 @@ create table bus_position (
 	  , sched_deviation decimal not null
 	  , lat varchar(20) not null
 	  , lon varchar(20) not null
-	  , primary key(timestamp, trip_id)
-	  , constraint fk_trip_id foreign key (trip_id) references trip(id)
+	  , primary key(timestamp, service_date, trip_id)
 );	  

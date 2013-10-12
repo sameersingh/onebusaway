@@ -1,11 +1,11 @@
 package edu.uw.modelab.dao.populators;
 
-import static edu.uw.modelab.utils.Utils.unquote;
-
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -29,13 +29,13 @@ public class BusPositionsPopulator extends AbstractPopulator {
 
 	public BusPositionsPopulator(final String file, final boolean enabled,
 			final DataSource dataSource) {
-		super(file, enabled);
+		super(file, enabled, "\t");
 		this.template = new JdbcTemplate(dataSource);
 	}
 
 	@Override
 	protected void doPopulate(final List<String[]> tokens) {
-		final List<BusPosition> busPositions = new ArrayList<BusPosition>(
+		final Set<BusPosition> busPositions = new HashSet<BusPosition>(
 				tokens.size());
 		CollectionUtils.forAllDo(tokens, new Closure() {
 			@Override
@@ -48,22 +48,24 @@ public class BusPositionsPopulator extends AbstractPopulator {
 					return;
 				}
 				final BusPosition busPosition = new BusPosition(Long
-						.valueOf(unquote(strTokens[0])), Long
-						.valueOf(unquote(strTokens[1])), Long
-						.valueOf(unquote(strTokens[2])), Double
-						.valueOf(unquote(strTokens[3])), Double
-						.valueOf(unquote(strTokens[4])), unquote(strTokens[5]),
-						unquote(strTokens[6]));
+						.valueOf(strTokens[0]), Long.valueOf(strTokens[1]),
+						Integer.valueOf(strTokens[2]), Double
+								.valueOf(strTokens[3]), Double
+								.valueOf(strTokens[4]), strTokens[5],
+						strTokens[6]);
 				busPositions.add(busPosition);
 			}
 		});
+
+		final List<BusPosition> busPositionsList = new ArrayList<BusPosition>(
+				busPositions);
 
 		template.batchUpdate(sql, new BatchPreparedStatementSetter() {
 
 			@Override
 			public void setValues(final PreparedStatement pss, final int i)
 					throws SQLException {
-				final BusPosition busPosition = busPositions.get(i);
+				final BusPosition busPosition = busPositionsList.get(i);
 				pss.setLong(1, busPosition.getTimeStamp());
 				pss.setLong(2, busPosition.getServiceDate());
 				pss.setLong(3, busPosition.getTripId());
@@ -79,5 +81,4 @@ public class BusPositionsPopulator extends AbstractPopulator {
 			}
 		});
 	}
-
 }

@@ -23,26 +23,32 @@
     </bean>
 
 	<bean id="routePopulator" class="edu.uw.modelab.dao.populators.RoutesPopulator">
-		<constructor-arg value="${input.folder}/routes.txt" />
-		<constructor-arg value="${populator.enabled}" />
+		<constructor-arg value="${gtfs.input.folder}/routes.txt" />
+		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
 	<bean id="stopTimesPopulator" class="edu.uw.modelab.dao.populators.StopTimesPopulator">
-		<constructor-arg value="${input.folder}/stop_times.txt" />
-		<constructor-arg value="${populator.enabled}" />
+		<constructor-arg value="${gtfs.input.folder}/stop_times.txt" />
+		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
 	<bean id="tripsPopulator" class="edu.uw.modelab.dao.populators.TripsPopulator">
-		<constructor-arg value="${input.folder}/trips.txt" />
-		<constructor-arg value="${populator.enabled}" />
+		<constructor-arg value="${gtfs.input.folder}/trips.txt" />
+		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
 	<bean id="stopsPopulator" class="edu.uw.modelab.dao.populators.StopsPopulator">
-		<constructor-arg value="${input.folder}/stops.txt" />
-		<constructor-arg value="${populator.enabled}" />
+		<constructor-arg value="${gtfs.input.folder}/stops.txt" />
+		<constructor-arg value="${gtfs.populator.enabled}" />
+		<constructor-arg ref="dataSource" />
+	</bean>
+	
+	<bean id="busPositionsPopulator" class="edu.uw.modelab.dao.populators.BusPositionsPopulator">
+		<constructor-arg value="${oba.input.folder}/${oba.input.file}" />
+		<constructor-arg value="${oba.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
@@ -57,12 +63,18 @@
 				<ref bean="tripsPopulator" />
 				<ref bean="stopsPopulator" />
 				<ref bean="stopTimesPopulator" />
+				<ref bean="busPositionsPopulator" />
 			</list>
 		</constructor-arg>
 	</bean>
 
-	<bean id="fileCreator" class="edu.uw.modelab.service.impl.D3JSCreator">
+	<bean id="stopsCreator" class="edu.uw.modelab.service.impl.D3JSStopsCreator">
 		<constructor-arg value="${output.folder}/stops.json" />
+		<constructor-arg ref="dao" />
+	</bean>
+	
+	<bean id="busPositionsCreator" class="edu.uw.modelab.service.impl.D3JSBusPositionsCreator">
+		<constructor-arg value="${output.folder}/bus_positions.json" />
 		<constructor-arg ref="dao" />
 	</bean>
 
