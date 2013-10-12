@@ -35,9 +35,9 @@ public class StopTimesPopulator extends AbstractPopulator {
 			@Override
 			public void execute(final Object tokens) {
 				final String[] strTokens = (String[]) tokens;
-				final StopTime stopTime = new StopTime(Long
-						.valueOf(unquote(strTokens[0])), Long
-						.valueOf(unquote(strTokens[4])), Long
+				final StopTime stopTime = new StopTime(Integer
+						.valueOf(unquote(strTokens[0])), Integer
+						.valueOf(unquote(strTokens[4])), Integer
 						.valueOf(unquote(strTokens[3])));
 				stopTimes.add(stopTime);
 			}
@@ -48,9 +48,9 @@ public class StopTimesPopulator extends AbstractPopulator {
 			public void setValues(final PreparedStatement pss, final int i)
 					throws SQLException {
 				final StopTime stopTime = stopTimes.get(i);
-				pss.setLong(1, stopTime.getTripId());
-				pss.setLong(2, stopTime.getStopId());
-				pss.setLong(3, stopTime.getStopSequence());
+				pss.setInt(1, stopTime.getTripId());
+				pss.setInt(2, stopTime.getStopId());
+				pss.setInt(3, stopTime.getStopSequence());
 			}
 
 			@Override

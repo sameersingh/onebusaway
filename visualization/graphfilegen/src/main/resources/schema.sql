@@ -29,3 +29,15 @@ create table stop_time (
       , constraint fk_trip_id foreign key (trip_id) references trip(id)
       , constraint fk_stop_id foreign key (stop_id) references stop(id)
 );
+
+create table bus_position (
+		timestamp bigint not null
+	  , service_date bigint not null
+	  , trip_id int not null
+	  , distance_trip decimal not null
+	  , sched_deviation decimal not null
+	  , lat varchar(20) not null
+	  , lon varchar(20) not null
+	  , primary key(timestamp, trip_id)
+	  , constraint fk_trip_id foreign key (trip_id) references trip(id)
+);	  

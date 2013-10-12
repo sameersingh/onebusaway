@@ -35,8 +35,9 @@ public class TripsPopulator extends AbstractPopulator {
 			@Override
 			public void execute(final Object tokens) {
 				final String[] strTokens = (String[]) tokens;
-				final Trip trip = new Trip(Long.valueOf(unquote(strTokens[2])),
-						Long.valueOf(unquote(strTokens[0])));
+				final Trip trip = new Trip(Integer
+						.valueOf(unquote(strTokens[2])), Integer
+						.valueOf(unquote(strTokens[0])));
 				trips.add(trip);
 			}
 		});

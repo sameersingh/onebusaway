@@ -9,6 +9,6 @@ public interface Dao {
 
 	List<Stop> getStops();
 
-	Map<String, List<Long>> getStopIdsPerRoute();
+	Map<String, List<Integer>> getStopIdsPerRoute();
 
 }

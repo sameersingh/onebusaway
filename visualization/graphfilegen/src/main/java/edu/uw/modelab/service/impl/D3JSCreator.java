@@ -14,17 +14,17 @@ import edu.uw.modelab.pojo.Stop;
 public class D3JSCreator extends AbstractFileCreator {
 
 	private final Dao dao;
-	private final Map<Long, Integer> stopIdsIndexes;
+	private final Map<Integer, Integer> stopIdsIndexes;
 
 	public D3JSCreator(final String filename, final Dao dao) {
 		super(filename);
 		this.dao = dao;
-		stopIdsIndexes = new HashMap<Long, Integer>(8110);
+		stopIdsIndexes = new HashMap<Integer, Integer>(8110);
 	}
 
 	@Override
 	protected void beginning(final PrintWriter writer) {
-		writer.print("{\"config\": {\"bounds\": { \"minx\": 100.0, \"maxx\": 105.0, \"miny\": 0.0, \"maxy\": 2.0 }, \"routes\": { \"min\": 1, \"max\": 10 }},");
+		writer.print("{");
 	}
 
 	@Override
@@ -53,14 +53,14 @@ public class D3JSCreator extends AbstractFileCreator {
 	@Override
 	protected void addEdges(final PrintWriter writer) {
 		writer.print("\"links\":[");
-		final Map<String, List<Long>> stopIdsPerRoute = dao
+		final Map<String, List<Integer>> stopIdsPerRoute = dao
 				.getStopIdsPerRoute();
-		final Set<Entry<String, List<Long>>> entrySet = stopIdsPerRoute
+		final Set<Entry<String, List<Integer>>> entrySet = stopIdsPerRoute
 				.entrySet();
-		final Iterator<Entry<String, List<Long>>> it = entrySet.iterator();
+		final Iterator<Entry<String, List<Integer>>> it = entrySet.iterator();
 		while (it.hasNext()) {
-			final Entry<String, List<Long>> entry = it.next();
-			final List<Long> stopIds = entry.getValue();
+			final Entry<String, List<Integer>> entry = it.next();
+			final List<Integer> stopIds = entry.getValue();
 			for (int i = 0; i < (stopIds.size() - 1); i++) {
 				final Integer source = stopIdsIndexes.get(stopIds.get(i));
 				final Integer target = stopIdsIndexes.get(stopIds.get(i + 1));

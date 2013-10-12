@@ -1,21 +1,20 @@
 package edu.uw.modelab.pojo;
 
-
 public class Trip {
 
-	private final long id;
-	private final long routeId;
+	private final int id;
+	private final int routeId;
 
-	public Trip(final long id, final long routeId) {
+	public Trip(final int id, final int routeId) {
 		this.id = id;
 		this.routeId = routeId;
 	}
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 
-	public long getRouteId() {
+	public int getRouteId() {
 		return routeId;
 	}
 

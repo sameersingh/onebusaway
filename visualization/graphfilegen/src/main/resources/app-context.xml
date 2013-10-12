@@ -17,7 +17,7 @@
 
    <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
         <property name="driverClass" value="org.postgresql.Driver"/>
-        <property name="url" value="jdbc:postgresql://${db.host}:${db.port}/gtfs"/>
+        <property name="url" value="jdbc:postgresql://${db.host}:${db.port}/oba"/>
         <property name="username" value="${db.user}"/>
         <property name="password" value="${db.pass}"/>
     </bean>

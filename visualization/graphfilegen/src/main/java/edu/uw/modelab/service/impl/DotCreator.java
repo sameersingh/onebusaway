@@ -32,12 +32,12 @@ public class DotCreator extends AbstractFileCreator {
 
 	@Override
 	protected void addEdges(final PrintWriter pw) {
-		final Map<String, List<Long>> stopIdsPerRoute = dao
+		final Map<String, List<Integer>> stopIdsPerRoute = dao
 				.getStopIdsPerRoute();
-		for (final Map.Entry<String, List<Long>> entry : stopIdsPerRoute
+		for (final Map.Entry<String, List<Integer>> entry : stopIdsPerRoute
 				.entrySet()) {
-			final List<Long> stopIds = entry.getValue();
-			final Iterator<Long> it = stopIds.iterator();
+			final List<Integer> stopIds = entry.getValue();
+			final Iterator<Integer> it = stopIds.iterator();
 			while (it.hasNext()) {
 				pw.print(it.next());
 				if (it.hasNext()) {

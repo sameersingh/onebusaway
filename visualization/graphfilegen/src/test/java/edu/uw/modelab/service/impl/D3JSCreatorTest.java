@@ -25,32 +25,32 @@ public class D3JSCreatorTest {
 		fileCreator = new D3JSCreator("d3js.json", mockDao);
 	}
 
-	private Map<String, List<Long>> stopsPerRoute() {
-		final Map<String, List<Long>> stopsPerRoutes = new HashMap<String, List<Long>>();
-		final List<Long> stops32bus = new ArrayList<Long>();
-		stops32bus.add(9978L);
-		stops32bus.add(29130L);
-		stops32bus.add(25200L);
-		stops32bus.add(25210L);
-		stops32bus.add(75406L);
-		stops32bus.add(75403L);
-		stops32bus.add(75405L);
-		stops32bus.add(9138L);
-		stops32bus.add(26365L);
-		stops32bus.add(29421L);
-		stops32bus.add(26370L);
-		stops32bus.add(26380L);
-		stops32bus.add(26390L);
+	private Map<String, List<Integer>> stopsPerRoute() {
+		final Map<String, List<Integer>> stopsPerRoutes = new HashMap<String, List<Integer>>();
+		final List<Integer> stops32bus = new ArrayList<Integer>();
+		stops32bus.add(9978);
+		stops32bus.add(29130);
+		stops32bus.add(25200);
+		stops32bus.add(25210);
+		stops32bus.add(75406);
+		stops32bus.add(75403);
+		stops32bus.add(75405);
+		stops32bus.add(9138);
+		stops32bus.add(26365);
+		stops32bus.add(29421);
+		stops32bus.add(26370);
+		stops32bus.add(26380);
+		stops32bus.add(26390);
 		stopsPerRoutes.put("32", stops32bus);
 
-		final List<Long> stops98bus = new ArrayList<Long>();
-		stops98bus.add(26700L);
-		stops98bus.add(26702L);
-		stops98bus.add(26641L);
-		stops98bus.add(26645L);
-		stops98bus.add(26665L);
-		stops98bus.add(1619L);
-		stops98bus.add(1630L);
+		final List<Integer> stops98bus = new ArrayList<Integer>();
+		stops98bus.add(26700);
+		stops98bus.add(26702);
+		stops98bus.add(26641);
+		stops98bus.add(26645);
+		stops98bus.add(26665);
+		stops98bus.add(1619);
+		stops98bus.add(1630);
 		stopsPerRoutes.put("98", stops98bus);
 		return stopsPerRoutes;
 	}
@@ -122,7 +122,7 @@ public class D3JSCreatorTest {
 
 	@Test
 	public void testCreate() {
-		final Map<String, List<Long>> stopsPerRoutes = stopsPerRoute();
+		final Map<String, List<Integer>> stopsPerRoutes = stopsPerRoute();
 		Mockito.when(mockDao.getStopIdsPerRoute()).thenReturn(stopsPerRoutes);
 		final List<Stop> stops = stops();
 		Mockito.when(mockDao.getStops()).thenReturn(stops);

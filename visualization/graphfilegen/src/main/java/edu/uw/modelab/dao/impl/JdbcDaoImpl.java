@@ -48,8 +48,8 @@ public class JdbcDaoImpl implements Dao {
 	}
 
 	@Override
-	public Map<String, List<Long>> getStopIdsPerRoute() {
-		final Map<String, List<Long>> result = new HashMap<String, List<Long>>();
+	public Map<String, List<Integer>> getStopIdsPerRoute() {
+		final Map<String, List<Integer>> result = new HashMap<String, List<Integer>>();
 		template.query(SELECT_STOPS_PER_ROUTE, new RouteStopsMapper(result));
 		return result;
 	}
@@ -59,7 +59,7 @@ public class JdbcDaoImpl implements Dao {
 		@Override
 		public Stop mapRow(final ResultSet rs, final int idx)
 				throws SQLException {
-			return new Stop(rs.getLong(1), rs.getString(2), rs.getString(3),
+			return new Stop(rs.getInt(1), rs.getString(2), rs.getString(3),
 					rs.getString(4));
 		}
 
@@ -67,10 +67,10 @@ public class JdbcDaoImpl implements Dao {
 
 	private static final class RouteStopsMapper implements RowMapper<Object> {
 
-		private final Map<String, List<Long>> stopIdsPerRoute;
-		private final Map<String, Long> routeTrip = new HashMap<String, Long>();
+		private final Map<String, List<Integer>> stopIdsPerRoute;
+		private final Map<String, Integer> routeTrip = new HashMap<String, Integer>();
 
-		public RouteStopsMapper(final Map<String, List<Long>> map) {
+		public RouteStopsMapper(final Map<String, List<Integer>> map) {
 			this.stopIdsPerRoute = map;
 		}
 
@@ -83,10 +83,10 @@ public class JdbcDaoImpl implements Dao {
 			// Assumption, the same trips use the same route, although I think
 			// that might not happen
 			final String routeName = rs.getString(1);
-			final long stopId = rs.getLong(2);
-			final long tripId = rs.getLong(3);
+			final int stopId = rs.getInt(2);
+			final int tripId = rs.getInt(3);
 			if (!stopIdsPerRoute.containsKey(routeName)) {
-				final List<Long> stopIds = new ArrayList<Long>();
+				final List<Integer> stopIds = new ArrayList<Integer>();
 				stopIds.add(stopId);
 				stopIdsPerRoute.put(routeName, stopIds);
 				routeTrip.put(routeName, tripId);

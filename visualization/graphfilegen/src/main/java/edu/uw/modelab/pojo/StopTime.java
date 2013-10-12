@@ -2,26 +2,25 @@ package edu.uw.modelab.pojo;
 
 public class StopTime {
 
-	private final long tripId;
-	private final long stopSequence;
-	private final long stopId;
+	private final int tripId;
+	private final int stopSequence;
+	private final int stopId;
 
-	public StopTime(final long tripId, final long stopSequence,
-			final long stopId) {
+	public StopTime(final int tripId, final int stopSequence, final int stopId) {
 		this.tripId = tripId;
 		this.stopSequence = stopSequence;
 		this.stopId = stopId;
 	}
 
-	public long getTripId() {
+	public int getTripId() {
 		return tripId;
 	}
 
-	public long getStopSequence() {
+	public int getStopSequence() {
 		return stopSequence;
 	}
 
-	public long getStopId() {
+	public int getStopId() {
 		return stopId;
 	}
 

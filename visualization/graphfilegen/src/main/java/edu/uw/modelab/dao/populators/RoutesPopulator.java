@@ -35,7 +35,7 @@ public class RoutesPopulator extends AbstractPopulator {
 			@Override
 			public void execute(final Object tokens) {
 				final String[] strTokens = (String[]) tokens;
-				final Route route = new Route(Long
+				final Route route = new Route(Integer
 						.valueOf(unquote(strTokens[0])), unquote(strTokens[2]),
 						unquote(strTokens[1]));
 				routes.add(route);
@@ -49,7 +49,7 @@ public class RoutesPopulator extends AbstractPopulator {
 			public void setValues(final PreparedStatement pss, final int i)
 					throws SQLException {
 				final Route route = routes.get(i);
-				pss.setLong(1, route.getId());
+				pss.setInt(1, route.getId());
 				pss.setString(2, route.getName());
 				pss.setString(3, route.getAgencyId());
 			}
