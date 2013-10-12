@@ -20,7 +20,7 @@ import edu.uw.modelab.pojo.Stop;
 public class JdbcDaoImpl implements Dao {
 
 	private static final String SELECT_ALL_STOPS = "select id, name, lat, lon from stop";
-	private static final String SELECT_ALL_BUS_POSITIONS = "select trip_id, service_date, lat, lon from bus_position";
+	private static final String SELECT_ALL_BUS_POSITIONS = "select trip_id, service_date, lat, lon from bus_position limit 20000";
 	private static final String ORDER_BY_TIMESTAMP = " order by timestamp";
 	private static final String SELECT_STOPS_PER_ROUTE = "select r.name, s.id, t.id from stop AS s "
 			+ "join stop_time AS st on s.id = st.stop_id "
