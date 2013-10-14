@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,11 @@ public class JdbcDaoImpl implements Dao {
 			+ "join trip AS t on t.id = st.trip_id "
 			+ "join route AS r on r.id = t.route_id "
 			+ "order by t.id, st.stop_sequence";
+
+	private static final String SELECT_NUMBER_STOPS_PER_ROUTE = "select r.name, count(distinct s.id) as stop_counts from stop as s "
+			+ "join stop_time as st on s.id = st.stop_id "
+			+ "join trip as t on t.id = st.trip_id "
+			+ "join route as r on r.id = t.route_id group by r.name order by stop_counts";
 
 	private final JdbcTemplate template;
 	private final List<AbstractPopulator> populators;
@@ -121,5 +127,30 @@ public class JdbcDaoImpl implements Dao {
 			return null;
 		}
 
+	}
+
+	@Override
+	public Map<String, Integer> getStopsPerRoute() {
+		final Map<String, Integer> result = new LinkedHashMap<String, Integer>();
+		template.query(SELECT_NUMBER_STOPS_PER_ROUTE,
+				new NumberStopsPerRouteRowMapper(result));
+		return result;
+	}
+
+	private static final class NumberStopsPerRouteRowMapper implements
+			RowMapper<Object> {
+
+		private final Map<String, Integer> result;
+
+		public NumberStopsPerRouteRowMapper(final Map<String, Integer> result) {
+			this.result = result;
+		}
+
+		@Override
+		public Object mapRow(final ResultSet rs, final int idx)
+				throws SQLException {
+			result.put(rs.getString(1), rs.getInt(2));
+			return null;
+		}
 	}
 }

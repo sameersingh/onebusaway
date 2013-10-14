@@ -14,4 +14,6 @@ public interface Dao {
 
 	List<BusPosition> getBusPositions();
 
+	Map<String, Integer> getStopsPerRoute();
+
 }

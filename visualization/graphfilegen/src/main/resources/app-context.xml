@@ -77,5 +77,10 @@
 		<constructor-arg value="${output.folder}/bus_positions.json" />
 		<constructor-arg ref="dao" />
 	</bean>
+	
+	<bean id="statsService" class="edu.uw.modelab.service.impl.StatsServiceImpl">
+		<constructor-arg value="${output.folder}/routes_number_stops.txt" />
+		<constructor-arg ref="dao" />
+	</bean>	
 
 </beans> 
