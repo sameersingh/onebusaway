@@ -122,11 +122,13 @@ public class D3JSStopsCreatorTest {
 
 	@Test
 	public void testCreate() {
-		final Map<String, List<Integer>> stopsPerRoutes = stopsPerRoute();
-		Mockito.when(mockDao.getStopIdsPerRoute()).thenReturn(stopsPerRoutes);
-		final List<Stop> stops = stops();
-		Mockito.when(mockDao.getStops()).thenReturn(stops);
-
+		/*
+		 * final Map<String, List<Integer>> stopsPerRoutes = stopsPerRoute();
+		 * Mockito
+		 * .when(mockDao.getStopIdsPerRoute()).thenReturn(stopsPerRoutes); final
+		 * List<Stop> stops = stops();
+		 * Mockito.when(mockDao.getStops()).thenReturn(stops);
+		 */
 		fileCreator.create();
 	}
 }

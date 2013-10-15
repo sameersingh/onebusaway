@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import edu.uw.modelab.dao.Dao;
+import edu.uw.modelab.pojo.Link;
 import edu.uw.modelab.pojo.Stop;
 
 public class D3JSStopsCreator extends D3JSCreator {
@@ -45,18 +46,18 @@ public class D3JSStopsCreator extends D3JSCreator {
 
 	@Override
 	protected void addEdges(final PrintWriter writer) {
+		final Map<String, Set<Link>> linksPerRoute = getDao()
+				.getLinksPerRoute();
 		writer.print("\"links\":[");
-		final Map<String, List<Integer>> stopIdsPerRoute = getDao()
-				.getStopIdsPerRoute();
-		final Set<Entry<String, List<Integer>>> entrySet = stopIdsPerRoute
-				.entrySet();
-		final Iterator<Entry<String, List<Integer>>> it = entrySet.iterator();
+		final Iterator<Entry<String, Set<Link>>> it = linksPerRoute.entrySet()
+				.iterator();
 		while (it.hasNext()) {
-			final Entry<String, List<Integer>> entry = it.next();
-			final List<Integer> stopIds = entry.getValue();
-			for (int i = 0; i < (stopIds.size() - 1); i++) {
-				final Integer source = stopIdsIndexes.get(stopIds.get(i));
-				final Integer target = stopIdsIndexes.get(stopIds.get(i + 1));
+			final Entry<String, Set<Link>> entry = it.next();
+			final Iterator<Link> linksIt = entry.getValue().iterator();
+			while (linksIt.hasNext()) {
+				final Link link = linksIt.next();
+				final Integer source = stopIdsIndexes.get(link.getFrom());
+				final Integer target = stopIdsIndexes.get(link.getTo());
 				final StringBuilder sb = new StringBuilder("{\"source\":")
 						.append(source)
 						.append(",\"target\":")
@@ -64,7 +65,7 @@ public class D3JSStopsCreator extends D3JSCreator {
 						.append(",\"value\":3,\"group\":1,\"name\":\"")
 						.append(entry.getKey())
 						.append("\",\"details\":\"Long description of Segment\"}");
-				if ((i + 1) != (stopIds.size() - 1)) {
+				if (linksIt.hasNext()) {
 					sb.append(",");
 				}
 				writer.print(sb.toString());

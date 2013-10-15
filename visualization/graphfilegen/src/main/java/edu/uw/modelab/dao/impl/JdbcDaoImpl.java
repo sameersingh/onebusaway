@@ -4,9 +4,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -16,6 +20,7 @@ import org.springframework.jdbc.core.RowMapper;
 import edu.uw.modelab.dao.Dao;
 import edu.uw.modelab.dao.populators.AbstractPopulator;
 import edu.uw.modelab.pojo.BusPosition;
+import edu.uw.modelab.pojo.Link;
 import edu.uw.modelab.pojo.Stop;
 
 public class JdbcDaoImpl implements Dao {
@@ -27,12 +32,15 @@ public class JdbcDaoImpl implements Dao {
 			+ "join stop_time AS st on s.id = st.stop_id "
 			+ "join trip AS t on t.id = st.trip_id "
 			+ "join route AS r on r.id = t.route_id "
+			// + "where r.name = '98' "
 			+ "order by t.id, st.stop_sequence";
 
 	private static final String SELECT_NUMBER_STOPS_PER_ROUTE = "select r.name, count(distinct s.id) as stop_counts from stop as s "
 			+ "join stop_time as st on s.id = st.stop_id "
 			+ "join trip as t on t.id = st.trip_id "
 			+ "join route as r on r.id = t.route_id group by r.name order by stop_counts";
+
+	// select count (distinct stop_id) from stop_time
 
 	private final JdbcTemplate template;
 	private final List<AbstractPopulator> populators;
@@ -58,10 +66,36 @@ public class JdbcDaoImpl implements Dao {
 	}
 
 	@Override
-	public Map<String, List<Integer>> getStopIdsPerRoute() {
-		final Map<String, List<Integer>> result = new HashMap<String, List<Integer>>();
-		template.query(SELECT_STOPS_PER_ROUTE, new RouteStopsMapper(result));
-		return result;
+	public Map<String, Set<Link>> getLinksPerRoute() {
+		final Map<String, Set<Link>> linksPerRoute = new HashMap<>();
+		final Map<String, Map<Integer, List<Integer>>> stopIdsPerTripPerRoute = new LinkedHashMap<>();
+		template.query(SELECT_STOPS_PER_ROUTE, new RouteStopsMapper(
+				stopIdsPerTripPerRoute));
+		final Iterator<Entry<String, Map<Integer, List<Integer>>>> it = stopIdsPerTripPerRoute
+				.entrySet().iterator();
+		while (it.hasNext()) {
+			final Entry<String, Map<Integer, List<Integer>>> entry = it.next();
+			final Map<Integer, List<Integer>> stopIdsPerTrip = entry.getValue();
+			final Iterator<Entry<Integer, List<Integer>>> innerIt = stopIdsPerTrip
+					.entrySet().iterator();
+			final String routeName = entry.getKey();
+			Set<Link> links = linksPerRoute.get(routeName);
+			if (links == null) {
+				links = new HashSet<>();
+				linksPerRoute.put(routeName, links);
+			}
+			while (innerIt.hasNext()) {
+				final Entry<Integer, List<Integer>> stopIdsEntry = innerIt
+						.next();
+				final List<Integer> stopIds = stopIdsEntry.getValue();
+				for (int i = 0; i < (stopIds.size() - 1); i++) {
+					final Link link = new Link(stopIds.get(i),
+							stopIds.get(i + 1));
+					links.add(link);
+				}
+			}
+		}
+		return linksPerRoute;
 	}
 
 	@Override
@@ -97,36 +131,40 @@ public class JdbcDaoImpl implements Dao {
 
 	private static final class RouteStopsMapper implements RowMapper<Object> {
 
-		private final Map<String, List<Integer>> stopIdsPerRoute;
-		private final Map<String, Integer> routeTrip = new HashMap<String, Integer>();
+		private final Map<String, Map<Integer, List<Integer>>> stopIdsPerTripPerRoute;
 
-		public RouteStopsMapper(final Map<String, List<Integer>> map) {
-			this.stopIdsPerRoute = map;
+		public RouteStopsMapper(
+				final Map<String, Map<Integer, List<Integer>>> map) {
+			this.stopIdsPerTripPerRoute = map;
 		}
 
 		@Override
 		public Object mapRow(final ResultSet rs, final int index)
 				throws SQLException {
-			// ugly stuff, just because we are getting the results per all the
-			// trips in the route
-			// cutting that out just get the the results for one trip per route.
-			// Assumption, the same trips use the same route, although I think
-			// that might not happen
 			final String routeName = rs.getString(1);
 			final int stopId = rs.getInt(2);
 			final int tripId = rs.getInt(3);
-			if (!stopIdsPerRoute.containsKey(routeName)) {
-				final List<Integer> stopIds = new ArrayList<Integer>();
-				stopIds.add(stopId);
-				stopIdsPerRoute.put(routeName, stopIds);
-				routeTrip.put(routeName, tripId);
-			} else if (stopIdsPerRoute.containsKey(routeName)
-					&& (routeTrip.get(routeName) == tripId)) {
-				stopIdsPerRoute.get(routeName).add(stopId);
+			if (!stopIdsPerTripPerRoute.containsKey(routeName)) {
+				final Map<Integer, List<Integer>> stopIdsPerTrip = new HashMap<>();
+				final List<Integer> stopIds = new ArrayList<>();
+				stopIdsPerTrip.put(tripId, stopIds);
+				stopIdsPerTripPerRoute.put(routeName, stopIdsPerTrip);
+			} else {
+				final Map<Integer, List<Integer>> stopIdsPerTrip = stopIdsPerTripPerRoute
+						.get(routeName);
+				List<Integer> stopIds = stopIdsPerTrip.get(tripId);
+				if (stopIds == null) {
+					stopIds = new ArrayList<>();
+					stopIds.add(stopId);
+					stopIdsPerTrip.put(tripId, stopIds);
+					stopIdsPerTripPerRoute.put(routeName, stopIdsPerTrip);
+				} else {
+					stopIds.add(stopId);
+					stopIdsPerTrip.put(tripId, stopIds);
+				}
 			}
 			return null;
 		}
-
 	}
 
 	@Override
