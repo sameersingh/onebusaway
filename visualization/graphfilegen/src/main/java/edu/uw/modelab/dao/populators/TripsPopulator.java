@@ -18,7 +18,7 @@ import edu.uw.modelab.pojo.Trip;
 
 public class TripsPopulator extends AbstractPopulator {
 
-	private static final String sql = "insert into trip (id, route_id) values (?, ?)";
+	private static final String sql = "insert into trip (id, route_id, headsign) values (?, ?, ?)";
 
 	private final JdbcTemplate template;
 
@@ -30,15 +30,17 @@ public class TripsPopulator extends AbstractPopulator {
 
 	@Override
 	protected void doPopulate(final List<String[]> tokens) {
-		final List<Trip> trips = new ArrayList<Trip>(tokens.size());
+		final List<TripInsertObject> tripInsertObjects = new ArrayList<TripInsertObject>(
+				tokens.size());
 		CollectionUtils.forAllDo(tokens, new Closure() {
 			@Override
 			public void execute(final Object tokens) {
 				final String[] strTokens = (String[]) tokens;
-				final Trip trip = new Trip(Integer
-						.valueOf(unquote(strTokens[2])), Integer
+				final TripInsertObject tio = new TripInsertObject(new Trip(
+						Integer.valueOf(unquote(strTokens[2])),
+						unquote(strTokens[3])), Integer
 						.valueOf(unquote(strTokens[0])));
-				trips.add(trip);
+				tripInsertObjects.add(tio);
 			}
 		});
 
@@ -46,15 +48,36 @@ public class TripsPopulator extends AbstractPopulator {
 			@Override
 			public void setValues(final PreparedStatement pss, final int i)
 					throws SQLException {
-				final Trip trip = trips.get(i);
-				pss.setLong(1, trip.getId());
-				pss.setLong(2, trip.getRouteId());
+				final TripInsertObject tio = tripInsertObjects.get(i);
+				final Trip trip = tio.getTrip();
+				pss.setInt(1, trip.getId());
+				pss.setInt(2, tio.getRouteId());
+				pss.setString(3, trip.getHeadSign());
 			}
 
 			@Override
 			public int getBatchSize() {
-				return trips.size();
+				return tripInsertObjects.size();
 			}
 		});
+	}
+
+	private class TripInsertObject {
+		private final Trip trip;
+		private final int routeId;
+
+		public TripInsertObject(final Trip trip, final int routeId) {
+			this.trip = trip;
+			this.routeId = routeId;
+		}
+
+		public Trip getTrip() {
+			return trip;
+		}
+
+		public int getRouteId() {
+			return routeId;
+		}
+
 	}
 }

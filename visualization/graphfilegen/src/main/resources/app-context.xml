@@ -22,65 +22,65 @@
         <property name="password" value="${db.pass}"/>
     </bean>
 
-	<bean id="routePopulator" class="edu.uw.modelab.dao.populators.RoutesPopulator">
+	<bean id="routesPopulator" class="edu.uw.modelab.dao.populators.RoutesPopulator" init-method="populate">
 		<constructor-arg value="${gtfs.input.folder}/routes.txt" />
 		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-	<bean id="stopTimesPopulator" class="edu.uw.modelab.dao.populators.StopTimesPopulator">
-		<constructor-arg value="${gtfs.input.folder}/stop_times.txt" />
-		<constructor-arg value="${gtfs.populator.enabled}" />
-		<constructor-arg ref="dataSource" />
-	</bean>
-
-	<bean id="tripsPopulator" class="edu.uw.modelab.dao.populators.TripsPopulator">
+	<bean id="tripsPopulator" class="edu.uw.modelab.dao.populators.TripsPopulator" init-method="populate">
 		<constructor-arg value="${gtfs.input.folder}/trips.txt" />
 		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-	<bean id="stopsPopulator" class="edu.uw.modelab.dao.populators.StopsPopulator">
+	<bean id="stopsPopulator" class="edu.uw.modelab.dao.populators.StopsPopulator" init-method="populate">
 		<constructor-arg value="${gtfs.input.folder}/stops.txt" />
 		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 	
-	<bean id="busPositionsPopulator" class="edu.uw.modelab.dao.populators.BusPositionsPopulator">
+	<bean id="stopTimesPopulator" class="edu.uw.modelab.dao.populators.StopTimesPopulator" init-method="populate">
+		<constructor-arg value="${gtfs.input.folder}/stop_times.txt" />
+		<constructor-arg value="${gtfs.populator.enabled}" />
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+	<bean id="busPositionsPopulator" class="edu.uw.modelab.dao.populators.BusPositionsPopulator" init-method="populate">
 		<constructor-arg value="${oba.input.folder}/${oba.input.file}" />
 		<constructor-arg value="${oba.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
-
-
-	<bean id="dao" class="edu.uw.modelab.dao.impl.JdbcDaoImpl"
-		init-method="init">
+	
+	<bean id="routeDao" class="edu.uw.modelab.dao.impl.JdbcRouteDao">
 		<constructor-arg ref="dataSource" />
-		<constructor-arg>
-			<list>
-				<!-- order matters -->
-				<ref bean="routePopulator" />
-				<ref bean="tripsPopulator" />
-				<ref bean="stopsPopulator" />
-				<ref bean="stopTimesPopulator" />
-				<ref bean="busPositionsPopulator" />
-			</list>
-		</constructor-arg>
 	</bean>
 
-	<bean id="stopsCreator" class="edu.uw.modelab.service.impl.D3JSStopsCreator">
+	<bean id="tripDao" class="edu.uw.modelab.dao.impl.JdbcTripDao">
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+	<bean id="stopDao" class="edu.uw.modelab.dao.impl.JdbcStopDao">
+		<constructor-arg ref="dataSource" />
+	</bean>
+	
+	<bean id="stopTimeDao" class="edu.uw.modelab.dao.impl.JdbcStopTimeDao">
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+	<bean id="busPositionDao" class="edu.uw.modelab.dao.impl.JdbcBusPositionDao">
+		<constructor-arg ref="dataSource" />
+	</bean>
+
+	<bean id="stopsCreator" class="edu.uw.modelab.service.impl.D3StopsCreator">
 		<constructor-arg value="${output.folder}/stops.json" />
 		<constructor-arg ref="dao" />
 	</bean>
 	
-	<bean id="busPositionsCreator" class="edu.uw.modelab.service.impl.D3JSBusPositionsCreator">
+	<bean id="busPositionsCreator" class="edu.uw.modelab.service.impl.D3BusPositionsCreator">
 		<constructor-arg value="${output.folder}/bus_positions.json" />
 		<constructor-arg ref="dao" />
 	</bean>
 	
-	<bean id="statsService" class="edu.uw.modelab.service.impl.StatsServiceImpl">
-		<constructor-arg value="${output.folder}/routes_number_stops.txt" />
-		<constructor-arg ref="dao" />
-	</bean>	
 
 </beans> 

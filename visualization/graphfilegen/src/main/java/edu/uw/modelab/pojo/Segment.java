@@ -1,20 +1,20 @@
 package edu.uw.modelab.pojo;
 
-public class Link {
+public class Segment {
 
-	private final int from;
-	private final int to;
+	private final Stop from;
+	private final Stop to;
 
-	public Link(final int from, final int to) {
+	public Segment(final Stop from, final Stop to) {
 		this.from = from;
 		this.to = to;
 	}
 
-	public int getFrom() {
+	public Stop getFrom() {
 		return from;
 	}
 
-	public int getTo() {
+	public Stop getTo() {
 		return to;
 	}
 
@@ -22,8 +22,8 @@ public class Link {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = (prime * result) + from;
-		result = (prime * result) + to;
+		result = (prime * result) + from.hashCode();
+		result = (prime * result) + to.hashCode();
 		return result;
 	}
 
@@ -38,11 +38,11 @@ public class Link {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		final Link other = (Link) obj;
-		if (from != other.from) {
+		final Segment other = (Segment) obj;
+		if (!from.equals(other.from)) {
 			return false;
 		}
-		if (to != other.to) {
+		if (!to.equals(other.to)) {
 			return false;
 		}
 		return true;

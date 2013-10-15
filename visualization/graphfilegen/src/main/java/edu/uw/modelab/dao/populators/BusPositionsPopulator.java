@@ -24,7 +24,7 @@ public class BusPositionsPopulator extends AbstractPopulator {
 			.getLogger(BusPositionsPopulator.class);
 
 	private static final String sql = "insert into bus_position (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon) values (?, ?, ?, ?, ?, ?, ?)";
-
+	private static final String sql_all_trip_ids = "select id from trip";
 	private final JdbcTemplate template;
 
 	public BusPositionsPopulator(final String file, final boolean enabled,
@@ -35,6 +35,9 @@ public class BusPositionsPopulator extends AbstractPopulator {
 
 	@Override
 	protected void doPopulate(final List<String[]> tokens) {
+		// in order not to get garbage here
+		final List<Integer> tripIds = template.queryForList(sql_all_trip_ids,
+				Integer.class);
 		final Set<BusPosition> busPositions = new HashSet<BusPosition>(
 				tokens.size());
 		CollectionUtils.forAllDo(tokens, new Closure() {
@@ -42,9 +45,13 @@ public class BusPositionsPopulator extends AbstractPopulator {
 			public void execute(final Object tokens) {
 				final String[] strTokens = (String[]) tokens;
 				try {
-					Long.valueOf(strTokens[2]);
+					final Integer tripId = Integer.valueOf(strTokens[2]);
+					if (!tripIds.contains(tripId)) {
+						LOG.warn("Trip id is not in the database, discarding register...");
+						return;
+					}
 				} catch (final Exception exc) {
-					LOG.warn("Trip id cannot be converted to long, discarding register...");
+					LOG.warn("Trip id cannot be converted to integer, discarding register...");
 					return;
 				}
 				final BusPosition busPosition = new BusPosition(Long

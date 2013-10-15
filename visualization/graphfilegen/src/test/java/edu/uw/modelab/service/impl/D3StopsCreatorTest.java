@@ -7,22 +7,20 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import edu.uw.modelab.dao.Dao;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.service.FileCreator;
 
-public class D3JSStopsCreatorTest {
+public class D3StopsCreatorTest {
 
 	private FileCreator fileCreator;
 
-	private Dao mockDao;
+	// private Dao mockDao;
 
 	@Before
 	public void setUp() {
-		mockDao = Mockito.mock(Dao.class);
-		fileCreator = new D3JSStopsCreator("test_stops.json", mockDao);
+		// mockDao = Mockito.mock(Dao.class);
+		// fileCreator = new D3StopsCreator("test_stops.json", mockDao);
 	}
 
 	private Map<String, List<Integer>> stopsPerRoute() {

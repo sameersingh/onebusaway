@@ -8,23 +8,24 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import edu.uw.modelab.dao.Dao;
-import edu.uw.modelab.pojo.Link;
+import edu.uw.modelab.dao.StopDao;
+import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 
-public class D3JSStopsCreator extends D3JSCreator {
+public class D3StopsCreator extends D3Creator {
 
 	private final Map<Integer, Integer> stopIdsIndexes;
+	private StopDao stopDao;
 
-	public D3JSStopsCreator(final String filename, final Dao dao) {
-		super(filename, dao);
+	public D3StopsCreator(final String filename, final StopDao stopDao) {
+		super(filename);
 		stopIdsIndexes = new HashMap<Integer, Integer>(8110);
 	}
 
 	@Override
 	protected void addNodes(final PrintWriter writer) {
 		writer.print("\"nodes\": [");
-		final List<Stop> stops = getDao().getStops();
+		final List<Stop> stops = stopDao.getStops();
 		final Iterator<Stop> it = stops.iterator();
 		int index = 0;
 		while (it.hasNext()) {
@@ -46,16 +47,16 @@ public class D3JSStopsCreator extends D3JSCreator {
 
 	@Override
 	protected void addEdges(final PrintWriter writer) {
-		final Map<String, Set<Link>> linksPerRoute = getDao()
+		/*final Map<String, Set<Segment>> linksPerRoute = getDao()
 				.getLinksPerRoute();
 		writer.print("\"links\":[");
-		final Iterator<Entry<String, Set<Link>>> it = linksPerRoute.entrySet()
-				.iterator();
+		final Iterator<Entry<String, Set<Segment>>> it = linksPerRoute
+				.entrySet().iterator();
 		while (it.hasNext()) {
-			final Entry<String, Set<Link>> entry = it.next();
-			final Iterator<Link> linksIt = entry.getValue().iterator();
+			final Entry<String, Set<Segment>> entry = it.next();
+			final Iterator<Segment> linksIt = entry.getValue().iterator();
 			while (linksIt.hasNext()) {
-				final Link link = linksIt.next();
+				final Segment link = linksIt.next();
 				final Integer source = stopIdsIndexes.get(link.getFrom());
 				final Integer target = stopIdsIndexes.get(link.getTo());
 				final StringBuilder sb = new StringBuilder("{\"source\":")
@@ -74,7 +75,7 @@ public class D3JSStopsCreator extends D3JSCreator {
 				writer.print(",");
 			}
 		}
-		writer.print("]");
+		writer.print("]"); */
 	}
 
 }

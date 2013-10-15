@@ -1,0 +1,2 @@
+stopIds with stop times
+select count (distinct stop_id) from stop_time
