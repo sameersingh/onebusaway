@@ -95,16 +95,22 @@ public class D3StopsCreator extends D3Creator {
 	}
 
 	private void addNodes(final PrintWriter writer, final List<Stop> stops) {
+		final Map<Integer, Integer> numberOfTripsPerStop = tripDao
+				.getNumberOfTripsPerStop();
 		final Iterator<Stop> it = stops.iterator();
 		int index = 0;
 		while (it.hasNext()) {
 			final Stop stop = it.next();
+			final int numberOfTripForStop = numberOfTripsPerStop.get(stop
+					.getId());
 			stopIdsIndexes.put(stop.getId(), index++);
 			final StringBuilder sb = new StringBuilder("{\"name\":\"")
 					.append(stop.getName())
 					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(stop.getLon()).append(",").append(stop.getLat())
-					.append("]},\"details\":\"update long desc\"}");
+					.append("]},\"details\":\"update long desc\",")
+					.append("\"num_trips\":").append(numberOfTripForStop)
+					.append("}");
 			if (it.hasNext()) {
 				sb.append(",");
 			}

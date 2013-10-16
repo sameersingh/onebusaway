@@ -44,7 +44,10 @@ public class D3BusPositionsCreator extends D3Creator {
 					.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(busPosition.getLon()).append(",")
 					.append(busPosition.getLat())
-					.append("]},\"details\":\"bus long desc\"}");
+					.append("]},\"details\":\"bus long desc\",\"distance\":")
+					.append(busPosition.getDistanceAlongTrip())
+					.append(",\"sched_dev\":")
+					.append(busPosition.getSchedDev()).append("}");
 			if (it.hasNext()) {
 				sb.append(",");
 			}
