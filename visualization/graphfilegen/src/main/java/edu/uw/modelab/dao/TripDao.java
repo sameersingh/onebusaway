@@ -9,7 +9,7 @@ public interface TripDao {
 
 	Trip getTripById(int tripId);
 
-	List<Trip> getAllTrips();
+	List<Trip> getTrips();
 
 	List<Segment> getTripSegmentsById(int tripId);
 }

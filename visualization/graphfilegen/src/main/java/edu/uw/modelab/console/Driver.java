@@ -1,12 +1,20 @@
 package edu.uw.modelab.console;
 
+import java.util.List;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.uw.modelab.dao.BusPositionDao;
+import edu.uw.modelab.dao.StopDao;
+import edu.uw.modelab.dao.TripDao;
 import edu.uw.modelab.dao.populators.BusPositionsPopulator;
 import edu.uw.modelab.dao.populators.RoutesPopulator;
 import edu.uw.modelab.dao.populators.StopTimesPopulator;
 import edu.uw.modelab.dao.populators.StopsPopulator;
 import edu.uw.modelab.dao.populators.TripsPopulator;
+import edu.uw.modelab.pojo.BusPosition;
+import edu.uw.modelab.pojo.Stop;
+import edu.uw.modelab.pojo.Trip;
 
 public class Driver {
 
@@ -21,10 +29,15 @@ public class Driver {
 		// final FileCreator busPositionsCreator = appContext.getBean(
 		// "busPositionsCreator", FileCreator.class);
 		// busPositionsCreator.create();
+		final List<Stop> stops = appContext.getBean("stopDao", StopDao.class)
+				.getStopsByTripId(21767755);
+		System.out.println(stops.size());
+		final List<BusPosition> busPositions = appContext.getBean(
+				"busPositionDao", BusPositionDao.class)
+				.getBusPositionsByTripId(21767755);
+		final Trip trip = appContext.getBean("tripDao", TripDao.class)
+				.getTripById(21767755);
 
-		// final StatsService statsService = appContext.getBean("statsService",
-		// StatsService.class);
-		// statsService.getStopsPerRoute();
 	}
 
 	private void instantiatePopulators(

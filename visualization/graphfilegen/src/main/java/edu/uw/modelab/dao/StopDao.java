@@ -11,6 +11,8 @@ public interface StopDao {
 
 	Stop getStopById(int stopId);
 
+	List<Stop> getStopsByTripId(int tripId);
+
 	Map<String, Integer> getNumberOfStopsPerRoute();
 
 }
