@@ -66,4 +66,9 @@ public class Stop {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "{id=" + id + ",name=" + name + ",lat=" + lat + ",lon=" + lon
+				+ ",time=" + stopTime + "}";
+	}
 }

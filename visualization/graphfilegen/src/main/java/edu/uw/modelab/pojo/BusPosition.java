@@ -104,4 +104,11 @@ public class BusPosition {
 		result = (prime * result) + tripId;
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return "{tripId=" + tripId + ",timestamp=" + timeStamp
+				+ ",serviceDate=" + serviceDate + ",lat=" + lat + ",lon=" + lon
+				+ "}";
+	}
 }

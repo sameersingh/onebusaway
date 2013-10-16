@@ -69,4 +69,9 @@ public class StopTime {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "{arrival=" + arrivalTime + ",departure:" + departureTime + "}";
+	}
+
 }
