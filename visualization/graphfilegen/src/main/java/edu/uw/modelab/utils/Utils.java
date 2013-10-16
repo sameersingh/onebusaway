@@ -16,7 +16,7 @@ public class Utils {
 
 	public static String toDate(final long serviceDate) {
 		final DateTime dt = new DateTime(serviceDate, DateTimeZone.UTC);
-		final DateTimeFormatter fmt = ISODateTimeFormat.dateHourMinute();
+		final DateTimeFormatter fmt = ISODateTimeFormat.dateHourMinuteSecond();
 		return fmt.print(dt);
 	}
 

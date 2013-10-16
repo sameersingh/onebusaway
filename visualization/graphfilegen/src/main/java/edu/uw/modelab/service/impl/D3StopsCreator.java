@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.uw.modelab.dao.RouteDao;
 import edu.uw.modelab.dao.StopDao;
+import edu.uw.modelab.dao.TripDao;
 import edu.uw.modelab.pojo.Route;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
@@ -26,12 +27,14 @@ public class D3StopsCreator extends D3Creator {
 	private final Map<Integer, Integer> stopIdsIndexes;
 	private final StopDao stopDao;
 	private final RouteDao routeDao;
+	private final TripDao tripDao;
 
 	public D3StopsCreator(final String filename, final StopDao stopDao,
-			final RouteDao routeDao) {
+			final RouteDao routeDao, final TripDao tripDao) {
 		super(filename);
 		this.stopDao = stopDao;
 		this.routeDao = routeDao;
+		this.tripDao = tripDao;
 		stopIdsIndexes = new HashMap<Integer, Integer>(8110);
 	}
 
@@ -39,23 +42,14 @@ public class D3StopsCreator extends D3Creator {
 	protected void addNodes(final PrintWriter writer) {
 		writer.print("\"nodes\": [");
 		final List<Stop> stops = stopDao.getStops();
-		final Iterator<Stop> it = stops.iterator();
-		int index = 0;
-		while (it.hasNext()) {
-			final Stop stop = it.next();
-			stopIdsIndexes.put(stop.getId(), index++);
-			final StringBuilder sb = new StringBuilder("{\"name\":\"")
-					.append(stop.getName())
-					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
-					.append(stop.getLon()).append(",").append(stop.getLat())
-					.append("]},\"details\":\"update long desc\"}");
-			if (it.hasNext()) {
-				sb.append(",");
-			}
-			writer.print(sb.toString());
-		}
-		writer.print("],");
+		addNodes(writer, stops);
+	}
 
+	@Override
+	protected void addNodes(final PrintWriter writer, final int tripId) {
+		writer.print("\"nodes\": [");
+		final List<Stop> stops = stopDao.getStopsByTripId(tripId);
+		addNodes(writer, stops);
 	}
 
 	@Override
@@ -99,4 +93,53 @@ public class D3StopsCreator extends D3Creator {
 		writer.print(sb.toString());
 		writer.print("]");
 	}
+
+	private void addNodes(final PrintWriter writer, final List<Stop> stops) {
+		final Iterator<Stop> it = stops.iterator();
+		int index = 0;
+		while (it.hasNext()) {
+			final Stop stop = it.next();
+			stopIdsIndexes.put(stop.getId(), index++);
+			final StringBuilder sb = new StringBuilder("{\"name\":\"")
+					.append(stop.getName())
+					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
+					.append(stop.getLon()).append(",").append(stop.getLat())
+					.append("]},\"details\":\"update long desc\"}");
+			if (it.hasNext()) {
+				sb.append(",");
+			}
+			writer.print(sb.toString());
+		}
+		writer.print("],");
+	}
+
+	@Override
+	protected void addEdges(final PrintWriter writer, final int tripId) {
+		final Set<Segment> addedSegments = new HashSet<>();
+		final Trip trip = tripDao.getTripById(tripId);
+		writer.print("\"links\":[");
+		final Set<Segment> segments = trip.getSegments();
+		final Iterator<Segment> segmentIt = segments.iterator();
+		final StringBuilder sb = new StringBuilder();
+		while (segmentIt.hasNext()) {
+			final Segment segment = segmentIt.next();
+			if (addedSegments.contains(segment)) {
+				LOG.info("Skipping segment, already added");
+				continue;
+			}
+			addedSegments.add(segment);
+			final int source = stopIdsIndexes.get(segment.getFrom().getId());
+			final int target = stopIdsIndexes.get(segment.getTo().getId());
+			sb.append("{\"source\":").append(source).append(",\"target\":")
+					.append(target)
+					.append(",\"value\":3,\"group\":1,\"name\":\"")
+					.append(trip.getHeadSign())
+					.append("\",\"details\":\"Long description of Segment\"},");
+
+		}
+		sb.deleteCharAt(sb.length() - 1);
+		writer.print(sb.toString());
+		writer.print("]");
+	}
+
 }

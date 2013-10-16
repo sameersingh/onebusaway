@@ -41,6 +41,29 @@ public abstract class AbstractFileCreator implements FileCreator {
 
 	}
 
+	@Override
+	public void createForTrip(final int tripId) {
+		PrintWriter pw = null;
+		try {
+			LOG.info("Creating output file for trip {}", tripId);
+			pw = new PrintWriter(filename, "UTF-8");
+			beginning(pw);
+			addNodes(pw, tripId);
+			addEdges(pw, tripId);
+			end(pw);
+			pw.flush();
+			LOG.info("Output file created for trip {}", tripId);
+		} catch (final IOException exc) {
+			LOG.error("Error creating output file for trip {}. Msg {}", tripId,
+					exc.getMessage());
+		} finally {
+			if (pw != null) {
+				pw.close();
+			}
+		}
+
+	}
+
 	protected abstract void beginning(PrintWriter writer);
 
 	protected abstract void addNodes(PrintWriter writer);
@@ -48,5 +71,9 @@ public abstract class AbstractFileCreator implements FileCreator {
 	protected abstract void addEdges(PrintWriter writer);
 
 	protected abstract void end(PrintWriter writer);
+
+	protected abstract void addNodes(PrintWriter writer, int tripId);
+
+	protected abstract void addEdges(PrintWriter writer, int tripId);
 
 }

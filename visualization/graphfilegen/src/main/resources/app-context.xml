@@ -76,6 +76,7 @@
 		<constructor-arg value="${output.folder}/stops.json" />
 		<constructor-arg ref="stopDao" />
 		<constructor-arg ref="routeDao" />
+		<constructor-arg ref="tripDao" />
 	</bean>
 	
 	<bean id="busPositionsCreator" class="edu.uw.modelab.service.impl.D3BusPositionsCreator">

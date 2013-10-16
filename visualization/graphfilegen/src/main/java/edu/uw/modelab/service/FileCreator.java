@@ -4,4 +4,6 @@ public interface FileCreator {
 
 	void create();
 
+	void createForTrip(int tripId);
+
 }
