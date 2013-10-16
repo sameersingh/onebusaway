@@ -16,8 +16,8 @@ create table trip (
 create table stop ( 
        id int not null 
      , name varchar(50) not null
-     , lat varchar(20) not null
-     , lon varchar(20) not null
+     , lat decimal not null
+     , lon decimal not null
      , primary key (id)
 ); 
 
@@ -38,8 +38,8 @@ create table bus_position (
 	  , trip_id int not null
 	  , distance_trip decimal not null
 	  , sched_deviation decimal not null
-	  , lat varchar(20) not null
-	  , lon varchar(20) not null
+	  , lat decimal not null
+	  , lon decimal not null
 	  , primary key(timestamp, service_date, trip_id)
       , constraint fk_trip_id foreign key (trip_id) references trip(id)
 

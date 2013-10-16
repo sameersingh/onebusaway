@@ -4,12 +4,12 @@ public class Stop {
 
 	private final int id;
 	private final String name;
-	private final String lat;
-	private final String lon;
+	private final double lat;
+	private final double lon;
 	private StopTime stopTime;
 
-	public Stop(final int id, final String name, final String lat,
-			final String lon) {
+	public Stop(final int id, final String name, final double lat,
+			final double lon) {
 		this.id = id;
 		this.name = name;
 		this.lat = lat;
@@ -32,11 +32,11 @@ public class Stop {
 		return name;
 	}
 
-	public String getLat() {
+	public double getLat() {
 		return lat;
 	}
 
-	public String getLon() {
+	public double getLon() {
 		return lon;
 	}
 

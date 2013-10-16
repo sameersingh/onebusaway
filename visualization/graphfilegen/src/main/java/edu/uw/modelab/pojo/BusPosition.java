@@ -7,12 +7,12 @@ public class BusPosition {
 	private int tripId;
 	private double distanceAlongTrip;
 	private double schedDev;
-	private String lat;
-	private String lon;
+	private double lat;
+	private double lon;
 
 	public BusPosition(final long timeStamp, final long serviceDate,
 			final int tripId, final double distanceAlongTrip,
-			final double schedDev, final String lat, final String lon) {
+			final double schedDev, final double lat, final double lon) {
 		this.timeStamp = timeStamp;
 		this.serviceDate = serviceDate;
 		this.tripId = tripId;
@@ -33,11 +33,11 @@ public class BusPosition {
 		return serviceDate;
 	}
 
-	public String getLat() {
+	public double getLat() {
 		return lat;
 	}
 
-	public String getLon() {
+	public double getLon() {
 		return lon;
 	}
 
@@ -73,11 +73,11 @@ public class BusPosition {
 		this.distanceAlongTrip = distanceAlongTrip;
 	}
 
-	public void setLat(final String lat) {
+	public void setLat(final double lat) {
 		this.lat = lat;
 	}
 
-	public void setLon(final String lon) {
+	public void setLon(final double lon) {
 		this.lon = lon;
 	}
 

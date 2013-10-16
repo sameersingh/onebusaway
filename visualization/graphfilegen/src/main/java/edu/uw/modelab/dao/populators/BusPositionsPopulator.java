@@ -58,8 +58,9 @@ public class BusPositionsPopulator extends AbstractPopulator {
 						.valueOf(strTokens[0]), Long.valueOf(strTokens[1]),
 						Integer.valueOf(strTokens[2]), Double
 								.valueOf(strTokens[3]), Double
-								.valueOf(strTokens[4]), strTokens[5],
-						strTokens[6]);
+								.valueOf(strTokens[4]), Double
+								.valueOf(strTokens[5]), Double
+								.valueOf(strTokens[6]));
 				busPositions.add(busPosition);
 			}
 		});
@@ -78,8 +79,8 @@ public class BusPositionsPopulator extends AbstractPopulator {
 				pss.setLong(3, busPosition.getTripId());
 				pss.setDouble(4, busPosition.getDistanceAlongTrip());
 				pss.setDouble(5, busPosition.getSchedDev());
-				pss.setString(6, busPosition.getLat());
-				pss.setString(7, busPosition.getLon());
+				pss.setDouble(6, busPosition.getLat());
+				pss.setDouble(7, busPosition.getLon());
 			}
 
 			@Override

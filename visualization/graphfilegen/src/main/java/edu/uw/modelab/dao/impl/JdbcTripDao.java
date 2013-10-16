@@ -73,7 +73,7 @@ public class JdbcTripDao implements TripDao {
 				trip.setHeadsign(rs.getString(1));
 			}
 			final Stop stop = new Stop(rs.getInt(2), rs.getString(3),
-					rs.getString(4), rs.getString(5));
+					rs.getDouble(4), rs.getDouble(5));
 			final StopTime st = new StopTime(rs.getString(6), rs.getString(7),
 					rs.getInt(8));
 			stop.setStopTime(st);

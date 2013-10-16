@@ -37,7 +37,8 @@ public class StopsPopulator extends AbstractPopulator {
 				final String[] strTokens = (String[]) tokens;
 				final Stop stop = new Stop(Integer
 						.valueOf(unquote(strTokens[0])), unquote(strTokens[2]),
-						unquote(strTokens[4]), unquote(strTokens[5]));
+						Double.valueOf(unquote(strTokens[4])), Double
+								.valueOf(unquote(strTokens[5])));
 				stops.add(stop);
 			}
 		});
@@ -49,8 +50,8 @@ public class StopsPopulator extends AbstractPopulator {
 				final Stop stop = stops.get(i);
 				pss.setInt(1, stop.getId());
 				pss.setString(2, stop.getName());
-				pss.setString(3, stop.getLat());
-				pss.setString(4, stop.getLon());
+				pss.setDouble(3, stop.getLat());
+				pss.setDouble(4, stop.getLon());
 			}
 
 			@Override

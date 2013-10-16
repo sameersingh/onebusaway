@@ -23,20 +23,15 @@ public class Driver {
 				"classpath:app-context.xml");
 		instantiatePopulators(appContext);
 
-		// final FileCreator stopsCreator = appContext.getBean("stopsCreator",
-		// FileCreator.class);
-		// stopsCreator.create();
-		// final FileCreator busPositionsCreator = appContext.getBean(
-		// "busPositionsCreator", FileCreator.class);
-		// busPositionsCreator.create();
 		final List<Stop> stops = appContext.getBean("stopDao", StopDao.class)
 				.getStopsByTripId(21767755);
 		System.out.println(stops.size());
-		final List<BusPosition> busPositions = appContext.getBean(
-				"busPositionDao", BusPositionDao.class)
-				.getBusPositionsByTripId(21767755);
 		final Trip trip = appContext.getBean("tripDao", TripDao.class)
 				.getTripById(21767755);
+		final List<BusPosition> busPositions = appContext.getBean(
+				"busPositionDao", BusPositionDao.class)
+				.getBusPositionsByTripId(trip.getId());
+		// new TimeEstimatorImpl().estimateTime(busPositions, stops);
 
 	}
 

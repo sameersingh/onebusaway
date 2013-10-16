@@ -20,4 +20,9 @@ public class Utils {
 		return fmt.print(dt);
 	}
 
+	public static double euclideanDistance(final double x, final double toX,
+			final double y, final double toY) {
+		return Math.sqrt(Math.pow(x - toX, 2) + Math.pow(y - toY, 2));
+	}
+
 }

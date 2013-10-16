@@ -77,8 +77,8 @@ public class JdbcStopDao implements StopDao {
 		@Override
 		public Stop mapRow(final ResultSet rs, final int idx)
 				throws SQLException {
-			return new Stop(rs.getInt(1), rs.getString(2), rs.getString(3),
-					rs.getString(4));
+			return new Stop(rs.getInt(1), rs.getString(2), rs.getDouble(3),
+					rs.getDouble(4));
 		}
 	}
 
@@ -90,7 +90,7 @@ public class JdbcStopDao implements StopDao {
 			final StopTime st = new StopTime(rs.getString(5), rs.getString(6),
 					rs.getInt(7));
 			final Stop stop = new Stop(rs.getInt(1), rs.getString(2),
-					rs.getString(3), rs.getString(4));
+					rs.getDouble(3), rs.getDouble(4));
 			stop.setStopTime(st);
 			return stop;
 		}

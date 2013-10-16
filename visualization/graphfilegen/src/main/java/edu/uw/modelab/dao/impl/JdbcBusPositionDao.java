@@ -46,8 +46,8 @@ public class JdbcBusPositionDao implements BusPositionDao {
 			bp.setTimeStamp(rs.getLong(1));
 			bp.setServiceDate(rs.getLong(2));
 			bp.setTripId(rs.getInt(3));
-			bp.setLat(rs.getString(4));
-			bp.setLon(rs.getString(5));
+			bp.setLat(rs.getDouble(4));
+			bp.setLon(rs.getDouble(5));
 			bp.setDistanceAlongTrip(rs.getDouble(6));
 			return bp;
 		}
