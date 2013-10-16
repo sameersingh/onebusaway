@@ -1,14 +1,13 @@
 package edu.uw.modelab.dao;
 
-import java.util.List;
+import java.util.Set;
 
 import edu.uw.modelab.pojo.Route;
-import edu.uw.modelab.pojo.Trip;
 
 public interface RouteDao {
 
-	List<Trip> getTripsById(int routeId);
+	Route getRouteById(int routeId);
 
-	List<Route> getAllRoutes();
+	Set<Route> getRoutes();
 
 }

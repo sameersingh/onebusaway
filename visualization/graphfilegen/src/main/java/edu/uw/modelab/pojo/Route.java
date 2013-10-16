@@ -6,9 +6,13 @@ import java.util.Set;
 public class Route {
 
 	private final int id;
-	private final String name;
-	private final String agencyId;
+	private String name;
+	private String agencyId;
 	private final Set<Trip> trips;
+
+	public Route(final int id) {
+		this(id, null, null);
+	}
 
 	public Route(final int id, final String name, final String agencyId) {
 		this.id = id;
@@ -17,12 +21,16 @@ public class Route {
 		this.trips = new HashSet<>();
 	}
 
-	public void addTrip(final Trip trip) {
-		this.trips.add(trip);
+	public void setName(final String name) {
+		this.name = name;
 	}
 
-	public void removeTrip(final Trip trip) {
-		this.trips.remove(trip);
+	public void setAgencyId(final String agencyId) {
+		this.agencyId = agencyId;
+	}
+
+	public void addTrip(final Trip trip) {
+		this.trips.add(trip);
 	}
 
 	public int getId() {
@@ -35,6 +43,10 @@ public class Route {
 
 	public String getAgencyId() {
 		return agencyId;
+	}
+
+	public Set<Trip> getTrips() {
+		return trips;
 	}
 
 	@Override
@@ -61,6 +73,10 @@ public class Route {
 			return false;
 		}
 		return true;
+	}
+
+	public boolean contains(final Trip trip) {
+		return trips.contains(trip);
 	}
 
 }

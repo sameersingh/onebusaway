@@ -2,23 +2,36 @@ package edu.uw.modelab.service.impl;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.uw.modelab.dao.RouteDao;
 import edu.uw.modelab.dao.StopDao;
+import edu.uw.modelab.pojo.Route;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
+import edu.uw.modelab.pojo.Trip;
 
 public class D3StopsCreator extends D3Creator {
 
-	private final Map<Integer, Integer> stopIdsIndexes;
-	private StopDao stopDao;
+	private static final Logger LOG = LoggerFactory
+			.getLogger(D3StopsCreator.class);
 
-	public D3StopsCreator(final String filename, final StopDao stopDao) {
+	private final Map<Integer, Integer> stopIdsIndexes;
+	private final StopDao stopDao;
+	private final RouteDao routeDao;
+
+	public D3StopsCreator(final String filename, final StopDao stopDao,
+			final RouteDao routeDao) {
 		super(filename);
+		this.stopDao = stopDao;
+		this.routeDao = routeDao;
 		stopIdsIndexes = new HashMap<Integer, Integer>(8110);
 	}
 
@@ -47,35 +60,50 @@ public class D3StopsCreator extends D3Creator {
 
 	@Override
 	protected void addEdges(final PrintWriter writer) {
-		/*final Map<String, Set<Segment>> linksPerRoute = getDao()
-				.getLinksPerRoute();
+		final Set<Segment> addedSegments = new HashSet<>();
+		final Set<Route> routes = routeDao.getRoutes();
 		writer.print("\"links\":[");
-		final Iterator<Entry<String, Set<Segment>>> it = linksPerRoute
-				.entrySet().iterator();
-		while (it.hasNext()) {
-			final Entry<String, Set<Segment>> entry = it.next();
-			final Iterator<Segment> linksIt = entry.getValue().iterator();
-			while (linksIt.hasNext()) {
-				final Segment link = linksIt.next();
-				final Integer source = stopIdsIndexes.get(link.getFrom());
-				final Integer target = stopIdsIndexes.get(link.getTo());
-				final StringBuilder sb = new StringBuilder("{\"source\":")
-						.append(source)
-						.append(",\"target\":")
-						.append(target)
-						.append(",\"value\":3,\"group\":1,\"name\":\"")
-						.append(entry.getKey())
-						.append("\",\"details\":\"Long description of Segment\"}");
-				if (linksIt.hasNext()) {
-					sb.append(",");
+		final Iterator<Route> routeIt = routes.iterator();
+		while (routeIt.hasNext()) {
+			final Route route = routeIt.next();
+			final Set<Trip> trips = route.getTrips();
+			final Iterator<Trip> tripIt = trips.iterator();
+			while (tripIt.hasNext()) {
+				final Trip trip = tripIt.next();
+				final Set<Segment> segments = trip.getSegments();
+				final Iterator<Segment> segmentIt = segments.iterator();
+				while (segmentIt.hasNext()) {
+					final Segment segment = segmentIt.next();
+					if (addedSegments.contains(segment)) {
+						LOG.info("Skipping segment, already added");
+						continue;
+					}
+					addedSegments.add(segment);
+					final int source = stopIdsIndexes.get(segment.getFrom()
+							.getId());
+					final int target = stopIdsIndexes.get(segment.getTo()
+							.getId());
+					final StringBuilder sb = new StringBuilder("{\"source\":")
+							.append(source)
+							.append(",\"target\":")
+							.append(target)
+							.append(",\"value\":3,\"group\":1,\"name\":\"")
+							.append(route.getName())
+							.append("\",\"details\":\"Long description of Segment\"}");
+					if (segmentIt.hasNext()) {
+						sb.append(",");
+					}
+					writer.print(sb.toString());
 				}
-				writer.print(sb.toString());
+				if (tripIt.hasNext()) {
+					writer.print(",");
+				}
 			}
-			if (it.hasNext()) {
+			if (routeIt.hasNext()) {
 				writer.print(",");
 			}
 		}
-		writer.print("]"); */
+		writer.print("]");
 	}
 
 }
