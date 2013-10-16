@@ -6,14 +6,18 @@ public class Stop {
 	private final String name;
 	private final double lat;
 	private final double lon;
+	private final double x;
+	private final double y;
 	private StopTime stopTime;
 
 	public Stop(final int id, final String name, final double lat,
-			final double lon) {
+			final double lon, final double y, final double x) {
 		this.id = id;
 		this.name = name;
 		this.lat = lat;
 		this.lon = lon;
+		this.y = y;
+		this.x = x;
 	}
 
 	public void setStopTime(final StopTime stopTime) {
@@ -38,6 +42,14 @@ public class Stop {
 
 	public double getLon() {
 		return lon;
+	}
+
+	public double getX() {
+		return x;
+	}
+
+	public double getY() {
+		return y;
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class JdbcTripDao implements TripDao {
 
 	private final JdbcTemplate template;
 
-	private static final String SELECT_TRIP_BY_ID = "select t.headsign, s.id, s.name, s.lat, s.lon, st.arrival_time,"
+	private static final String SELECT_TRIP_BY_ID = "select t.headsign, s.id, s.name, s.lat, s.lon, s.y, s.x, st.arrival_time,"
 			+ " st.departure_time, st.stop_sequence from trip as t "
 			+ "join stop_time as st on t.id = st.trip_id "
 			+ "join stop as s on st.stop_id = s.id "
@@ -73,9 +73,10 @@ public class JdbcTripDao implements TripDao {
 				trip.setHeadsign(rs.getString(1));
 			}
 			final Stop stop = new Stop(rs.getInt(2), rs.getString(3),
-					rs.getDouble(4), rs.getDouble(5));
-			final StopTime st = new StopTime(rs.getString(6), rs.getString(7),
-					rs.getInt(8));
+					rs.getDouble(4), rs.getDouble(5), rs.getDouble(6),
+					rs.getDouble(7));
+			final StopTime st = new StopTime(rs.getString(8), rs.getString(9),
+					rs.getInt(10));
 			stop.setStopTime(st);
 			stops.add(stop);
 			return null;

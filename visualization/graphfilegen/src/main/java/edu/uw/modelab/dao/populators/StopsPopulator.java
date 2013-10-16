@@ -15,10 +15,11 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import edu.uw.modelab.pojo.Stop;
+import edu.uw.modelab.utils.EllipticalMercator;
 
 public class StopsPopulator extends AbstractPopulator {
 
-	private static final String sql = "insert into stop (id, name, lat, lon) values (?, ?, ?, ?)";
+	private static final String sql = "insert into stop (id, name, lat, lon, y, x) values (?, ?, ?, ?, ?, ?)";
 
 	private final JdbcTemplate template;
 
@@ -35,10 +36,13 @@ public class StopsPopulator extends AbstractPopulator {
 			@Override
 			public void execute(final Object tokens) {
 				final String[] strTokens = (String[]) tokens;
+				final double lat = Double.valueOf(unquote(strTokens[4]));
+				final double lon = Double.valueOf(unquote(strTokens[5]));
+				final double y = EllipticalMercator.mercY(lat);
+				final double x = EllipticalMercator.mercX(lon);
 				final Stop stop = new Stop(Integer
 						.valueOf(unquote(strTokens[0])), unquote(strTokens[2]),
-						Double.valueOf(unquote(strTokens[4])), Double
-								.valueOf(unquote(strTokens[5])));
+						lat, lon, y, x);
 				stops.add(stop);
 			}
 		});
@@ -52,6 +56,9 @@ public class StopsPopulator extends AbstractPopulator {
 				pss.setString(2, stop.getName());
 				pss.setDouble(3, stop.getLat());
 				pss.setDouble(4, stop.getLon());
+				pss.setDouble(5, stop.getY());
+				pss.setDouble(6, stop.getX());
+
 			}
 
 			@Override

@@ -20,7 +20,7 @@ public class JdbcBusPositionDao implements BusPositionDao {
 			+ " order by timestamp";
 
 	private static final String SELECT_BUS_POSITIONS = "select timestamp, service_date, trip_id, lat, lon, distance_trip"
-			+ " from bus_position order by timestamp";
+			+ " from bus_position order by timestamp limit 30000";
 
 	private final JdbcTemplate template;
 

@@ -21,9 +21,9 @@ public class JdbcStopDao implements StopDao {
 
 	private static Logger LOG = LoggerFactory.getLogger(JdbcStopDao.class);
 
-	private static final String SELECT_ALL_STOPS = "select id, name, lat, lon from stop";
-	private static final String SELECT_STOP_BY_STOP_ID = "select id, name, lat, lon from stop where id=?";
-	private static final String SELECT_STOPS_BY_TRIP_ID = "select s.id, s.name, s.lat, s.lon, st.arrival_time,"
+	private static final String SELECT_ALL_STOPS = "select id, name, lat, lon, y, x from stop";
+	private static final String SELECT_STOP_BY_STOP_ID = "select id, name, lat, lon, y, x from stop where id=?";
+	private static final String SELECT_STOPS_BY_TRIP_ID = "select s.id, s.name, s.lat, s.lon, s.y, s.x, st.arrival_time,"
 			+ " st.departure_time, st.stop_sequence from stop as s "
 			+ "join stop_time as st on s.id = st.stop_id "
 			+ "join trip as t on t.id = st.trip_id where t.id = ?";
@@ -31,12 +31,6 @@ public class JdbcStopDao implements StopDao {
 			+ "join stop_time as st on s.id = st.stop_id "
 			+ "join trip as t on t.id = st.trip_id "
 			+ "join route as r on r.id = t.route_id group by r.name order by stop_counts";
-
-	private static final String SELECT_STOPS_PER_ROUTE = "select r.name, s.id, t.id from stop AS s "
-			+ "join stop_time AS st on s.id = st.stop_id "
-			+ "join trip AS t on t.id = st.trip_id "
-			+ "join route AS r on r.id = t.route_id "
-			+ "order by t.id, st.stop_sequence";
 
 	private final JdbcTemplate template;
 
@@ -78,7 +72,7 @@ public class JdbcStopDao implements StopDao {
 		public Stop mapRow(final ResultSet rs, final int idx)
 				throws SQLException {
 			return new Stop(rs.getInt(1), rs.getString(2), rs.getDouble(3),
-					rs.getDouble(4));
+					rs.getDouble(4), rs.getDouble(5), rs.getDouble(6));
 		}
 	}
 
@@ -87,10 +81,11 @@ public class JdbcStopDao implements StopDao {
 		@Override
 		public Stop mapRow(final ResultSet rs, final int idx)
 				throws SQLException {
-			final StopTime st = new StopTime(rs.getString(5), rs.getString(6),
-					rs.getInt(7));
+			final StopTime st = new StopTime(rs.getString(7), rs.getString(8),
+					rs.getInt(9));
 			final Stop stop = new Stop(rs.getInt(1), rs.getString(2),
-					rs.getDouble(3), rs.getDouble(4));
+					rs.getDouble(3), rs.getDouble(4), rs.getDouble(5),
+					rs.getDouble(6));
 			stop.setStopTime(st);
 			return stop;
 		}

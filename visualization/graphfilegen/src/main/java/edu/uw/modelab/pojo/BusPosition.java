@@ -9,10 +9,13 @@ public class BusPosition {
 	private double schedDev;
 	private double lat;
 	private double lon;
+	private double y;
+	private double x;
 
 	public BusPosition(final long timeStamp, final long serviceDate,
 			final int tripId, final double distanceAlongTrip,
-			final double schedDev, final double lat, final double lon) {
+			final double schedDev, final double lat, final double lon,
+			final double y, final double x) {
 		this.timeStamp = timeStamp;
 		this.serviceDate = serviceDate;
 		this.tripId = tripId;
@@ -20,6 +23,8 @@ public class BusPosition {
 		this.schedDev = schedDev;
 		this.lat = lat;
 		this.lon = lon;
+		this.y = y;
+		this.x = x;
 	}
 
 	public BusPosition() {
@@ -79,6 +84,22 @@ public class BusPosition {
 
 	public void setLon(final double lon) {
 		this.lon = lon;
+	}
+
+	public double getY() {
+		return y;
+	}
+
+	public void setY(final double y) {
+		this.y = y;
+	}
+
+	public double getX() {
+		return x;
+	}
+
+	public void setX(final double x) {
+		this.x = x;
 	}
 
 	@Override

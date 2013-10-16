@@ -17,13 +17,14 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import edu.uw.modelab.pojo.BusPosition;
+import edu.uw.modelab.utils.EllipticalMercator;
 
 public class BusPositionsPopulator extends AbstractPopulator {
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(BusPositionsPopulator.class);
 
-	private static final String sql = "insert into bus_position (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon) values (?, ?, ?, ?, ?, ?, ?)";
+	private static final String sql = "insert into bus_position (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon, y, x) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	private static final String sql_all_trip_ids = "select id from trip";
 	private final JdbcTemplate template;
 
@@ -54,13 +55,15 @@ public class BusPositionsPopulator extends AbstractPopulator {
 					LOG.warn("Trip id cannot be converted to integer, discarding register...");
 					return;
 				}
+				final double lat = Double.valueOf(strTokens[5]);
+				final double lon = Double.valueOf(strTokens[6]);
+				final double y = EllipticalMercator.mercY(lat);
+				final double x = EllipticalMercator.mercX(lon);
 				final BusPosition busPosition = new BusPosition(Long
 						.valueOf(strTokens[0]), Long.valueOf(strTokens[1]),
 						Integer.valueOf(strTokens[2]), Double
 								.valueOf(strTokens[3]), Double
-								.valueOf(strTokens[4]), Double
-								.valueOf(strTokens[5]), Double
-								.valueOf(strTokens[6]));
+								.valueOf(strTokens[4]), lat, lon, y, x);
 				busPositions.add(busPosition);
 			}
 		});
@@ -81,6 +84,8 @@ public class BusPositionsPopulator extends AbstractPopulator {
 				pss.setDouble(5, busPosition.getSchedDev());
 				pss.setDouble(6, busPosition.getLat());
 				pss.setDouble(7, busPosition.getLon());
+				pss.setDouble(8, busPosition.getY());
+				pss.setDouble(9, busPosition.getX());
 			}
 
 			@Override

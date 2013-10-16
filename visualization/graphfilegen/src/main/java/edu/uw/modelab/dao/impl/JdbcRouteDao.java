@@ -28,7 +28,7 @@ public class JdbcRouteDao implements RouteDao {
 	private final JdbcTemplate template;
 
 	private static final String SELECT_ROUTE_BY_ID = "select r.name, r.agency_id, t.id"
-			+ " t.headsign, s.id, s.name, s.lat, s.lon, st.arrival_time,"
+			+ " t.headsign, s.id, s.name, s.lat, s.lon, s.y, s.x, st.arrival_time,"
 			+ " st.departure_time, st.stop_sequence from route as r"
 			+ " join trip as t on r.id = t.route_id"
 			+ " join stop_time as st on t.id = st.trip_id"
@@ -37,7 +37,7 @@ public class JdbcRouteDao implements RouteDao {
 			+ " order by r.name, t.id, st.stop_sequence";
 
 	private static final String SELECT_ROUTES = "select r.id, r.name, r.agency_id, t.id,"
-			+ " t.headsign, s.id, s.name, s.lat, s.lon, st.arrival_time,"
+			+ " t.headsign, s.id, s.name, s.lat, s.lon, s.y, s.x, st.arrival_time,"
 			+ " st.departure_time, st.stop_sequence from route as r"
 			+ " join trip as t on r.id = t.route_id"
 			+ " join stop_time as st on t.id = st.trip_id"
@@ -129,9 +129,11 @@ public class JdbcRouteDao implements RouteDao {
 			final String stopName = rs.getString(6);
 			final double lat = rs.getDouble(7);
 			final double lon = rs.getDouble(8);
-			final Stop stop = new Stop(stopId, stopName, lat, lon);
-			final String arrivalTime = rs.getString(9);
-			final String departureTime = rs.getString(10);
+			final double y = rs.getDouble(9);
+			final double x = rs.getDouble(10);
+			final Stop stop = new Stop(stopId, stopName, lat, lon, y, x);
+			final String arrivalTime = rs.getString(11);
+			final String departureTime = rs.getString(12);
 			final int stopSequence = rs.getInt(11);
 			final StopTime stopTime = new StopTime(arrivalTime, departureTime,
 					stopSequence);
@@ -192,9 +194,11 @@ public class JdbcRouteDao implements RouteDao {
 			final String stopName = rs.getString(7);
 			final double lat = rs.getDouble(8);
 			final double lon = rs.getDouble(9);
-			final Stop stop = new Stop(stopId, stopName, lat, lon);
-			final String arrivalTime = rs.getString(10);
-			final String departureTime = rs.getString(11);
+			final double y = rs.getDouble(10);
+			final double x = rs.getDouble(11);
+			final Stop stop = new Stop(stopId, stopName, lat, lon, y, x);
+			final String arrivalTime = rs.getString(12);
+			final String departureTime = rs.getString(13);
 			final int stopSequence = rs.getInt(12);
 			final StopTime stopTime = new StopTime(arrivalTime, departureTime,
 					stopSequence);
