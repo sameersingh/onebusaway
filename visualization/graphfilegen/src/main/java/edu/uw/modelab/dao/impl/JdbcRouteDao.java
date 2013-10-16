@@ -36,13 +36,12 @@ public class JdbcRouteDao implements RouteDao {
 			+ " where r.id = ?"
 			+ " order by r.name, t.id, st.stop_sequence";
 
-	private static final String SELECT_ROUTES = "select r.id, r.name, r.agency_id, t.id"
+	private static final String SELECT_ROUTES = "select r.id, r.name, r.agency_id, t.id,"
 			+ " t.headsign, s.id, s.name, s.lat, s.lon, st.arrival_time,"
 			+ " st.departure_time, st.stop_sequence from route as r"
 			+ " join trip as t on r.id = t.route_id"
 			+ " join stop_time as st on t.id = st.trip_id"
 			+ " join stop as s on s.id = st.stop_id "
-			+ " where r.id = ?"
 			+ " order by r.name, t.id, st.stop_sequence";
 
 	public JdbcRouteDao(final DataSource dataSource) {
@@ -142,6 +141,7 @@ public class JdbcRouteDao implements RouteDao {
 			if (stops == null) {
 				stops = new ArrayList<>();
 				stops.add(stop);
+				stopsPerTrip.put(tripId, stops);
 			} else if (!stops.contains(stop)) {
 				stops.add(stop);
 			}
@@ -183,6 +183,7 @@ public class JdbcRouteDao implements RouteDao {
 			if (trips == null) {
 				trips = new ArrayList<>();
 				trips.add(trip);
+				tripsPerRoute.put(routeId, trips);
 			} else if (!trips.contains(trip)) {
 				trips.add(trip);
 			}
@@ -203,6 +204,7 @@ public class JdbcRouteDao implements RouteDao {
 			if (stops == null) {
 				stops = new ArrayList<>();
 				stops.add(stop);
+				stopsPerTrip.put(tripId, stops);
 			} else if (!stops.contains(stop)) {
 				stops.add(stop);
 			}

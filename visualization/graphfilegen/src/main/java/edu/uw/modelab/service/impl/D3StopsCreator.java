@@ -64,6 +64,7 @@ public class D3StopsCreator extends D3Creator {
 		final Set<Route> routes = routeDao.getRoutes();
 		writer.print("\"links\":[");
 		final Iterator<Route> routeIt = routes.iterator();
+		final StringBuilder sb = new StringBuilder();
 		while (routeIt.hasNext()) {
 			final Route route = routeIt.next();
 			final Set<Trip> trips = route.getTrips();
@@ -83,27 +84,19 @@ public class D3StopsCreator extends D3Creator {
 							.getId());
 					final int target = stopIdsIndexes.get(segment.getTo()
 							.getId());
-					final StringBuilder sb = new StringBuilder("{\"source\":")
+					sb.append("{\"source\":")
 							.append(source)
 							.append(",\"target\":")
 							.append(target)
 							.append(",\"value\":3,\"group\":1,\"name\":\"")
 							.append(route.getName())
-							.append("\",\"details\":\"Long description of Segment\"}");
-					if (segmentIt.hasNext()) {
-						sb.append(",");
-					}
-					writer.print(sb.toString());
+							.append("\",\"details\":\"Long description of Segment\"},");
+
 				}
-				if (tripIt.hasNext()) {
-					writer.print(",");
-				}
-			}
-			if (routeIt.hasNext()) {
-				writer.print(",");
 			}
 		}
+		sb.deleteCharAt(sb.length() - 1);
+		writer.print(sb.toString());
 		writer.print("]");
 	}
-
 }
