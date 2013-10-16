@@ -6,8 +6,8 @@ public class Stop {
 	private final String name;
 	private final double lat;
 	private final double lon;
-	private final double x;
 	private final double y;
+	private final double x;
 	private StopTime stopTime;
 
 	public Stop(final int id, final String name, final double lat,

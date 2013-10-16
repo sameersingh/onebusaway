@@ -43,6 +43,15 @@ public class EllipticalMercator {
 	}
 
 	public static void main(final String[] args) {
+		final double test1 = mercY(47.6183014);
+		final double test2 = mercX(-122.342506);
+		System.out.println(test1);
+		System.out.println(test2);
+		final double test3 = mercY(47.6218643188477);
+		final double test4 = mercX(-122.342376708984);
+		System.out.println(test3);
+		System.out.println(test4);
+		System.out.println();
 		final double y0 = mercY(47.6345634);
 		final double x0 = mercX(-122.370468);
 		final double y1 = mercY(47.6323738);

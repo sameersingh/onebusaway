@@ -14,12 +14,12 @@ import edu.uw.modelab.pojo.BusPosition;
 
 public class JdbcBusPositionDao implements BusPositionDao {
 
-	private static final String SELECT_BUS_POSITION_BY_TRIP_ID = "select timestamp, service_date, trip_id, lat, lon, distance_trip"
+	private static final String SELECT_BUS_POSITION_BY_TRIP_ID = "select timestamp, service_date, trip_id, lat, lon, y, x, distance_trip"
 			+ " from bus_position"
 			+ " where trip_id = ?"
 			+ " order by timestamp";
 
-	private static final String SELECT_BUS_POSITIONS = "select timestamp, service_date, trip_id, lat, lon, distance_trip"
+	private static final String SELECT_BUS_POSITIONS = "select timestamp, service_date, trip_id, lat, lon, y, x, distance_trip"
 			+ " from bus_position order by timestamp limit 30000";
 
 	private final JdbcTemplate template;
@@ -48,7 +48,9 @@ public class JdbcBusPositionDao implements BusPositionDao {
 			bp.setTripId(rs.getInt(3));
 			bp.setLat(rs.getDouble(4));
 			bp.setLon(rs.getDouble(5));
-			bp.setDistanceAlongTrip(rs.getDouble(6));
+			bp.setY(rs.getDouble(6));
+			bp.setX(rs.getDouble(7));
+			bp.setDistanceAlongTrip(rs.getDouble(8));
 			return bp;
 		}
 	}

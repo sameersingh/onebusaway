@@ -1,7 +1,7 @@
 package edu.uw.modelab.pojo;
 
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Trip {
@@ -17,7 +17,7 @@ public class Trip {
 	public Trip(final int id, final String headSign) {
 		this.id = id;
 		this.headSign = headSign;
-		segments = new HashSet<>();
+		segments = new LinkedHashSet<>();
 	}
 
 	public void setHeadsign(final String headSign) {

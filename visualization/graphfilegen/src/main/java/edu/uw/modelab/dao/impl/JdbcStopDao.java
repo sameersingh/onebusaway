@@ -26,7 +26,8 @@ public class JdbcStopDao implements StopDao {
 	private static final String SELECT_STOPS_BY_TRIP_ID = "select s.id, s.name, s.lat, s.lon, s.y, s.x, st.arrival_time,"
 			+ " st.departure_time, st.stop_sequence from stop as s "
 			+ "join stop_time as st on s.id = st.stop_id "
-			+ "join trip as t on t.id = st.trip_id where t.id = ?";
+			+ "join trip as t on t.id = st.trip_id where t.id = ?"
+			+ " order by st.stop_sequence";
 	private static final String SELECT_NUMBER_STOPS_PER_ROUTE = "select r.name, count(distinct s.id) as stop_counts from stop as s "
 			+ "join stop_time as st on s.id = st.stop_id "
 			+ "join trip as t on t.id = st.trip_id "

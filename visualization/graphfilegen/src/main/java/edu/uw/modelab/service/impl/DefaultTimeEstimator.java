@@ -8,7 +8,6 @@ import java.util.Set;
 import edu.uw.modelab.pojo.BusPosition;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
-import edu.uw.modelab.pojo.StopAggregate;
 import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.service.TimeEstimator;
 import edu.uw.modelab.utils.Utils;
@@ -20,13 +19,16 @@ public class DefaultTimeEstimator implements TimeEstimator {
 			final Trip trip) {
 		final Set<Segment> segments = trip.getSegments();
 		for (final Segment segment : segments) {
+			final Stop from = segment.getFrom();
 			final Stop to = segment.getTo();
-			estimateTime(to, busPositions);
+			final double estimatedTime = estimateTime(to, busPositions);
+			System.out.println("From: " + from);
+			System.out.println("To: " + to);
+			System.out.println("ArrivalTime: "
+					+ to.getStopTime().getArrivalTime());
+			System.out.println("Estimated ArrivalTime: " + estimatedTime);
+			System.out.println();
 		}
-		final List<StopAggregate> list = new ArrayList<>();
-		for (final BusPosition busPosition : busPositions) {
-		}
-
 	}
 
 	private long estimateTime(final Stop to,
