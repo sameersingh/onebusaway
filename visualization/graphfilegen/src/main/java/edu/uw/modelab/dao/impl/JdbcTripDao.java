@@ -3,7 +3,9 @@ package edu.uw.modelab.dao.impl;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -26,6 +28,12 @@ public class JdbcTripDao implements TripDao {
 			+ "join stop as s on st.stop_id = s.id "
 			+ "where t.id =? "
 			+ "order by st.stop_sequence";
+
+	private static final String SELECT_NUMBER_TRIPS_PER_STOP = "select s.id, count(distinct t.id) as trip_counts from trip as t"
+			+ " join stop_time as st on st.trip_id = t.id"
+			+ " join stop as s on st.stop_id = s.id"
+			+ " group by s.id"
+			+ " order by trip_counts";
 
 	public JdbcTripDao(final DataSource dataSource) {
 		this.template = new JdbcTemplate(dataSource);
@@ -79,6 +87,31 @@ public class JdbcTripDao implements TripDao {
 					rs.getInt(10));
 			stop.setStopTime(st);
 			stops.add(stop);
+			return null;
+		}
+	}
+
+	@Override
+	public Map<Integer, Integer> getNumberOfTripsPerStop() {
+		final Map<Integer, Integer> result = new LinkedHashMap<>();
+		template.query(SELECT_NUMBER_TRIPS_PER_STOP,
+				new NumberTripsPerStopRowMapper(result));
+		return result;
+	}
+
+	private static final class NumberTripsPerStopRowMapper implements
+			RowMapper<Object> {
+
+		private final Map<Integer, Integer> result;
+
+		public NumberTripsPerStopRowMapper(final Map<Integer, Integer> result) {
+			this.result = result;
+		}
+
+		@Override
+		public Object mapRow(final ResultSet rs, final int idx)
+				throws SQLException {
+			result.put(rs.getInt(1), rs.getInt(2));
 			return null;
 		}
 	}
