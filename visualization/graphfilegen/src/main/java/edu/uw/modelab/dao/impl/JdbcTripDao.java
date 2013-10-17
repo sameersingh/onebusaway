@@ -13,14 +13,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 import edu.uw.modelab.dao.TripDao;
+import edu.uw.modelab.dao.TripInstanceDao;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.StopTime;
 import edu.uw.modelab.pojo.Trip;
+import edu.uw.modelab.pojo.TripInstance;
 
 public class JdbcTripDao implements TripDao {
 
 	private final JdbcTemplate template;
+	private final TripInstanceDao tripInstanceDao;
 
 	private static final String SELECT_TRIP_BY_ID = "select t.headsign, s.id, s.name, s.lat, s.lon, s.y, s.x, st.arrival_time,"
 			+ " st.departure_time, st.stop_sequence from trip as t "
@@ -35,8 +38,10 @@ public class JdbcTripDao implements TripDao {
 			+ " group by s.id"
 			+ " order by trip_counts";
 
-	public JdbcTripDao(final DataSource dataSource) {
+	public JdbcTripDao(final DataSource dataSource,
+			final TripInstanceDao tripInstanceDao) {
 		this.template = new JdbcTemplate(dataSource);
+		this.tripInstanceDao = tripInstanceDao;
 	}
 
 	@Override
@@ -49,19 +54,12 @@ public class JdbcTripDao implements TripDao {
 			final Segment segment = new Segment(stops.get(i), stops.get(i + 1));
 			trip.addSegment(segment);
 		}
+		final List<TripInstance> tripInstances = tripInstanceDao
+				.getTripInstancesForTripId(tripId);
+		for (final TripInstance tripInstance : tripInstances) {
+			trip.addInstance(tripInstance);
+		}
 		return trip;
-	}
-
-	@Override
-	public List<Trip> getTrips() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<Segment> getTripSegmentsById(final int tripId) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	private static class TripRowMapper implements RowMapper<Object> {

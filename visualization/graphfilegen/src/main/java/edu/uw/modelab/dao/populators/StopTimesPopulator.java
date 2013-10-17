@@ -59,8 +59,8 @@ public class StopTimesPopulator extends AbstractPopulator {
 				final StopTimeInsertObject stopInsertObject = toInsert.get(i);
 				final StopTime stopTime = stopInsertObject.getStopTime();
 				pss.setInt(1, stopInsertObject.getTripId());
-				pss.setString(2, stopTime.getArrivalTime());
-				pss.setString(3, stopTime.getDepartureTime());
+				pss.setString(2, stopTime.getSchedArrivalTime());
+				pss.setString(3, stopTime.getSchedDepartureTime());
 				pss.setInt(4, stopInsertObject.getStopId());
 				pss.setInt(5, stopTime.getStopSequence());
 			}

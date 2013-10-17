@@ -9,6 +9,7 @@ public class Trip {
 	private final int id;
 	private String headSign;
 	private final Set<Segment> segments;
+	private final Set<TripInstance> instances;
 
 	public Trip(final int id) {
 		this(id, null);
@@ -18,6 +19,7 @@ public class Trip {
 		this.id = id;
 		this.headSign = headSign;
 		segments = new LinkedHashSet<>();
+		instances = new LinkedHashSet<>();
 	}
 
 	public void setHeadsign(final String headSign) {
@@ -38,6 +40,14 @@ public class Trip {
 
 	public String getHeadSign() {
 		return headSign;
+	}
+
+	public void addInstance(final TripInstance instance) {
+		this.instances.add(instance);
+	}
+
+	public Set<TripInstance> getInstances() {
+		return instances;
 	}
 
 	@Override

@@ -6,4 +6,6 @@ public interface FileCreator {
 
 	void createForTrip(int tripId);
 
+	void createForTripInstance(int tripId, long serviceDate);
+
 }

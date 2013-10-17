@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.uw.modelab.dao.TripInstanceDao;
+import edu.uw.modelab.pojo.RealtimePosition;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.utils.Utils;
 
@@ -21,9 +22,9 @@ public class D3TripInstancesCreator extends D3Creator {
 	@Override
 	protected void addNodes(final PrintWriter writer) {
 		writer.print("\"nodes\": [");
-		final List<TripInstance> busPositions = tripInstanceDao
+		final List<TripInstance> tripInstances = tripInstanceDao
 				.getTripInstances();
-		addNodes(writer, busPositions);
+		addNodes(writer, tripInstances);
 	}
 
 	@Override
@@ -39,17 +40,27 @@ public class D3TripInstancesCreator extends D3Creator {
 		final Iterator<TripInstance> it = tripInstances.iterator();
 		while (it.hasNext()) {
 			final TripInstance tripInstance = it.next();
-			final StringBuilder sb = new StringBuilder("{\"name\":\"")
-					.append(tripInstance.getTripId())
-					.append("_")
-					.append(Utils.toDate(tripInstance.getTimeStamp()))
-					.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
-					.append(tripInstance.getLon()).append(",")
-					.append(tripInstance.getLat())
-					.append("]},\"details\":\"bus long desc\",\"distance\":")
-					.append(tripInstance.getDistanceAlongTrip())
-					.append(",\"sched_dev\":")
-					.append(tripInstance.getSchedDev()).append("}");
+			final List<RealtimePosition> realtimes = tripInstance.getRealtime();
+			final Iterator<RealtimePosition> realtimesIt = realtimes.iterator();
+			final StringBuilder sb = new StringBuilder();
+			while (realtimesIt.hasNext()) {
+				final RealtimePosition rtp = realtimesIt.next();
+				sb.append("{\"name\":\"")
+						.append(tripInstance.getTripId())
+						.append("_")
+						.append(Utils.toDate(tripInstance.getServiceDate()))
+						.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
+						.append(rtp.getLon())
+						.append(",")
+						.append(rtp.getLat())
+						.append("]},\"details\":\"bus long desc\",\"distance\":")
+						.append(rtp.getDistanceAlongTrip())
+						.append(",\"sched_dev\":").append(rtp.getSchedDev())
+						.append("}");
+				if (realtimesIt.hasNext()) {
+					sb.append(",");
+				}
+			}
 			if (it.hasNext()) {
 				sb.append(",");
 			}
@@ -66,6 +77,41 @@ public class D3TripInstancesCreator extends D3Creator {
 
 	@Override
 	protected void addEdges(final PrintWriter writer, final int tripId) {
+		addEdges(writer);
+	}
+
+	@Override
+	protected void addNodes(final PrintWriter writer, final int tripId,
+			final long serviceDate) {
+		writer.print("\"nodes\": [");
+		final TripInstance tripInstance = tripInstanceDao.getTripInstance(
+				tripId, serviceDate);
+		final List<RealtimePosition> realtimes = tripInstance.getRealtime();
+		final Iterator<RealtimePosition> realtimesIt = realtimes.iterator();
+		final StringBuilder sb = new StringBuilder();
+		while (realtimesIt.hasNext()) {
+			final RealtimePosition rtp = realtimesIt.next();
+			sb.append("{\"name\":\"")
+					.append(tripInstance.getTripId())
+					.append("_")
+					.append(Utils.toDate(tripInstance.getServiceDate()))
+					.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
+					.append(rtp.getLon()).append(",").append(rtp.getLat())
+					.append("]},\"details\":\"bus long desc\",\"distance\":")
+					.append(rtp.getDistanceAlongTrip())
+					.append(",\"sched_dev\":").append(rtp.getSchedDev())
+					.append("}");
+			if (realtimesIt.hasNext()) {
+				sb.append(",");
+			}
+		}
+		writer.print(sb.toString());
+		writer.print("],");
+	}
+
+	@Override
+	protected void addEdges(final PrintWriter writer, final int tripId,
+			final long serviceDate) {
 		addEdges(writer);
 	}
 

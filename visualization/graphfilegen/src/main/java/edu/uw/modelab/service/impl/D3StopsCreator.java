@@ -53,6 +53,14 @@ public class D3StopsCreator extends D3Creator {
 	}
 
 	@Override
+	protected void addNodes(final PrintWriter writer, final int tripId,
+			final long serviceDate) {
+		writer.print("\"nodes\": [");
+		final List<Stop> stops = stopDao.getStopsByTripId(tripId);
+		addNodes(writer, stops);
+	}
+
+	@Override
 	protected void addEdges(final PrintWriter writer) {
 		final Set<Segment> addedSegments = new HashSet<>();
 		final Set<Route> routes = routeDao.getRoutes();
@@ -78,13 +86,11 @@ public class D3StopsCreator extends D3Creator {
 							.getId());
 					final int target = stopIdsIndexes.get(segment.getTo()
 							.getId());
-					sb.append("{\"source\":")
-							.append(source)
-							.append(",\"target\":")
-							.append(target)
+					sb.append("{\"source\":").append(source)
+							.append(",\"target\":").append(target)
 							.append(",\"value\":3,\"group\":1,\"name\":\"")
 							.append(route.getName())
-							.append("\",\"details\":\"Long description of Segment\"},");
+							.append("\",\"details\":\"\"},");
 
 				}
 			}
@@ -110,7 +116,8 @@ public class D3StopsCreator extends D3Creator {
 					.append(stop.getLon()).append(",").append(stop.getLat())
 					.append("]},\"details\":\"\",").append("\"num_trips\":")
 					.append(numberOfTripForStop).append(",\"sched\":\"")
-					.append(stop.getStopTime().getArrivalTime()).append("\"}");
+					.append(stop.getStopTime().getSchedArrivalTime())
+					.append("\"}");
 			if (it.hasNext()) {
 				sb.append(",");
 			}
@@ -136,14 +143,18 @@ public class D3StopsCreator extends D3Creator {
 			addedSegments.add(segment);
 			final int source = stopIdsIndexes.get(segment.getFrom().getId());
 			final int target = stopIdsIndexes.get(segment.getTo().getId());
-			sb.append("{\"source\":").append(source).append(",\"target\":")
+			sb.append("{\"source\":")
+					.append(source)
+					.append(",\"target\":")
 					.append(target)
 					.append(",\"value\":3,\"group\":1,\"name\":\"")
-					.append(trip.getHeadSign()).append("\",\"details\":\"\"")
+					.append(trip.getHeadSign())
+					.append("\",\"details\":\"\"")
 					.append(",\"from_sched\":\"")
-					.append(segment.getFrom().getStopTime().getArrivalTime())
+					.append(segment.getFrom().getStopTime()
+							.getSchedArrivalTime())
 					.append("\",\"to_sched\":\"")
-					.append(segment.getTo().getStopTime().getArrivalTime())
+					.append(segment.getTo().getStopTime().getSchedArrivalTime())
 					.append("\",\"distance\":").append(segment.getDistance())
 					.append("},");
 
@@ -151,6 +162,12 @@ public class D3StopsCreator extends D3Creator {
 		sb.deleteCharAt(sb.length() - 1);
 		writer.print(sb.toString());
 		writer.print("]");
+	}
+
+	@Override
+	protected void addEdges(final PrintWriter writer, final int tripId,
+			final long serviceDate) {
+		addEdges(writer, tripId);
 	}
 
 }

@@ -58,6 +58,7 @@
 
 	<bean id="tripDao" class="edu.uw.modelab.dao.impl.JdbcTripDao">
 		<constructor-arg ref="dataSource" />
+		<constructor-arg ref="tripInstanceDao" />
 	</bean>
 
 	<bean id="stopDao" class="edu.uw.modelab.dao.impl.JdbcStopDao">
