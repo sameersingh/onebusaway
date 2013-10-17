@@ -78,12 +78,15 @@
 		<constructor-arg ref="stopDao" />
 		<constructor-arg ref="routeDao" />
 		<constructor-arg ref="tripDao" />
+		<constructor-arg ref="timeEstimator" />
 	</bean>
 	
 	<bean id="tripInstancesCreator" class="edu.uw.modelab.service.impl.D3TripInstancesCreator">
 		<constructor-arg value="${output.folder}/trip_instances.json" />
 		<constructor-arg ref="tripInstanceDao" />
 	</bean>
+	
+	<bean id="timeEstimator" class="edu.uw.modelab.service.impl.DefaultTimeEstimator" />
 	
 
 </beans> 

@@ -18,6 +18,7 @@ import edu.uw.modelab.pojo.Route;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
+import edu.uw.modelab.service.TimeEstimator;
 
 public class D3StopsCreator extends D3Creator {
 
@@ -28,13 +29,16 @@ public class D3StopsCreator extends D3Creator {
 	private final StopDao stopDao;
 	private final RouteDao routeDao;
 	private final TripDao tripDao;
+	private final TimeEstimator timeEstimator;
 
 	public D3StopsCreator(final String filename, final StopDao stopDao,
-			final RouteDao routeDao, final TripDao tripDao) {
+			final RouteDao routeDao, final TripDao tripDao,
+			final TimeEstimator timeEstimator) {
 		super(filename);
 		this.stopDao = stopDao;
 		this.routeDao = routeDao;
 		this.tripDao = tripDao;
+		this.timeEstimator = timeEstimator;
 		stopIdsIndexes = new HashMap<Integer, Integer>(8110);
 	}
 
@@ -115,9 +119,7 @@ public class D3StopsCreator extends D3Creator {
 					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(stop.getLon()).append(",").append(stop.getLat())
 					.append("]},\"details\":\"\",").append("\"num_trips\":")
-					.append(numberOfTripForStop).append(",\"sched\":\"")
-					.append(stop.getStopTime().getSchedArrivalTime())
-					.append("\"}");
+					.append(numberOfTripForStop).append("\"}");
 			if (it.hasNext()) {
 				sb.append(",");
 			}
@@ -131,6 +133,7 @@ public class D3StopsCreator extends D3Creator {
 		final Set<Segment> addedSegments = new HashSet<>();
 		final Trip trip = tripDao.getTripById(tripId);
 		writer.print("\"links\":[");
+		timeEstimator.estimateArrivalTimes(trip);
 		final Set<Segment> segments = trip.getSegments();
 		final Iterator<Segment> segmentIt = segments.iterator();
 		final StringBuilder sb = new StringBuilder();
@@ -153,10 +156,15 @@ public class D3StopsCreator extends D3Creator {
 					.append(",\"from_sched\":\"")
 					.append(segment.getFrom().getStopTime()
 							.getSchedArrivalTime())
+					.append(",\"from_actual\":\"")
+					.append(segment.getFrom().getStopTime()
+							.getActualArrivalTime())
 					.append("\",\"to_sched\":\"")
 					.append(segment.getTo().getStopTime().getSchedArrivalTime())
-					.append("\",\"distance\":").append(segment.getDistance())
-					.append("},");
+					.append("\",\"to_actual\":\"")
+					.append(segment.getTo().getStopTime()
+							.getActualArrivalTime()).append("\",\"distance\":")
+					.append(segment.getDistance()).append("},");
 
 		}
 		sb.deleteCharAt(sb.length() - 1);

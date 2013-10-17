@@ -40,7 +40,8 @@ public class D3TripInstancesCreator extends D3Creator {
 		final Iterator<TripInstance> it = tripInstances.iterator();
 		while (it.hasNext()) {
 			final TripInstance tripInstance = it.next();
-			final List<RealtimePosition> realtimes = tripInstance.getRealtime();
+			final List<RealtimePosition> realtimes = tripInstance
+					.getRealtimes();
 			final Iterator<RealtimePosition> realtimesIt = realtimes.iterator();
 			final StringBuilder sb = new StringBuilder();
 			while (realtimesIt.hasNext()) {
@@ -48,7 +49,7 @@ public class D3TripInstancesCreator extends D3Creator {
 				sb.append("{\"name\":\"")
 						.append(tripInstance.getTripId())
 						.append("_")
-						.append(Utils.toDate(tripInstance.getServiceDate()))
+						.append(Utils.toHHMMss(rtp.getTimeStamp()))
 						.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 						.append(rtp.getLon())
 						.append(",")
@@ -86,7 +87,7 @@ public class D3TripInstancesCreator extends D3Creator {
 		writer.print("\"nodes\": [");
 		final TripInstance tripInstance = tripInstanceDao.getTripInstance(
 				tripId, serviceDate);
-		final List<RealtimePosition> realtimes = tripInstance.getRealtime();
+		final List<RealtimePosition> realtimes = tripInstance.getRealtimes();
 		final Iterator<RealtimePosition> realtimesIt = realtimes.iterator();
 		final StringBuilder sb = new StringBuilder();
 		while (realtimesIt.hasNext()) {
@@ -94,7 +95,7 @@ public class D3TripInstancesCreator extends D3Creator {
 			sb.append("{\"name\":\"")
 					.append(tripInstance.getTripId())
 					.append("_")
-					.append(Utils.toDate(tripInstance.getServiceDate()))
+					.append(Utils.toHHMMss(rtp.getTimeStamp()))
 					.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(rtp.getLon()).append(",").append(rtp.getLat())
 					.append("]},\"details\":\"bus long desc\",\"distance\":")

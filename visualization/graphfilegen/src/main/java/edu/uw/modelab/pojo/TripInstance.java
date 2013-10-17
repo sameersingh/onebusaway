@@ -19,7 +19,7 @@ public class TripInstance {
 		this.realtimes.add(realtime);
 	}
 
-	public List<RealtimePosition> getRealtime() {
+	public List<RealtimePosition> getRealtimes() {
 		return realtimes;
 	}
 

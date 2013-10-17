@@ -5,7 +5,7 @@ public class StopTime {
 	private final String schedArrivalTime;
 	private final String schedDepartureTime;
 	private final int stopSequence;
-	private Long actualArrivalTime;
+	private long actualArrivalTime;
 
 	public StopTime(final String arrivalTime, final String departureTime,
 			final int stopSequence) {
@@ -30,7 +30,7 @@ public class StopTime {
 		this.actualArrivalTime = actualArrivalTime;
 	}
 
-	public Long getActualArrivalTime() {
+	public long getActualArrivalTime() {
 		return actualArrivalTime;
 	}
 

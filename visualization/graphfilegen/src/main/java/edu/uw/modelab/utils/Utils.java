@@ -1,11 +1,16 @@
 package edu.uw.modelab.utils;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
 public class Utils {
+
+	// ugly stuff, asuming that the start and end day of the trip are the same
+	private static final String DATE_START = "02/08/2012 ";
+	private static final String DATE_END = "02/08/2012 ";
 
 	private Utils() {
 	}
@@ -14,10 +19,28 @@ public class Utils {
 		return str.replace("\"", "");
 	}
 
-	public static String toDate(final long serviceDate) {
-		final DateTime dt = new DateTime(serviceDate, DateTimeZone.UTC);
-		final DateTimeFormatter fmt = ISODateTimeFormat.dateHourMinuteSecond();
-		return fmt.print(dt);
+	public static String toHHMMss(final long serviceDate) {
+		final DateTimeFormatter fmt = DateTimeFormat
+				.forPattern("HH:mm:ss Z '(PST)'");
+		final String date = fmt.print(serviceDate);
+		return date.split(",")[0];
+	}
+
+	public static long diff(final String scheduled, final long timestamp) {
+		final SimpleDateFormat format = new SimpleDateFormat(
+				"MM/dd/yyyy HH:mm:ss");
+		Date d1 = null;
+		Date d2 = null;
+		long diff = 0;
+		try {
+			d1 = format.parse(DATE_START + scheduled);
+			d2 = format.parse(DATE_END + toHHMMss(timestamp));
+			diff = ((d2.getTime() - d1.getTime()) / 1000);
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+		return diff;
+
 	}
 
 	public static double euclideanDistance(final double x, final double toX,
