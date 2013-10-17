@@ -34,7 +34,7 @@ create table stop_time (
       , constraint fk_stop_id foreign key (stop_id) references stop(id)
 );
 
-create table bus_position (
+create table trip_instance (
 		timestamp bigint not null
 	  , service_date bigint not null
 	  , trip_id int not null

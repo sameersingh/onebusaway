@@ -1,6 +1,6 @@
 package edu.uw.modelab.pojo;
 
-public class BusPosition {
+public class TripInstance {
 
 	private long timeStamp;
 	private long serviceDate;
@@ -12,7 +12,7 @@ public class BusPosition {
 	private double y;
 	private double x;
 
-	public BusPosition(final long timeStamp, final long serviceDate,
+	public TripInstance(final long timeStamp, final long serviceDate,
 			final int tripId, final double distanceAlongTrip,
 			final double schedDev, final double lat, final double lon,
 			final double y, final double x) {
@@ -27,7 +27,7 @@ public class BusPosition {
 		this.x = x;
 	}
 
-	public BusPosition() {
+	public TripInstance() {
 	}
 
 	public long getTimeStamp() {
@@ -107,10 +107,10 @@ public class BusPosition {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof BusPosition)) {
+		if (!(obj instanceof TripInstance)) {
 			return false;
 		}
-		final BusPosition bp = (BusPosition) obj;
+		final TripInstance bp = (TripInstance) obj;
 		return (this.timeStamp == bp.timeStamp)
 				&& (this.serviceDate == bp.serviceDate)
 				&& (this.tripId == bp.tripId);

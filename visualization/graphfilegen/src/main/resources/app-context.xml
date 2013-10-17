@@ -46,8 +46,8 @@
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-	<bean id="busPositionsPopulator" class="edu.uw.modelab.dao.populators.BusPositionsPopulator" init-method="populate">
-		<constructor-arg value="${oba.input.folder}/${oba.input.file}" />
+	<bean id="tripInstancesPopulator" class="edu.uw.modelab.dao.populators.TripInstancesPopulator" init-method="populate">
+		<constructor-arg value="${oba.input.folder}" />
 		<constructor-arg value="${oba.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
@@ -68,7 +68,7 @@
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-	<bean id="busPositionDao" class="edu.uw.modelab.dao.impl.JdbcBusPositionDao">
+	<bean id="tripInstanceDao" class="edu.uw.modelab.dao.impl.JdbcTripInstanceDao">
 		<constructor-arg ref="dataSource" />
 	</bean>
 
@@ -79,9 +79,9 @@
 		<constructor-arg ref="tripDao" />
 	</bean>
 	
-	<bean id="busPositionsCreator" class="edu.uw.modelab.service.impl.D3BusPositionsCreator">
-		<constructor-arg value="${output.folder}/bus_positions.json" />
-		<constructor-arg ref="busPositionDao" />
+	<bean id="tripInstancesCreator" class="edu.uw.modelab.service.impl.D3TripInstancesCreator">
+		<constructor-arg value="${output.folder}/trip_instances.json" />
+		<constructor-arg ref="tripInstanceDao" />
 	</bean>
 	
 

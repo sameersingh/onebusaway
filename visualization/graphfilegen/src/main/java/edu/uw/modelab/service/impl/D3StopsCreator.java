@@ -108,9 +108,9 @@ public class D3StopsCreator extends D3Creator {
 					.append(stop.getName())
 					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(stop.getLon()).append(",").append(stop.getLat())
-					.append("]},\"details\":\"update long desc\",")
-					.append("\"num_trips\":").append(numberOfTripForStop)
-					.append("}");
+					.append("]},\"details\":\"\",").append("\"num_trips\":")
+					.append(numberOfTripForStop).append(",\"sched\":\"")
+					.append(stop.getStopTime().getArrivalTime()).append("\"}");
 			if (it.hasNext()) {
 				sb.append(",");
 			}
@@ -139,8 +139,13 @@ public class D3StopsCreator extends D3Creator {
 			sb.append("{\"source\":").append(source).append(",\"target\":")
 					.append(target)
 					.append(",\"value\":3,\"group\":1,\"name\":\"")
-					.append(trip.getHeadSign())
-					.append("\",\"details\":\"Long description of Segment\"},");
+					.append(trip.getHeadSign()).append("\",\"details\":\"\"")
+					.append(",\"from_sched\":\"")
+					.append(segment.getFrom().getStopTime().getArrivalTime())
+					.append("\",\"to_sched\":\"")
+					.append(segment.getTo().getStopTime().getArrivalTime())
+					.append("\",\"distance\":").append(segment.getDistance())
+					.append("},");
 
 		}
 		sb.deleteCharAt(sb.length() - 1);

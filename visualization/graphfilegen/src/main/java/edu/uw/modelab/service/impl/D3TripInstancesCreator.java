@@ -4,50 +4,52 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.uw.modelab.dao.BusPositionDao;
-import edu.uw.modelab.pojo.BusPosition;
+import edu.uw.modelab.dao.TripInstanceDao;
+import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.utils.Utils;
 
-public class D3BusPositionsCreator extends D3Creator {
+public class D3TripInstancesCreator extends D3Creator {
 
-	private final BusPositionDao busPositionDao;
+	private final TripInstanceDao tripInstanceDao;
 
-	public D3BusPositionsCreator(final String filename, final BusPositionDao dao) {
+	public D3TripInstancesCreator(final String filename,
+			final TripInstanceDao dao) {
 		super(filename);
-		this.busPositionDao = dao;
+		this.tripInstanceDao = dao;
 	}
 
 	@Override
 	protected void addNodes(final PrintWriter writer) {
 		writer.print("\"nodes\": [");
-		final List<BusPosition> busPositions = busPositionDao.getBusPositions();
+		final List<TripInstance> busPositions = tripInstanceDao
+				.getTripInstances();
 		addNodes(writer, busPositions);
 	}
 
 	@Override
 	protected void addNodes(final PrintWriter writer, final int tripId) {
 		writer.print("\"nodes\": [");
-		final List<BusPosition> busPositions = busPositionDao
-				.getBusPositionsByTripId(tripId);
-		addNodes(writer, busPositions);
+		final List<TripInstance> tripInstances = tripInstanceDao
+				.getTripInstancesForTripId(tripId);
+		addNodes(writer, tripInstances);
 	}
 
 	private void addNodes(final PrintWriter writer,
-			final List<BusPosition> busPositions) {
-		final Iterator<BusPosition> it = busPositions.iterator();
+			final List<TripInstance> tripInstances) {
+		final Iterator<TripInstance> it = tripInstances.iterator();
 		while (it.hasNext()) {
-			final BusPosition busPosition = it.next();
+			final TripInstance tripInstance = it.next();
 			final StringBuilder sb = new StringBuilder("{\"name\":\"")
-					.append(busPosition.getTripId())
+					.append(tripInstance.getTripId())
 					.append("_")
-					.append(Utils.toDate(busPosition.getTimeStamp()))
+					.append(Utils.toDate(tripInstance.getTimeStamp()))
 					.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
-					.append(busPosition.getLon()).append(",")
-					.append(busPosition.getLat())
+					.append(tripInstance.getLon()).append(",")
+					.append(tripInstance.getLat())
 					.append("]},\"details\":\"bus long desc\",\"distance\":")
-					.append(busPosition.getDistanceAlongTrip())
+					.append(tripInstance.getDistanceAlongTrip())
 					.append(",\"sched_dev\":")
-					.append(busPosition.getSchedDev()).append("}");
+					.append(tripInstance.getSchedDev()).append("}");
 			if (it.hasNext()) {
 				sb.append(",");
 			}

@@ -16,30 +16,30 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import edu.uw.modelab.pojo.BusPosition;
+import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.utils.EllipticalMercator;
 
-public class BusPositionsPopulator extends AbstractPopulator {
+public class TripInstancesPopulator extends BulkPopulator {
 
 	private static final Logger LOG = LoggerFactory
-			.getLogger(BusPositionsPopulator.class);
+			.getLogger(TripInstancesPopulator.class);
 
-	private static final String sql = "insert into bus_position (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon, y, x) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-	private static final String sql_all_trip_ids = "select id from trip";
+	private static final String SQL = "insert into trip_instance (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon, y, x) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	private static final String SQL_ALL_TRIP_IDS = "select id from trip";
 	private final JdbcTemplate template;
 
-	public BusPositionsPopulator(final String file, final boolean enabled,
+	public TripInstancesPopulator(final String folder, final boolean enabled,
 			final DataSource dataSource) {
-		super(file, enabled, "\t");
+		super(folder, enabled, "\t");
 		this.template = new JdbcTemplate(dataSource);
 	}
 
 	@Override
 	protected void doPopulate(final List<String[]> tokens) {
 		// in order not to get garbage here
-		final List<Integer> tripIds = template.queryForList(sql_all_trip_ids,
+		final List<Integer> tripIds = template.queryForList(SQL_ALL_TRIP_IDS,
 				Integer.class);
-		final Set<BusPosition> busPositions = new HashSet<BusPosition>(
+		final Set<TripInstance> tripInstances = new HashSet<TripInstance>(
 				tokens.size());
 		CollectionUtils.forAllDo(tokens, new Closure() {
 			@Override
@@ -59,38 +59,38 @@ public class BusPositionsPopulator extends AbstractPopulator {
 				final double lon = Double.valueOf(strTokens[6]);
 				final double y = EllipticalMercator.mercY(lat);
 				final double x = EllipticalMercator.mercX(lon);
-				final BusPosition busPosition = new BusPosition(Long
+				final TripInstance busPosition = new TripInstance(Long
 						.valueOf(strTokens[0]), Long.valueOf(strTokens[1]),
 						Integer.valueOf(strTokens[2]), Double
 								.valueOf(strTokens[3]), Double
 								.valueOf(strTokens[4]), lat, lon, y, x);
-				busPositions.add(busPosition);
+				tripInstances.add(busPosition);
 			}
 		});
 
-		final List<BusPosition> busPositionsList = new ArrayList<BusPosition>(
-				busPositions);
+		final List<TripInstance> tripInstanceList = new ArrayList<TripInstance>(
+				tripInstances);
 
-		template.batchUpdate(sql, new BatchPreparedStatementSetter() {
+		template.batchUpdate(SQL, new BatchPreparedStatementSetter() {
 
 			@Override
 			public void setValues(final PreparedStatement pss, final int i)
 					throws SQLException {
-				final BusPosition busPosition = busPositionsList.get(i);
-				pss.setLong(1, busPosition.getTimeStamp());
-				pss.setLong(2, busPosition.getServiceDate());
-				pss.setLong(3, busPosition.getTripId());
-				pss.setDouble(4, busPosition.getDistanceAlongTrip());
-				pss.setDouble(5, busPosition.getSchedDev());
-				pss.setDouble(6, busPosition.getLat());
-				pss.setDouble(7, busPosition.getLon());
-				pss.setDouble(8, busPosition.getY());
-				pss.setDouble(9, busPosition.getX());
+				final TripInstance tripInstance = tripInstanceList.get(i);
+				pss.setLong(1, tripInstance.getTimeStamp());
+				pss.setLong(2, tripInstance.getServiceDate());
+				pss.setLong(3, tripInstance.getTripId());
+				pss.setDouble(4, tripInstance.getDistanceAlongTrip());
+				pss.setDouble(5, tripInstance.getSchedDev());
+				pss.setDouble(6, tripInstance.getLat());
+				pss.setDouble(7, tripInstance.getLon());
+				pss.setDouble(8, tripInstance.getY());
+				pss.setDouble(9, tripInstance.getX());
 			}
 
 			@Override
 			public int getBatchSize() {
-				return busPositions.size();
+				return tripInstances.size();
 			}
 		});
 	}

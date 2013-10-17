@@ -1,13 +1,18 @@
 package edu.uw.modelab.pojo;
 
+import edu.uw.modelab.utils.Utils;
+
 public class Segment {
 
 	private final Stop from;
 	private final Stop to;
+	private final double distance;
 
 	public Segment(final Stop from, final Stop to) {
 		this.from = from;
 		this.to = to;
+		this.distance = Utils.euclideanDistance(from.getX(), to.getX(),
+				from.getY(), to.getY());
 	}
 
 	public Stop getFrom() {
@@ -16,6 +21,10 @@ public class Segment {
 
 	public Stop getTo() {
 		return to;
+	}
+
+	public double getDistance() {
+		return distance;
 	}
 
 	@Override

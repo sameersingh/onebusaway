@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import edu.uw.modelab.pojo.BusPosition;
+import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
@@ -15,7 +15,7 @@ import edu.uw.modelab.utils.Utils;
 public class DefaultTimeEstimator implements TimeEstimator {
 
 	@Override
-	public void estimateArrivalTime(final List<BusPosition> busPositions,
+	public void estimateArrivalTime(final List<TripInstance> busPositions,
 			final Trip trip) {
 		final Set<Segment> segments = trip.getSegments();
 		for (final Segment segment : segments) {
@@ -32,18 +32,18 @@ public class DefaultTimeEstimator implements TimeEstimator {
 	}
 
 	private long estimateTime(final Stop to,
-			final List<BusPosition> busPositions) {
+			final List<TripInstance> busPositions) {
 		final double toX = to.getX();
 		final double toY = to.getY();
 		final List<IndexedDistance> distances = new ArrayList<>();
 		int i = 0;
-		for (final BusPosition bp : busPositions) {
+		for (final TripInstance bp : busPositions) {
 			distances.add(new IndexedDistance(i++, Utils.euclideanDistance(
 					bp.getX(), toX, bp.getY(), toY)));
 		}
 		Collections.sort(distances);
-		final BusPosition closest = busPositions.get(distances.get(0).index);
-		final BusPosition secondClosest = busPositions
+		final TripInstance closest = busPositions.get(distances.get(0).index);
+		final TripInstance secondClosest = busPositions
 				.get(distances.get(1).index);
 
 		long t1;
