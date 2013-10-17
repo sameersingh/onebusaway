@@ -19,6 +19,7 @@ import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.service.TimeEstimator;
+import edu.uw.modelab.utils.Utils;
 
 public class D3StopsCreator extends D3Creator {
 
@@ -119,7 +120,7 @@ public class D3StopsCreator extends D3Creator {
 					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(stop.getLon()).append(",").append(stop.getLat())
 					.append("]},\"details\":\"\",").append("\"num_trips\":")
-					.append(numberOfTripForStop).append("\"}");
+					.append(numberOfTripForStop).append("}");
 			if (it.hasNext()) {
 				sb.append(",");
 			}
@@ -156,15 +157,16 @@ public class D3StopsCreator extends D3Creator {
 					.append(",\"from_sched\":\"")
 					.append(segment.getFrom().getStopTime()
 							.getSchedArrivalTime())
-					.append(",\"from_actual\":\"")
-					.append(segment.getFrom().getStopTime()
-							.getActualArrivalTime())
+					.append("\",\"from_actual\":\"")
+					.append(Utils.toHHMMss(segment.getFrom().getStopTime()
+							.getActualArrivalTime()))
 					.append("\",\"to_sched\":\"")
 					.append(segment.getTo().getStopTime().getSchedArrivalTime())
 					.append("\",\"to_actual\":\"")
-					.append(segment.getTo().getStopTime()
-							.getActualArrivalTime()).append("\",\"distance\":")
-					.append(segment.getDistance()).append("},");
+					.append(Utils.toHHMMss(segment.getTo().getStopTime()
+							.getActualArrivalTime()))
+					.append("\",\"distance\":").append(segment.getDistance())
+					.append("},");
 
 		}
 		sb.deleteCharAt(sb.length() - 1);

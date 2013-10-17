@@ -34,7 +34,8 @@ public class DefaultTimeEstimator implements TimeEstimator {
 			LOG.info("To: " + to);
 			LOG.info("Scheduled arrival time: "
 					+ to.getStopTime().getSchedArrivalTime());
-			LOG.info("Actual arrival time: " + actualArrivalTime);
+			LOG.info("Actual arrival time: "
+					+ Utils.toHHMMss(actualArrivalTime));
 		}
 	}
 

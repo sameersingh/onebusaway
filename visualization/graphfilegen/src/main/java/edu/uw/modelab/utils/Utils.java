@@ -3,8 +3,10 @@ package edu.uw.modelab.utils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.joda.time.format.DateTimeFormat;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 public class Utils {
 
@@ -19,11 +21,20 @@ public class Utils {
 		return str.replace("\"", "");
 	}
 
-	public static String toHHMMss(final long serviceDate) {
-		final DateTimeFormatter fmt = DateTimeFormat
-				.forPattern("HH:mm:ss Z '(PST)'");
-		final String date = fmt.print(serviceDate);
-		return date.split(",")[0];
+	public static String toHHMMss(final long timestamp) {
+		if (timestamp != 0) {
+			final DateTime dt = new DateTime(timestamp, DateTimeZone.UTC);
+			final DateTimeFormatter fmt = ISODateTimeFormat
+					.dateHourMinuteSecond();
+			final String date = fmt.print(dt);
+			return date.split("T")[1];
+			// final DateTimeFormatter fmt = DateTimeFormat
+			// .forPattern("HH:mm:ss Z '(UTC)'");
+			// final String date = fmt.print(timestamp);
+			// return date.split(",")[0];
+		} else {
+			return "";
+		}
 	}
 
 	public static long diff(final String scheduled, final long timestamp) {
@@ -46,6 +57,10 @@ public class Utils {
 	public static double euclideanDistance(final double x, final double toX,
 			final double y, final double toY) {
 		return Math.sqrt(Math.pow(x - toX, 2) + Math.pow(y - toY, 2));
+	}
+
+	public static void main(final String[] args) {
+		System.out.println(Utils.toHHMMss(1376825356070L));
 	}
 
 }
