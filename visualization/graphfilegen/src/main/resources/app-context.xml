@@ -88,5 +88,11 @@
 	
 	<bean id="timeEstimator" class="edu.uw.modelab.service.impl.DefaultTimeEstimator" />
 	
+	<bean id="featureFileCreator" class="edu.uw.modelab.service.impl.PerSegmentFeatureFileCreator" >
+		<constructor-arg value="${output.folder}/features.dat" />
+		<constructor-arg value="${output.folder}/features_labels.txt" />
+		<constructor-arg ref="tripDao" />
+	</bean>
+	
 
 </beans> 

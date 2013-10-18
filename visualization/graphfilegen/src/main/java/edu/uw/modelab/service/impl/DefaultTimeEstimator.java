@@ -1,6 +1,7 @@
 package edu.uw.modelab.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -28,18 +29,18 @@ public class DefaultTimeEstimator implements TimeEstimator {
 		for (final Segment segment : segments) {
 			final Stop from = segment.getFrom();
 			final Stop to = segment.getTo();
-			final long actualArrivalTime = avgEstimatedTime(to, tripInstances);
+			final long actualArrivalTime = estimatedTime(to, tripInstances);
 			to.getStopTime().setActualArrivalTime(actualArrivalTime);
 			LOG.info("From: " + from);
 			LOG.info("To: " + to);
 			LOG.info("Scheduled arrival time: "
 					+ to.getStopTime().getSchedArrivalTime());
 			LOG.info("Actual arrival time: "
-					+ Utils.toHHMMss(actualArrivalTime));
+					+ Utils.toHHMMssPST(actualArrivalTime));
 		}
 	}
 
-	private long avgEstimatedTime(final Stop to,
+	private long estimatedTime(final Stop to,
 			final Set<TripInstance> tripInstances) {
 		final double toX = to.getX();
 		final double toY = to.getY();
@@ -74,18 +75,12 @@ public class DefaultTimeEstimator implements TimeEstimator {
 			weightDenominator = distances.get(0).distance
 					+ distances.get(1).distance;
 			final long tHat = (long) (t1 + (((t2 - t1) * weightNumerator) / weightDenominator));
-			LOG.info("tHat for tripInstance {} = {}",
-					tripInstance.getServiceDate(), tHat);
 			estimatedTimePerInstance.add(tHat);
 		}
-		long sum = 0;
-		for (final Long estimatedTime : estimatedTimePerInstance) {
-			sum += estimatedTime;
-		}
-		LOG.info("tHats Sum = {}", sum);
-		final long avg = sum / estimatedTimePerInstance.size();
-		LOG.info("Avg = {}", avg);
-		return avg;
+		LOG.info("Actual Times {}",
+				Arrays.toString(estimatedTimePerInstance.toArray()));
+		// TODO must do the average here
+		return estimatedTimePerInstance.get(0);
 	}
 
 	private class IndexedDistance implements Comparable<IndexedDistance> {

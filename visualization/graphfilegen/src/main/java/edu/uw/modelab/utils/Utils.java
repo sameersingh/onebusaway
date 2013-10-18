@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
@@ -21,20 +22,39 @@ public class Utils {
 		return str.replace("\"", "");
 	}
 
-	public static String toHHMMss(final long timestamp) {
+	public static String toHHMMssUTC(final long timestamp) {
+		String result = "";
 		if (timestamp != 0) {
 			final DateTime dt = new DateTime(timestamp, DateTimeZone.UTC);
 			final DateTimeFormatter fmt = ISODateTimeFormat
 					.dateHourMinuteSecond();
 			final String date = fmt.print(dt);
-			return date.split("T")[1];
-			// final DateTimeFormatter fmt = DateTimeFormat
-			// .forPattern("HH:mm:ss Z '(UTC)'");
-			// final String date = fmt.print(timestamp);
-			// return date.split(",")[0];
-		} else {
-			return "";
+			result = date.split("T")[1];
 		}
+		return result;
+	}
+
+	public static String toHHMMssPST(final long timestamp) {
+		String result = "";
+		if (timestamp != 0) {
+			final DateTimeFormatter fmt = DateTimeFormat
+					.forPattern("HH:mm:ss Z '(PST)'");
+			final String date = fmt.print(timestamp);
+			result = date.split(" ")[0];
+		}
+		return result;
+	}
+
+	public static int dayOfWeek(final long timestamp) {
+		final DateTime dt = new DateTime(timestamp,
+				DateTimeZone.forID("America/Los_Angeles"));
+		return dt.getDayOfWeek();
+	}
+
+	public static int monthOfYear(final long timestamp) {
+		final DateTime dt = new DateTime(timestamp,
+				DateTimeZone.forID("America/Los_Angeles"));
+		return dt.getMonthOfYear();
 	}
 
 	public static long diff(final String scheduled, final long timestamp) {
@@ -45,7 +65,7 @@ public class Utils {
 		long diff = 0;
 		try {
 			d1 = format.parse(DATE_START + scheduled);
-			d2 = format.parse(DATE_END + toHHMMss(timestamp));
+			d2 = format.parse(DATE_END + toHHMMssPST(timestamp));
 			diff = ((d2.getTime() - d1.getTime()) / 1000);
 		} catch (final Exception e) {
 			e.printStackTrace();
@@ -60,7 +80,12 @@ public class Utils {
 	}
 
 	public static void main(final String[] args) {
-		System.out.println(Utils.toHHMMss(1376825356070L));
+		System.out.println(Utils.dayOfWeek(1372662000000L));
+		System.out.println(Utils.dayOfWeek(1379574000000L));
+		// System.out.println(Utils.toHHMMssUTC(1372701294000L));
+		// System.out.println(Utils.toHHMMssPST(1372701294000L));
+		// System.out.println(Utils.toHHMMssPST(1372701385000L));
+		// System.out.println(Utils.toHHMMssPST(1372701653000L));
 	}
 
 }

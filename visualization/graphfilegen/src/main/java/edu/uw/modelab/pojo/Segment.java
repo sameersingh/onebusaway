@@ -62,4 +62,7 @@ public class Segment {
 		return "{from:" + from + ",to:" + to + "}";
 	}
 
+	public String name() {
+		return "seg[" + from.getId() + "-" + to.getId() + "]";
+	}
 }
