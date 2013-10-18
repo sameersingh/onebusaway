@@ -7,10 +7,12 @@ public class Segment {
 	private final Stop from;
 	private final Stop to;
 	private final double distance;
+	private boolean isFirst;
 
 	public Segment(final Stop from, final Stop to) {
 		this.from = from;
 		this.to = to;
+		isFirst = false;
 		this.distance = Utils.euclideanDistance(from.getX(), to.getX(),
 				from.getY(), to.getY());
 	}
@@ -25,6 +27,14 @@ public class Segment {
 
 	public double getDistance() {
 		return distance;
+	}
+
+	public void setFirst(final boolean isFirst) {
+		this.isFirst = isFirst;
+	}
+
+	public boolean isFirst() {
+		return isFirst;
 	}
 
 	@Override

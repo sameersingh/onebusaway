@@ -92,6 +92,7 @@
 		<constructor-arg value="${output.folder}/features.dat" />
 		<constructor-arg value="${output.folder}/features_labels.txt" />
 		<constructor-arg ref="tripDao" />
+		<constructor-arg ref="timeEstimator" />
 	</bean>
 	
 

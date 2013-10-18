@@ -8,8 +8,12 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Utils {
+
+	private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
 
 	// ugly stuff, asuming that the start and end day of the trip are the same
 	private static final String DATE_START = "02/08/2012 ";
@@ -57,18 +61,36 @@ public class Utils {
 		return dt.getMonthOfYear();
 	}
 
-	public static long diff(final String scheduled, final long timestamp) {
+	public static long diff(final String from, final long toTimestamp) {
 		final SimpleDateFormat format = new SimpleDateFormat(
 				"MM/dd/yyyy HH:mm:ss");
 		Date d1 = null;
 		Date d2 = null;
 		long diff = 0;
 		try {
-			d1 = format.parse(DATE_START + scheduled);
-			d2 = format.parse(DATE_END + toHHMMssPST(timestamp));
+			d1 = format.parse(DATE_START + from);
+			d2 = format.parse(DATE_END + toHHMMssPST(toTimestamp));
 			diff = ((d2.getTime() - d1.getTime()) / 1000);
 		} catch (final Exception e) {
-			e.printStackTrace();
+			LOG.error("Exception calculating diff between {} and {}", from,
+					toTimestamp);
+		}
+		return diff;
+
+	}
+
+	public static long diff(final String to, final String from) {
+		final SimpleDateFormat format = new SimpleDateFormat(
+				"MM/dd/yyyy HH:mm:ss");
+		Date d1 = null;
+		Date d2 = null;
+		long diff = 0;
+		try {
+			d1 = format.parse(DATE_START + from);
+			d2 = format.parse(DATE_END + to);
+			diff = ((d2.getTime() - d1.getTime()) / 1000);
+		} catch (final Exception e) {
+			LOG.error("Exception calculating diff between {} and {}", to, from);
 		}
 		return diff;
 
@@ -82,6 +104,7 @@ public class Utils {
 	public static void main(final String[] args) {
 		System.out.println(Utils.dayOfWeek(1372662000000L));
 		System.out.println(Utils.dayOfWeek(1379574000000L));
+		System.out.println(Utils.diff("10:51:00", "10:50:00"));
 		// System.out.println(Utils.toHHMMssUTC(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701385000L));

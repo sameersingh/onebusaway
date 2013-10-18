@@ -52,6 +52,9 @@ public class JdbcTripDao implements TripDao {
 				new TripRowMapper(trip, stops));
 		for (int i = 0; i < (stops.size() - 1); i++) {
 			final Segment segment = new Segment(stops.get(i), stops.get(i + 1));
+			if (i == 0) {
+				segment.setFirst(true);
+			}
 			trip.addSegment(segment);
 		}
 		final List<TripInstance> tripInstances = tripInstanceDao
