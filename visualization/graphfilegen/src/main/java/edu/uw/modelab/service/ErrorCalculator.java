@@ -4,6 +4,6 @@ public interface ErrorCalculator {
 
 	void calculateError(int tripId);
 
-	void calculateError(int tripId, int poi, int from);
+	void calculateError(int tripId, int from, int to);
 
 }

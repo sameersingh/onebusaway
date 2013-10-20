@@ -101,7 +101,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	}
 
 	@Override
-	public void calculateError(final int tripId, final int i, final int j) {
+	public void calculateError(final int tripId, final int j, final int i) {
 		assert i > j;
 		final Trip trip = tripDao.getTripById(tripId);
 		final Set<TripInstance> tripInstances = trip.getInstances();
@@ -124,7 +124,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 				delays += delay;
 			}
 			final long roundedDelays = (long) delays;
-			final long timeIMode = timeIOba + (roundedDelays * 1000);
+			final long timeIMode = timeIOba + (roundedDelays * -1000);
 			System.out.println("TimeIOba " + Utils.toHHMMssPST(timeIOba));
 			System.out.println("TimeIMode " + Utils.toHHMMssPST(timeIMode));
 			System.out.println("Actual " + Utils.toHHMMssPST(actualI));
@@ -150,7 +150,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	private long getScheduled(final Segment segmentI, final Segment segmentJ) {
 		final String segmentISched = segmentI.getFrom().getStopTime()
 				.getSchedArrivalTime();
-		final String segmentJSched = segmentJ.getTo().getStopTime()
+		final String segmentJSched = segmentJ.getFrom().getStopTime()
 				.getSchedArrivalTime();
 		return Utils.diff(segmentISched, segmentJSched);
 	}
