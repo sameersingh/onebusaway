@@ -38,6 +38,11 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 			+ " where trip_id = ? and service_date < ?"
 			+ " order by service_date, timestamp";
 
+	private static final String SELECT_TRIP_INSTANCES_BY_TRIP_ID_AND_SERVICE_FROM = "select timestamp, service_date, trip_id, lat, lon, y, x, distance_trip, sched_deviation"
+			+ " from trip_instance"
+			+ " where trip_id = ? and service_date >= ?"
+			+ " order by service_date, timestamp";
+
 	private final JdbcTemplate template;
 
 	public JdbcTripInstanceDao(final DataSource dataSource) {
@@ -113,6 +118,22 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 			final int tripId, final long serviceDate) {
 		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
 		template.query(SELECT_TRIP_INSTANCES_BY_TRIP_ID_AND_SERVICE_DATE_LESS,
+				new Object[] { tripId, serviceDate },
+				new TripInstanceRowMapper(tripInstances));
+		final List<TripInstance> result = new ArrayList<>();
+		final Iterator<Entry<Long, TripInstance>> it = tripInstances.entrySet()
+				.iterator();
+		while (it.hasNext()) {
+			result.add(it.next().getValue());
+		}
+		return result;
+	}
+
+	@Override
+	public List<TripInstance> getTripInstancesForTripIdAndServiceDateFrom(
+			final int tripId, final long serviceDate) {
+		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
+		template.query(SELECT_TRIP_INSTANCES_BY_TRIP_ID_AND_SERVICE_FROM,
 				new Object[] { tripId, serviceDate },
 				new TripInstanceRowMapper(tripInstances));
 		final List<TripInstance> result = new ArrayList<>();

@@ -140,4 +140,27 @@ public class JdbcTripDao implements TripDao {
 		return trip;
 	}
 
+	@Override
+	public Trip getTripByIdAndServiceDateFrom(final int tripId,
+			final long serviceDate) {
+		final Trip trip = new Trip(tripId);
+		final List<Stop> stops = new ArrayList<>();
+		template.query(SELECT_TRIP_BY_ID, new Object[] { tripId },
+				new TripRowMapper(trip, stops));
+		for (int i = 0; i < (stops.size() - 1); i++) {
+			final Segment segment = new Segment(stops.get(i), stops.get(i + 1));
+			if (i == 0) {
+				segment.setFirst(true);
+			}
+			trip.addSegment(segment);
+		}
+		final List<TripInstance> tripInstances = tripInstanceDao
+				.getTripInstancesForTripIdAndServiceDateFrom(tripId,
+						serviceDate);
+		for (final TripInstance tripInstance : tripInstances) {
+			trip.addInstance(tripInstance);
+		}
+		return trip;
+	}
+
 }

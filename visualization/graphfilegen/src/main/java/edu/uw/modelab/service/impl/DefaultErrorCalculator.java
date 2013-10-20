@@ -106,9 +106,16 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	}
 
 	@Override
-	public void calculateError(final int tripId, final int k) {
-		final Trip trip = tripDao.getTripByIdAndServiceDateLessThan(tripId,
-				1378191600000L);
+	public void calculateError(final int tripId, final int k,
+			final edu.uw.modelab.service.Error error) {
+		Trip trip = null;
+		if (error == edu.uw.modelab.service.Error.TRAINING) {
+			trip = tripDao.getTripByIdAndServiceDateLessThan(tripId,
+					1378191600000L);
+		} else {
+			trip = tripDao
+					.getTripByIdAndServiceDateFrom(tripId, 1378191600000L);
+		}
 		final Set<TripInstance> tripInstances = trip.getInstances();
 		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
 		final List<Segment> segments = new ArrayList<>(trip.getSegments());
@@ -134,7 +141,6 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 				final long actual_J = getActual(segments.get(j), tripInstance);
 				final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
 				final String key_J = Utils.label(tripInstance, segments.get(j));
-				System.out.println(key_J);
 				final double y_hat_J_sec = yHatPerSegmentPerTripInstancePerTrip
 						.get(key_J);
 				final long y_hat_J = Math.round(y_hat_J_sec) * -1000;

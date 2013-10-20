@@ -105,7 +105,7 @@
 		<constructor-arg value="${output.folder}/oba_errors.dat" />
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="timeEstimator" />
-		<constructor-arg value="${features.yhat.folder}/features_y_hat.csv" />
+		<constructor-arg value="${features.yhat.file}" />
 	</bean>
 
 </beans> 
