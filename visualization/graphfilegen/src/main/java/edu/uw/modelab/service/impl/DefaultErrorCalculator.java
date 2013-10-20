@@ -107,7 +107,8 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 
 	@Override
 	public void calculateError(final int tripId, final int k) {
-		final Trip trip = tripDao.getTripById(tripId);
+		final Trip trip = tripDao.getTripByIdAndServiceDateLessThan(tripId,
+				1378191600000L);
 		final Set<TripInstance> tripInstances = trip.getInstances();
 		final int numberOfTripInstances = tripInstances.size();
 		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
@@ -127,8 +128,9 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 			while (tripInstancesIt.hasNext()) {
 				final TripInstance tripInstance = tripInstancesIt.next();
 				final long actualI = getActual(segments.get(i), tripInstance);
+				final long t_true = actualI;
 				final long actualJ = getActual(segments.get(j), tripInstance);
-				final long timeIOba = actualJ + (scheduledDiff * 1000);
+				final long t_hat_oba = actualJ + (scheduledDiff * 1000);
 				double delays = 0;
 				for (int idx = j; idx < i; idx++) {
 					final String key = Utils.label(tripInstance,
@@ -137,12 +139,12 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 							.get(key);
 					delays += delay;
 				}
-				final long roundedDelays = (long) delays;
-				final long timeIMode = timeIOba + (roundedDelays * -1000);
-				final double errOba = Math.pow((actualI - timeIOba) / 1000, 2);
+				final long roundedDelays = Math.round(delays);
+				final long t_hat_mode = t_hat_oba + (roundedDelays * -1000);
+				final double errOba = Math.pow((t_true - t_hat_oba) / 1000, 2);
 				errorsOba += errOba;
 				final double errMode = Math
-						.pow((actualI - timeIMode) / 1000, 2);
+						.pow((t_true - t_hat_mode) / 1000, 2);
 				errorsMode += errMode;
 			}
 			i++;

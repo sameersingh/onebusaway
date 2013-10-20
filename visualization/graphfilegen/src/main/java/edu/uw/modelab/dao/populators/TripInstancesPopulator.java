@@ -54,16 +54,22 @@ public class TripInstancesPopulator extends BulkPopulator {
 					LOG.warn("Trip id cannot be converted to integer, discarding register...");
 					return;
 				}
-				final double lat = Double.valueOf(strTokens[5]);
-				final double lon = Double.valueOf(strTokens[6]);
-				final double y = EllipticalMercator.mercY(lat);
-				final double x = EllipticalMercator.mercX(lon);
-				final TripInstanceInsertObject tiio = new TripInstanceInsertObject(
-						Long.valueOf(strTokens[0]), Long.valueOf(strTokens[1]),
-						Integer.valueOf(strTokens[2]), Double
-								.valueOf(strTokens[3]), Double
-								.valueOf(strTokens[4]), lat, lon, y, x);
-				tripInstances.add(tiio);
+				try {
+					final double lat = Double.valueOf(strTokens[5]);
+					final double lon = Double.valueOf(strTokens[6]);
+					final double y = EllipticalMercator.mercY(lat);
+					final double x = EllipticalMercator.mercX(lon);
+					final TripInstanceInsertObject tiio = new TripInstanceInsertObject(
+							Long.valueOf(strTokens[0]), Long
+									.valueOf(strTokens[1]), Integer
+									.valueOf(strTokens[2]), Double
+									.valueOf(strTokens[3]), Double
+									.valueOf(strTokens[4]), lat, lon, y, x);
+					tripInstances.add(tiio);
+				} catch (final Exception ex) {
+					LOG.error("Discarding register, unexpected exception",
+							ex.getMessage());
+				}
 			}
 		});
 

@@ -115,6 +115,7 @@ public class Utils {
 		System.out.println(Utils.dayOfWeek(1379574000000L));
 		System.out.println(Utils.diff("10:51:00", "10:50:00"));
 		System.out.println(Utils.time(1372662000000L, "10:50:00"));
+		System.out.println(Utils.monthOfYear(1380265200000L));
 		// System.out.println(Utils.toHHMMssUTC(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701385000L));

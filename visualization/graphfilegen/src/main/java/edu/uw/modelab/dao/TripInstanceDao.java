@@ -12,4 +12,7 @@ public interface TripInstanceDao {
 
 	TripInstance getTripInstance(int tripId, long serviceDate);
 
+	List<TripInstance> getTripInstancesForTripIdAndServiceDateLessThan(
+			int tripId, long serviceDate);
+
 }
