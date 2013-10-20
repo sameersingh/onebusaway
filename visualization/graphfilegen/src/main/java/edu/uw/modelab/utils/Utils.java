@@ -95,7 +95,7 @@ public class Utils {
 		} catch (final Exception e) {
 			LOG.error("Exception calculating diff between {} and {}", to, from);
 		}
-		return diff;
+		return diff < 0 ? -diff : diff;
 
 	}
 
@@ -116,6 +116,8 @@ public class Utils {
 		System.out.println(Utils.diff("10:51:00", "10:50:00"));
 		System.out.println(Utils.time(1372662000000L, "10:50:00"));
 		System.out.println(Utils.monthOfYear(1380265200000L));
+		System.out.println(Utils.diff("23:00:00", "25:00:00"));
+
 		// System.out.println(Utils.toHHMMssUTC(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701385000L));
