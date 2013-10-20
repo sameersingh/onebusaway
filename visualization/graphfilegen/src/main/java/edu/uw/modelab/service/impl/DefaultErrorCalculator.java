@@ -110,49 +110,58 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		final Trip trip = tripDao.getTripByIdAndServiceDateLessThan(tripId,
 				1378191600000L);
 		final Set<TripInstance> tripInstances = trip.getInstances();
-		final int numberOfTripInstances = tripInstances.size();
 		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
 		final List<Segment> segments = new ArrayList<>(trip.getSegments());
 		final int numberOfSegments = segments.size();
 
 		assert k < numberOfSegments;
-
-		int j = 0;
-		int i = k;
-
-		double errorsOba = 0;
-		double errorsMode = 0;
-		while (i < numberOfSegments) {
-			final long scheduledDiff = getScheduled(segments.get(i),
-					segments.get(j));
-			while (tripInstancesIt.hasNext()) {
-				final TripInstance tripInstance = tripInstancesIt.next();
-				final long actualI = getActual(segments.get(i), tripInstance);
-				final long t_true = actualI;
-				final long actualJ = getActual(segments.get(j), tripInstance);
-				final long t_hat_oba = actualJ + (scheduledDiff * 1000);
-				double delays = 0;
-				for (int idx = j; idx < i; idx++) {
-					final String key = Utils.label(tripInstance,
-							segments.get(idx));
-					final double delay = yHatPerSegmentPerTripInstancePerTrip
-							.get(key);
-					delays += delay;
+		final List<Double> errorsOba = new ArrayList<>();
+		final List<Double> errorsMode = new ArrayList<>();
+		while (tripInstancesIt.hasNext()) {
+			final TripInstance tripInstance = tripInstancesIt.next();
+			int j = 0;
+			int i = k;
+			while (i <= numberOfSegments) {
+				final long scheduledDiff = getScheduled(segments.get(i - 1),
+						segments.get(j));
+				long actual_I = 0;
+				if (i == numberOfSegments) {
+					actual_I = getActualLast(segments.get(i - 1), tripInstance);
+				} else {
+					actual_I = getActual(segments.get(i), tripInstance);
 				}
-				final long roundedDelays = Math.round(delays);
-				final long t_hat_mode = t_hat_oba + (roundedDelays * -1000);
-				final double errOba = Math.pow((t_true - t_hat_oba) / 1000, 2);
-				errorsOba += errOba;
-				final double errMode = Math
-						.pow((t_true - t_hat_mode) / 1000, 2);
-				errorsMode += errMode;
+				final long t_true_I = actual_I;
+				final long actual_J = getActual(segments.get(j), tripInstance);
+				final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
+				final String key_J = Utils.label(tripInstance, segments.get(j));
+				System.out.println(key_J);
+				final double y_hat_J_sec = yHatPerSegmentPerTripInstancePerTrip
+						.get(key_J);
+				final long y_hat_J = Math.round(y_hat_J_sec) * -1000;
+				final long t_hat_mode_I = t_hat_oba_I + y_hat_J;
+
+				final double errObaI = Math.pow(
+						(t_true_I - t_hat_oba_I) / 1000, 2);
+				final double errModeI = Math.pow(
+						(t_true_I - t_hat_mode_I) / 1000, 2);
+				errorsOba.add(errObaI);
+				errorsMode.add(errModeI);
+				i++;
+				j++;
 			}
-			i++;
-			j++;
 		}
-		final int N = numberOfTripInstances * i;
-		final double errorObaK = Math.sqrt(errorsOba / N);
-		final double errorModeK = Math.sqrt(errorsMode / N);
+
+		double sumErrorsOba = 0;
+		for (final Double errorOba : errorsOba) {
+			sumErrorsOba += errorOba;
+		}
+		double sumErrorsMode = 0;
+		for (final Double errorMode : errorsMode) {
+			sumErrorsMode += errorMode;
+		}
+		final double errorObaK = Math.sqrt(sumErrorsOba / errorsOba.size());
+		final double errorModeK = Math.sqrt(sumErrorsMode / errorsMode.size());
+
 		Map<Integer, Double> obaErrorMap = errorObaPerKPerTripId.get(tripId);
 		if (obaErrorMap == null) {
 			obaErrorMap = new LinkedHashMap<>();
@@ -189,8 +198,15 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		return result;
 	}
 
+	private long getActualLast(final Segment segment,
+			final TripInstance tripInstance) {
+		final Stop stop = segment.getTo();
+		final long result = timeEstimator.actual(tripInstance, stop);
+		return result;
+	}
+
 	private long getScheduled(final Segment segmentI, final Segment segmentJ) {
-		final String segmentISched = segmentI.getFrom().getStopTime()
+		final String segmentISched = segmentI.getTo().getStopTime()
 				.getSchedArrivalTime();
 		final String segmentJSched = segmentJ.getFrom().getStopTime()
 				.getSchedArrivalTime();
