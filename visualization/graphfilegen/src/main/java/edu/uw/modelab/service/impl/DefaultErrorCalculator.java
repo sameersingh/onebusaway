@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,8 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 			.getLogger(DefaultErrorCalculator.class);
 
 	private final Map<String, Double> yHatPerSegmentPerTripInstancePerTrip;
+	private final Map<Integer, Map<Integer, Double>> errorObaPerKPerTripId;
+	private final Map<Integer, Map<Integer, Double>> errorModePerKPerTripId;
 	private final TripDao tripDao;
 	private final TimeEstimator timeEstimator;
 	private final String filename;
@@ -43,6 +46,8 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		this.timeEstimator = timeEstimator;
 		this.featureYhatFileName = featureYhatFileName;
 		this.yHatPerSegmentPerTripInstancePerTrip = new HashMap<String, Double>();
+		this.errorObaPerKPerTripId = new LinkedHashMap<>();
+		this.errorModePerKPerTripId = new LinkedHashMap<>();
 	}
 
 	public void init() {
@@ -101,36 +106,71 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	}
 
 	@Override
-	public void calculateError(final int tripId, final int j, final int i) {
-		assert i > j;
+	public void calculateError(final int tripId, final int k) {
 		final Trip trip = tripDao.getTripById(tripId);
 		final Set<TripInstance> tripInstances = trip.getInstances();
+		final int numberOfTripInstances = tripInstances.size();
 		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
 		final List<Segment> segments = new ArrayList<>(trip.getSegments());
-		final StringBuilder sb = new StringBuilder();
-		final long scheduledDiff = getScheduled(segments.get(i),
-				segments.get(j));
-		int r = 0;
-		while (tripInstancesIt.hasNext()) {
-			final TripInstance tripInstance = tripInstancesIt.next();
-			final long actualI = getActual(segments.get(i), tripInstance);
-			final long actualJ = getActual(segments.get(j), tripInstance);
-			final long timeIOba = actualJ + (scheduledDiff * 1000);
-			double delays = 0;
-			for (int idx = j; idx < i; idx++) {
-				final String key = Utils.label(tripInstance, segments.get(idx));
-				final double delay = yHatPerSegmentPerTripInstancePerTrip
-						.get(key);
-				delays += delay;
+		final int numberOfSegments = segments.size();
+
+		assert k < numberOfSegments;
+
+		int j = 0;
+		int i = k;
+
+		double errorsOba = 0;
+		double errorsMode = 0;
+		while (i < numberOfSegments) {
+			final long scheduledDiff = getScheduled(segments.get(i),
+					segments.get(j));
+			while (tripInstancesIt.hasNext()) {
+				final TripInstance tripInstance = tripInstancesIt.next();
+				final long actualI = getActual(segments.get(i), tripInstance);
+				final long actualJ = getActual(segments.get(j), tripInstance);
+				final long timeIOba = actualJ + (scheduledDiff * 1000);
+				double delays = 0;
+				for (int idx = j; idx < i; idx++) {
+					final String key = Utils.label(tripInstance,
+							segments.get(idx));
+					final double delay = yHatPerSegmentPerTripInstancePerTrip
+							.get(key);
+					delays += delay;
+				}
+				final long roundedDelays = (long) delays;
+				final long timeIMode = timeIOba + (roundedDelays * -1000);
+				final double errOba = Math.pow((actualI - timeIOba) / 1000, 2);
+				errorsOba += errOba;
+				final double errMode = Math
+						.pow((actualI - timeIMode) / 1000, 2);
+				errorsMode += errMode;
 			}
-			final long roundedDelays = (long) delays;
-			final long timeIMode = timeIOba + (roundedDelays * -1000);
-			System.out.println("TimeIOba " + Utils.toHHMMssPST(timeIOba));
-			System.out.println("TimeIMode " + Utils.toHHMMssPST(timeIMode));
-			System.out.println("Actual " + Utils.toHHMMssPST(actualI));
-			r++;
+			i++;
+			j++;
 		}
-		System.out.println(r);
+		final int N = numberOfTripInstances * i;
+		final double errorObaK = Math.sqrt(errorsOba / N);
+		final double errorModeK = Math.sqrt(errorsMode / N);
+		Map<Integer, Double> obaErrorMap = errorObaPerKPerTripId.get(tripId);
+		if (obaErrorMap == null) {
+			obaErrorMap = new LinkedHashMap<>();
+			obaErrorMap.put(k, errorObaK);
+			errorObaPerKPerTripId.put(tripId, obaErrorMap);
+		} else {
+			obaErrorMap.put(k, errorObaK);
+		}
+
+		Map<Integer, Double> modeErrorMap = errorModePerKPerTripId.get(tripId);
+		if (modeErrorMap == null) {
+			modeErrorMap = new LinkedHashMap<>();
+			modeErrorMap.put(k, errorModeK);
+			errorModePerKPerTripId.put(tripId, modeErrorMap);
+		} else {
+			modeErrorMap.put(k, errorModeK);
+		}
+
+		System.out.println(errorObaPerKPerTripId.get(tripId).get(k) + "\t"
+				+ errorModePerKPerTripId.get(tripId).get(k));
 	}
 
 	private long getActual(final Segment segment,
@@ -154,4 +194,5 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 				.getSchedArrivalTime();
 		return Utils.diff(segmentISched, segmentJSched);
 	}
+
 }
