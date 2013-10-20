@@ -140,7 +140,7 @@ public class JdbcRouteDao implements RouteDao {
 			final Stop stop = new Stop(stopId, stopName, lat, lon, y, x);
 			final String arrivalTime = rs.getString(11);
 			final String departureTime = rs.getString(12);
-			final int stopSequence = rs.getInt(11);
+			final int stopSequence = rs.getInt(13);
 			final StopTime stopTime = new StopTime(arrivalTime, departureTime,
 					stopSequence);
 			stop.setStopTime(stopTime);
@@ -205,7 +205,7 @@ public class JdbcRouteDao implements RouteDao {
 			final Stop stop = new Stop(stopId, stopName, lat, lon, y, x);
 			final String arrivalTime = rs.getString(12);
 			final String departureTime = rs.getString(13);
-			final int stopSequence = rs.getInt(12);
+			final int stopSequence = rs.getInt(14);
 			final StopTime stopTime = new StopTime(arrivalTime, departureTime,
 					stopSequence);
 			stop.setStopTime(stopTime);
