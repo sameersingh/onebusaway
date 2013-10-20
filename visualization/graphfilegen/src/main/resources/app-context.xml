@@ -86,14 +86,24 @@
 		<constructor-arg ref="tripInstanceDao" />
 	</bean>
 	
+	<bean id="delayCalculator" class="edu.uw.modelab.service.impl.DefaultDelayCalculator">
+		<constructor-arg ref="timeEstimator" />
+	</bean>
+	
 	<bean id="timeEstimator" class="edu.uw.modelab.service.impl.DefaultTimeEstimator" />
 	
 	<bean id="featureFileCreator" class="edu.uw.modelab.service.impl.PerSegmentFeatureFileCreator" >
 		<constructor-arg value="${output.folder}/features.dat" />
 		<constructor-arg value="${output.folder}/features_labels.txt" />
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref="delayCalculator" />
 	</bean>
 	
+	<bean id="errorCalculator" class="edu.uw.modelab.service.impl.DefaultErrorCalculator" init-method="init" >
+		<constructor-arg value="${output.folder}/oba_errors.dat" />
+		<constructor-arg ref="tripDao" />
+		<constructor-arg ref="timeEstimator" />
+		<constructor-arg value="${features.yhat.folder}/features_y_hat.csv" />
+	</bean>
 
 </beans> 

@@ -42,6 +42,11 @@ public class DefaultTimeEstimator implements TimeEstimator {
 	}
 
 	@Override
+	public long actual(final TripInstance tripInstance, final Stop stop) {
+		return getActualArrivalTime(stop, tripInstance);
+	}
+
+	@Override
 	public void estimateArrivalTimes(final Trip trip) {
 		final Set<Segment> segments = trip.getSegments();
 		final Set<TripInstance> tripInstances = trip.getInstances();

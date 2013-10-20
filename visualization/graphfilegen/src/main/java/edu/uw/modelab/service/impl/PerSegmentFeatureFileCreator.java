@@ -13,11 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import edu.uw.modelab.dao.TripDao;
 import edu.uw.modelab.pojo.Segment;
-import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
+import edu.uw.modelab.service.DelayCalculator;
 import edu.uw.modelab.service.FeatureFileCreator;
-import edu.uw.modelab.service.TimeEstimator;
 import edu.uw.modelab.utils.Utils;
 
 public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
@@ -28,15 +27,15 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 	private final String featureFile;
 	private final String featureLabelsFile;
 	private final TripDao tripDao;
-	private final TimeEstimator timeEstimator;
+	private final DelayCalculator delayCalculator;
 
 	public PerSegmentFeatureFileCreator(final String featureFile,
 			final String featureLabelsFile, final TripDao tripDao,
-			final TimeEstimator timeEstimator) {
+			final DelayCalculator delayCalculator) {
 		this.featureFile = featureFile;
 		this.featureLabelsFile = featureLabelsFile;
 		this.tripDao = tripDao;
-		this.timeEstimator = timeEstimator;
+		this.delayCalculator = delayCalculator;
 
 	}
 
@@ -52,9 +51,7 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 			while (tripInstancesIt.hasNext()) {
 				final TripInstance tripInstance = tripInstancesIt.next();
 				for (final Segment segment : segments) {
-					pw.println(tripInstance.getTripId() + "_"
-							+ tripInstance.getServiceDate() + "_"
-							+ segment.name());
+					pw.println(Utils.label(tripInstance, segment));
 				}
 			}
 		} catch (final FileNotFoundException exc) {
@@ -84,7 +81,8 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 				appendDayOfWeek(sb, dayOfWeek);
 				appendMonthOfYear(sb, monthOfYear);
 				appendSegments(sb, i, segments.size());
-				sb.append(calculateDelay(segments.get(i), tripInstance));
+				sb.append(delayCalculator.calculateDelay(segments.get(i),
+						tripInstance));
 				sb.append("\n");
 			}
 		}
@@ -101,20 +99,6 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 				pw.close();
 			}
 		}
-	}
-
-	private long calculateDelay(final Segment segment,
-			final TripInstance tripInstance) {
-		final Stop from = segment.getFrom();
-		final String scheduledFrom = from.getStopTime().getSchedArrivalTime();
-		final Stop to = segment.getTo();
-		final String scheduledTo = to.getStopTime().getSchedArrivalTime();
-		final long scheduled = Utils.diff(scheduledTo, scheduledFrom);
-		final long actual = timeEstimator.actualDiff(tripInstance, segment);
-		final long delay = scheduled - actual;
-		LOG.info("Segment {} arrived " + (delay < 0 ? "late" : "before")
-				+ " {} seconds", segment.name(), delay);
-		return delay;
 	}
 
 	private void appendSegments(final StringBuilder sb, final int i,

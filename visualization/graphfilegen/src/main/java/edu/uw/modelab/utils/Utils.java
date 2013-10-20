@@ -11,6 +11,9 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.uw.modelab.pojo.Segment;
+import edu.uw.modelab.pojo.TripInstance;
+
 public class Utils {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
@@ -101,14 +104,30 @@ public class Utils {
 		return Math.sqrt(Math.pow(x - toX, 2) + Math.pow(y - toY, 2));
 	}
 
+	public static String label(final TripInstance tripInstance,
+			final Segment segment) {
+		return tripInstance.getTripId() + "_" + tripInstance.getServiceDate()
+				+ "_" + segment.name();
+	}
+
 	public static void main(final String[] args) {
 		System.out.println(Utils.dayOfWeek(1372662000000L));
 		System.out.println(Utils.dayOfWeek(1379574000000L));
 		System.out.println(Utils.diff("10:51:00", "10:50:00"));
+		System.out.println(Utils.time(1372662000000L, "10:50:00"));
 		// System.out.println(Utils.toHHMMssUTC(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701385000L));
 		// System.out.println(Utils.toHHMMssPST(1372701653000L));
 	}
 
+	public static long time(final long serviceDate, final String actual) {
+		DateTimeFormatter fmt = DateTimeFormat
+				.forPattern("MM/dd/yyyy Z '(PST)'");
+		final String date = fmt.print(serviceDate).split(" ")[0];
+		final String fullDate = date + " " + actual;
+		fmt = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss");
+		final DateTime dateTime = fmt.parseDateTime(fullDate);
+		return dateTime.getMillis();
+	}
 }
