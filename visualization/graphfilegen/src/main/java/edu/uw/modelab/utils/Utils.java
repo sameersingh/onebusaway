@@ -1,7 +1,10 @@
 package edu.uw.modelab.utils;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -21,6 +24,25 @@ public class Utils {
 	// ugly stuff, asuming that the start and end day of the trip are the same
 	private static final String DATE_START = "02/08/2012 ";
 	private static final String DATE_END = "02/08/2012 ";
+
+	// interval index - end time of the interval
+	private static Map<Integer, String> endTimesPerInterval;
+
+	static {
+		endTimesPerInterval = new HashMap<Integer, String>();
+		endTimesPerInterval.put(0, "1:59:59");
+		endTimesPerInterval.put(1, "3:59:59");
+		endTimesPerInterval.put(2, "5:59:59");
+		endTimesPerInterval.put(3, "7:59:59");
+		endTimesPerInterval.put(4, "9:59:59");
+		endTimesPerInterval.put(5, "11:59:59");
+		endTimesPerInterval.put(6, "13:59:59");
+		endTimesPerInterval.put(7, "15:59:59");
+		endTimesPerInterval.put(8, "17:59:59");
+		endTimesPerInterval.put(9, "19:59:59");
+		endTimesPerInterval.put(10, "21:59:59");
+		endTimesPerInterval.put(11, "23:59:59");
+	}
 
 	private Utils() {
 	}
@@ -91,7 +113,10 @@ public class Utils {
 		try {
 			d1 = format.parse(DATE_START + from);
 			d2 = format.parse(DATE_END + to);
-			diff = ((d2.getTime() - d1.getTime()) / 1000);
+			final long diffInMillis = d2.getTime() - d1.getTime();
+			if (diffInMillis != 0) {
+				diff = diffInMillis / 1000;
+			}
 		} catch (final Exception e) {
 			LOG.error("Exception calculating diff between {} and {}", to, from);
 		}
@@ -117,27 +142,34 @@ public class Utils {
 		// System.out.println(Utils.time(1372662000000L, "10:50:00"));
 		// System.out.println(Utils.monthOfYear(1380265200000L));
 		// System.out.println(Utils.diff("23:00:00", "25:00:00"));
-		System.out.println(Utils.timefDay("00:00:00")); // 0
-		System.out.println(Utils.timefDay("00:01:00")); // 0
-		System.out.println(Utils.timefDay("01:00:00")); // 0
-		System.out.println(Utils.timefDay("06:00:00")); // 0
-		System.out.println(Utils.timefDay("06:10:00")); // 1
-		System.out.println(Utils.timefDay("07:00:00")); // 1
-		System.out.println(Utils.timefDay("12:00:00")); // 1
-		System.out.println(Utils.timefDay("12:01:00")); // 2
-		System.out.println(Utils.timefDay("15:00:00")); // 2
-		System.out.println(Utils.timefDay("18:00:00")); // 2
-		System.out.println(Utils.timefDay("18:01:00")); // 3
-		System.out.println(Utils.timefDay("20:01:00")); // 3
-		System.out.println(Utils.timefDay("23:59:00")); // 3
-		System.out.println(Utils.timefDay("24:00:00")); // 0
-		System.out.println(Utils.timefDay("24:30:00")); // 0
-		System.out.println(Utils.timefDay("25:40:00")); // 0
+		// System.out.println(Utils.timefDay("00:00:00")); // 0
+		// System.out.println(Utils.timefDay("00:01:00")); // 0
+		// System.out.println(Utils.timefDay("01:00:00")); // 0
+		// System.out.println(Utils.timefDay("06:00:00")); // 0
+		// System.out.println(Utils.timefDay("06:10:00")); // 1
+		// System.out.println(Utils.timefDay("07:00:00")); // 1
+		// System.out.println(Utils.timefDay("12:00:00")); // 1
+		// System.out.println(Utils.timefDay("12:01:00")); // 2
+		// System.out.println(Utils.timefDay("15:00:00")); // 2
+		// System.out.println(Utils.timefDay("18:00:00")); // 2
+		// System.out.println(Utils.timefDay("18:01:00")); // 3
+		// System.out.println(Utils.timefDay("20:01:00")); // 3
+		// System.out.println(Utils.timefDay("23:59:00")); // 3
+		// System.out.println(Utils.timefDay("24:00:00")); // 0
+		// System.out.println(Utils.timefDay("24:30:00")); // 0
+		// System.out.println(Utils.timefDay("25:40:00")); // 0
 
 		// System.out.println(Utils.toHHMMssUTC(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701385000L));
 		// System.out.println(Utils.toHHMMssPST(1372701653000L));
+
+		System.out.println(Utils.getTimeOfDayVector("01:50:00", "2:10:00"));
+		System.out.println(Utils.getTimeOfDayVector("01:55:00", "2:10:00"));
+		System.out.println(Utils.getTimeOfDayVector("01:55:00", "2:15:00"));
+		System.out.println(Utils.getTimeOfDayVector("07:55:00", "8:15:00"));
+		System.out.println(Utils.getTimeOfDayVector("23:50:00", "24:10:00"));
+
 	}
 
 	public static long time(final long serviceDate, final String actual) {
@@ -157,6 +189,7 @@ public class Utils {
 	 * @param schedArrivalTime
 	 * @return
 	 */
+	@Deprecated
 	public static int timefDay(final String schedArrivalTime) {
 		final String[] tokens = schedArrivalTime.split(":");
 		final int hours = Integer.valueOf(tokens[0]);
@@ -193,5 +226,62 @@ public class Utils {
 			return 0;
 		}
 		throw new RuntimeException("Unable to determine time of day");
+	}
+
+	public static int getTimeOfDay(final String time) {
+		final String[] tokens = time.split(":");
+		final int hours = Integer.valueOf(tokens[0]);
+		final int minutes = Integer.valueOf(tokens[1]);
+		if ((hours >= 0) && (hours < 2)) {
+			return 0;
+		} else if ((hours >= 2) && (hours < 4)) {
+			return 1;
+		} else if ((hours >= 4) && (hours < 6)) {
+			return 2;
+		} else if ((hours >= 6) && (hours < 8)) {
+			return 3;
+		} else if ((hours >= 8) && (hours < 10)) {
+			return 4;
+		} else if ((hours >= 10) && (hours < 12)) {
+			return 5;
+		} else if ((hours >= 12) && (hours < 14)) {
+			return 6;
+		} else if ((hours >= 14) && (hours < 16)) {
+			return 7;
+		} else if ((hours >= 16) && (hours < 18)) {
+			return 8;
+		} else if ((hours >= 18) && (hours < 20)) {
+			return 9;
+		} else if ((hours >= 20) && (hours < 22)) {
+			return 10;
+		} else if ((hours >= 22) && (hours < 24)) {
+			return 11;
+		} else if ((hours >= 24) && (hours < 26)) {
+			return 0;
+		}
+		throw new RuntimeException("Unable to determine time of day");
+	}
+
+	public static String getTimeOfDayVector(final String from, final String to) {
+		final int fromInterval = Utils.getTimeOfDay(from);
+		final int toInterval = Utils.getTimeOfDay(to);
+		final double[] timeOfDays = new double[12];
+		if (fromInterval == toInterval) {
+			timeOfDays[fromInterval] = 1;
+		} else {
+			final String endOfFromInterval = endTimesPerInterval
+					.get(fromInterval);
+			final long range = Utils.diff(to, from);
+			final long diff = Utils.diff(endOfFromInterval, from);
+			final double alpha = (double) diff / (double) range;
+			timeOfDays[fromInterval] = alpha;
+			timeOfDays[toInterval] = (1 - alpha);
+		}
+		final StringBuilder sb = new StringBuilder();
+		final DecimalFormat decimalFormat = new DecimalFormat("###.##");
+		for (final double i : timeOfDays) {
+			sb.append(decimalFormat.format(i) + "\t");
+		}
+		return sb.toString();
 	}
 }

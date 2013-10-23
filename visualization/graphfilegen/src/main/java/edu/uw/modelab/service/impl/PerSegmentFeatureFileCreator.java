@@ -164,13 +164,10 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 	}
 
 	private void appendTimeOfDay(final StringBuilder sb, final Segment segment) {
-		final int[] timesOfDay = new int[4];
-		final int index = Utils.timefDay(segment.getFrom().getStopTime()
-				.getSchedArrivalTime());
-		timesOfDay[index] = 1;
-		for (final int timeOfDay : timesOfDay) {
-			sb.append(timeOfDay + "\t");
-		}
+		final String result = Utils.getTimeOfDayVector(segment.getFrom()
+				.getStopTime().getSchedArrivalTime(), segment.getTo()
+				.getStopTime().getSchedArrivalTime());
+		sb.append(result);
 	}
 
 	private void appendSegments(final StringBuilder sb, final int i,
