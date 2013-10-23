@@ -34,6 +34,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	private final Map<String, Double> yHatPerSegmentPerTripInstancePerTrip;
 	private final Map<Integer, Map<Integer, Double>> errorObaPerKPerTripId;
 	private final Map<Integer, Map<Integer, Double>> errorModePerKPerTripId;
+	private final Map<Integer, Map<Integer, Double>> errorSchedulePerKPerTripId;
 	private final TripDao tripDao;
 	private final TimeEstimator timeEstimator;
 	private final String filename;
@@ -48,6 +49,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		this.yHatPerSegmentPerTripInstancePerTrip = new HashMap<String, Double>();
 		this.errorObaPerKPerTripId = new LinkedHashMap<>();
 		this.errorModePerKPerTripId = new LinkedHashMap<>();
+		this.errorSchedulePerKPerTripId = new LinkedHashMap<>();
 	}
 
 	public void init() {
@@ -124,19 +126,25 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		assert k < numberOfSegments;
 		final List<Double> errorsOba = new ArrayList<>();
 		final List<Double> errorsMode = new ArrayList<>();
+		final List<Double> errorsSchedule = new ArrayList<>();
 		while (tripInstancesIt.hasNext()) {
 			final TripInstance tripInstance = tripInstancesIt.next();
 			int j = 0;
 			int i = k;
 			while (i <= numberOfSegments) {
-				final long scheduledDiff = getScheduled(segments.get(i - 1),
-						segments.get(j));
+				final long scheduledDiff = getScheduledDiff(
+						segments.get(i - 1), segments.get(j));
 				long actual_I = 0;
+				long sched_I = 0;
 				if (i == numberOfSegments) {
 					actual_I = getActualLast(segments.get(i - 1), tripInstance);
+					sched_I = getScheduledLast(segments.get(i - 1),
+							tripInstance);
 				} else {
 					actual_I = getActual(segments.get(i), tripInstance);
+					sched_I = getScheduled(segments.get(i), tripInstance);
 				}
+
 				final long t_true_I = actual_I;
 				final long actual_J = getActual(segments.get(j), tripInstance);
 				final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
@@ -150,8 +158,11 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 						(t_true_I - t_hat_oba_I) / 1000, 2);
 				final double errModeI = Math.pow(
 						(t_true_I - t_hat_mode_I) / 1000, 2);
+				final double errSchedI = Math.pow((t_true_I - sched_I) / 1000,
+						2);
 				errorsOba.add(errObaI);
 				errorsMode.add(errModeI);
+				errorsSchedule.add(errSchedI);
 				i++;
 				j++;
 			}
@@ -165,8 +176,14 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		for (final Double errorMode : errorsMode) {
 			sumErrorsMode += errorMode;
 		}
+		double sumErrorsSchedule = 0;
+		for (final Double errorSchedule : errorsSchedule) {
+			sumErrorsSchedule += errorSchedule;
+		}
 		final double errorObaK = Math.sqrt(sumErrorsOba / errorsOba.size());
 		final double errorModeK = Math.sqrt(sumErrorsMode / errorsMode.size());
+		final double errorScheduleK = Math.sqrt(sumErrorsSchedule
+				/ errorsSchedule.size());
 
 		Map<Integer, Double> obaErrorMap = errorObaPerKPerTripId.get(tripId);
 		if (obaErrorMap == null) {
@@ -186,8 +203,19 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 			modeErrorMap.put(k, errorModeK);
 		}
 
+		Map<Integer, Double> scheduleErrorMap = errorSchedulePerKPerTripId
+				.get(tripId);
+		if (scheduleErrorMap == null) {
+			scheduleErrorMap = new LinkedHashMap<>();
+			scheduleErrorMap.put(k, errorScheduleK);
+			errorSchedulePerKPerTripId.put(tripId, scheduleErrorMap);
+		} else {
+			scheduleErrorMap.put(k, errorScheduleK);
+		}
+
 		System.out.println(errorObaPerKPerTripId.get(tripId).get(k) + "\t"
-				+ errorModePerKPerTripId.get(tripId).get(k));
+				+ errorModePerKPerTripId.get(tripId).get(k) + "\t"
+				+ errorSchedulePerKPerTripId.get(tripId).get(k));
 	}
 
 	private long getActual(final Segment segment,
@@ -211,7 +239,21 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		return result;
 	}
 
-	private long getScheduled(final Segment segmentI, final Segment segmentJ) {
+	private long getScheduled(final Segment segment,
+			final TripInstance tripInstance) {
+		final Stop stop = segment.getFrom();
+		final String scheduled = stop.getStopTime().getSchedArrivalTime();
+		return Utils.time(tripInstance.getServiceDate(), scheduled);
+	}
+
+	private long getScheduledLast(final Segment segment,
+			final TripInstance tripInstance) {
+		final Stop stop = segment.getTo();
+		final String scheduled = stop.getStopTime().getSchedArrivalTime();
+		return Utils.time(tripInstance.getServiceDate(), scheduled);
+	}
+
+	private long getScheduledDiff(final Segment segmentI, final Segment segmentJ) {
 		final String segmentISched = segmentI.getTo().getStopTime()
 				.getSchedArrivalTime();
 		final String segmentJSched = segmentJ.getFrom().getStopTime()

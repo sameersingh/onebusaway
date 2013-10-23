@@ -182,56 +182,9 @@ public class Utils {
 		return dateTime.getMillis();
 	}
 
-	/**
-	 * 0 -> (OO:00 - 06:00) 1 -> (06:01 - 12:00) 2 -> (12:01 - 18:00) 3 ->
-	 * (18:01 - 23:59) 0 -> (24:00 - 30:00)
-	 * 
-	 * @param schedArrivalTime
-	 * @return
-	 */
-	@Deprecated
-	public static int timefDay(final String schedArrivalTime) {
-		final String[] tokens = schedArrivalTime.split(":");
-		final int hours = Integer.valueOf(tokens[0]);
-		final int minutes = Integer.valueOf(tokens[1]);
-		if ((hours == 0) && (minutes == 0)) {
-			return 0;
-		} else if ((hours == 0) && (minutes > 0)) {
-			return 0;
-		} else if ((hours > 0) && (hours < 6)) {
-			return 0;
-		} else if ((hours == 6) && (minutes == 0)) {
-			return 0;
-		} else if ((hours == 6) && (minutes > 0)) {
-			return 1;
-		} else if ((hours > 6) && (hours < 12)) {
-			return 1;
-		} else if ((hours == 12) && (minutes == 0)) {
-			return 1;
-		} else if ((hours == 12) && (minutes > 0)) {
-			return 2;
-		} else if ((hours > 12) && (hours < 18)) {
-			return 2;
-		} else if ((hours == 18) && (minutes == 0)) {
-			return 2;
-		} else if ((hours == 18) && (minutes > 0)) {
-			return 3;
-		} else if ((hours > 18) && (hours < 24)) {
-			return 3;
-		} else if ((hours == 24) && (minutes == 0)) {
-			return 0;
-		} else if ((hours == 24) && (minutes > 0)) {
-			return 0;
-		} else if ((hours >= 25) && (hours <= 30)) {
-			return 0;
-		}
-		throw new RuntimeException("Unable to determine time of day");
-	}
-
 	public static int getTimeOfDay(final String time) {
 		final String[] tokens = time.split(":");
 		final int hours = Integer.valueOf(tokens[0]);
-		final int minutes = Integer.valueOf(tokens[1]);
 		if ((hours >= 0) && (hours < 2)) {
 			return 0;
 		} else if ((hours >= 2) && (hours < 4)) {

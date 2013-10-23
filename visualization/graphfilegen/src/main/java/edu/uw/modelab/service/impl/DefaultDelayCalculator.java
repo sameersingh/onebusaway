@@ -31,8 +31,8 @@ public class DefaultDelayCalculator implements DelayCalculator {
 		final long scheduled = Utils.diff(scheduledTo, scheduledFrom);
 		final long actual = timeEstimator.actualDiff(tripInstance, segment);
 		final long delay = scheduled - actual;
-		LOG.info("Segment {} arrived " + (delay < 0 ? "late" : "before")
-				+ " {} seconds", segment.name(), delay);
+		// LOG.info("Segment {} arrived " + (delay < 0 ? "late" : "before")
+		// + " {} seconds", segment.name(), delay);
 		return delay;
 	}
 
