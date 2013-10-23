@@ -155,10 +155,21 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 			sb.append("1" + "\t" + segments.get(i).getDistance() + "\t");
 			appendDayOfWeek(sb, dayOfWeek);
 			// appendMonthOfYear(sb, monthOfYear);
+			appendTimeOfDay(sb, segments.get(i));
 			appendSegments(sb, i, segments.size());
 			sb.append(delayCalculator.calculateDelay(segments.get(i),
 					tripInstance));
 			sb.append("\n");
+		}
+	}
+
+	private void appendTimeOfDay(final StringBuilder sb, final Segment segment) {
+		final int[] timesOfDay = new int[4];
+		final int index = Utils.timefDay(segment.getFrom().getStopTime()
+				.getSchedArrivalTime());
+		timesOfDay[index] = 1;
+		for (final int timeOfDay : timesOfDay) {
+			sb.append(timeOfDay + "\t");
 		}
 	}
 

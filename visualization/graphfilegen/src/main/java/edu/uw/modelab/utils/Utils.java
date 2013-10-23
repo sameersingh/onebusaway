@@ -111,12 +111,28 @@ public class Utils {
 	}
 
 	public static void main(final String[] args) {
-		System.out.println(Utils.dayOfWeek(1372662000000L));
-		System.out.println(Utils.dayOfWeek(1379574000000L));
-		System.out.println(Utils.diff("10:51:00", "10:50:00"));
-		System.out.println(Utils.time(1372662000000L, "10:50:00"));
-		System.out.println(Utils.monthOfYear(1380265200000L));
-		System.out.println(Utils.diff("23:00:00", "25:00:00"));
+		// System.out.println(Utils.dayOfWeek(1372662000000L));
+		// System.out.println(Utils.dayOfWeek(1379574000000L));
+		// System.out.println(Utils.diff("10:51:00", "10:50:00"));
+		// System.out.println(Utils.time(1372662000000L, "10:50:00"));
+		// System.out.println(Utils.monthOfYear(1380265200000L));
+		// System.out.println(Utils.diff("23:00:00", "25:00:00"));
+		System.out.println(Utils.timefDay("00:00:00")); // 0
+		System.out.println(Utils.timefDay("00:01:00")); // 0
+		System.out.println(Utils.timefDay("01:00:00")); // 0
+		System.out.println(Utils.timefDay("06:00:00")); // 0
+		System.out.println(Utils.timefDay("06:10:00")); // 1
+		System.out.println(Utils.timefDay("07:00:00")); // 1
+		System.out.println(Utils.timefDay("12:00:00")); // 1
+		System.out.println(Utils.timefDay("12:01:00")); // 2
+		System.out.println(Utils.timefDay("15:00:00")); // 2
+		System.out.println(Utils.timefDay("18:00:00")); // 2
+		System.out.println(Utils.timefDay("18:01:00")); // 3
+		System.out.println(Utils.timefDay("20:01:00")); // 3
+		System.out.println(Utils.timefDay("23:59:00")); // 3
+		System.out.println(Utils.timefDay("24:00:00")); // 0
+		System.out.println(Utils.timefDay("24:30:00")); // 0
+		System.out.println(Utils.timefDay("25:40:00")); // 0
 
 		// System.out.println(Utils.toHHMMssUTC(1372701294000L));
 		// System.out.println(Utils.toHHMMssPST(1372701294000L));
@@ -132,5 +148,50 @@ public class Utils {
 		fmt = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss");
 		final DateTime dateTime = fmt.parseDateTime(fullDate);
 		return dateTime.getMillis();
+	}
+
+	/**
+	 * 0 -> (OO:00 - 06:00) 1 -> (06:01 - 12:00) 2 -> (12:01 - 18:00) 3 ->
+	 * (18:01 - 23:59) 0 -> (24:00 - 30:00)
+	 * 
+	 * @param schedArrivalTime
+	 * @return
+	 */
+	public static int timefDay(final String schedArrivalTime) {
+		final String[] tokens = schedArrivalTime.split(":");
+		final int hours = Integer.valueOf(tokens[0]);
+		final int minutes = Integer.valueOf(tokens[1]);
+		if ((hours == 0) && (minutes == 0)) {
+			return 0;
+		} else if ((hours == 0) && (minutes > 0)) {
+			return 0;
+		} else if ((hours > 0) && (hours < 6)) {
+			return 0;
+		} else if ((hours == 6) && (minutes == 0)) {
+			return 0;
+		} else if ((hours == 6) && (minutes > 0)) {
+			return 1;
+		} else if ((hours > 6) && (hours < 12)) {
+			return 1;
+		} else if ((hours == 12) && (minutes == 0)) {
+			return 1;
+		} else if ((hours == 12) && (minutes > 0)) {
+			return 2;
+		} else if ((hours > 12) && (hours < 18)) {
+			return 2;
+		} else if ((hours == 18) && (minutes == 0)) {
+			return 2;
+		} else if ((hours == 18) && (minutes > 0)) {
+			return 3;
+		} else if ((hours > 18) && (hours < 24)) {
+			return 3;
+		} else if ((hours == 24) && (minutes == 0)) {
+			return 0;
+		} else if ((hours == 24) && (minutes > 0)) {
+			return 0;
+		} else if ((hours >= 25) && (hours <= 30)) {
+			return 0;
+		}
+		throw new RuntimeException("Unable to determine time of day");
 	}
 }
