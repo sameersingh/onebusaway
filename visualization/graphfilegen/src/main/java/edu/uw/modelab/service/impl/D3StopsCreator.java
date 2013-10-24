@@ -4,8 +4,10 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -18,6 +20,8 @@ import edu.uw.modelab.pojo.Route;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
+import edu.uw.modelab.pojo.TripInstance;
+import edu.uw.modelab.service.DistanceAlongTripCalculator;
 import edu.uw.modelab.service.TimeEstimator;
 import edu.uw.modelab.utils.Utils;
 
@@ -31,14 +35,20 @@ public class D3StopsCreator extends D3Creator {
 	private final RouteDao routeDao;
 	private final TripDao tripDao;
 	private final TimeEstimator timeEstimator;
+	private final DistanceAlongTripCalculator distanceAlongTripCalculator;
+
+	// horrible, I'm in a hurry
+	private Set<Route> routes = null;
 
 	public D3StopsCreator(final String filename, final StopDao stopDao,
 			final RouteDao routeDao, final TripDao tripDao,
-			final TimeEstimator timeEstimator) {
+			final TimeEstimator timeEstimator,
+			final DistanceAlongTripCalculator distanceAlongTripCalculator) {
 		super(filename);
 		this.stopDao = stopDao;
 		this.routeDao = routeDao;
 		this.tripDao = tripDao;
+		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
 		this.timeEstimator = timeEstimator;
 		stopIdsIndexes = new HashMap<Integer, Integer>(8110);
 	}
@@ -46,8 +56,93 @@ public class D3StopsCreator extends D3Creator {
 	@Override
 	protected void addNodes(final PrintWriter writer) {
 		writer.print("\"nodes\": [");
-		final List<Stop> stops = stopDao.getStops();
-		addNodes(writer, stops);
+		final Map<Stop, Map<TripInstance, String>> stops = buildStops();
+		final Set<Entry<Stop, Map<TripInstance, String>>> entrySet = stops
+				.entrySet();
+		int index = 0;
+		final StringBuilder sb = new StringBuilder();
+		for (final Entry<Stop, Map<TripInstance, String>> entry : entrySet) {
+			final Stop stop = entry.getKey();
+			stopIdsIndexes.put(stop.getId(), index++);
+			sb.append("{\"name\":\"")
+					.append(stop.getName())
+					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
+					.append(stop.getLon()).append(",").append(stop.getLat())
+					.append("]},\"trip_instances\":[");
+			final Iterator<Entry<TripInstance, String>> tripInstancesEntryIt = entry
+					.getValue().entrySet().iterator();
+			while (tripInstancesEntryIt.hasNext()) {
+				final Entry<TripInstance, String> tripInstanceEntry = tripInstancesEntryIt
+						.next();
+				final TripInstance tripInstance = tripInstanceEntry.getKey();
+				final String[] tokens = tripInstanceEntry.getValue().split("-");
+				sb.append("{\"id\":\"").append(tripInstance.getId())
+						.append("\",\"arrival\":\"").append(tokens[0])
+						.append("\",\"scheduled\":\"").append(tokens[1])
+						.append("\"}");
+				if (tripInstancesEntryIt.hasNext()) {
+					sb.append(",");
+				}
+			}
+			sb.append("]},");
+		}
+		if (sb.length() > 0) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		writer.print(sb.toString());
+		writer.print("],");
+	}
+
+	private Map<Stop, Map<TripInstance, String>> buildStops() {
+		routes = routeDao.getRoutes();
+		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
+		for (final Route route : routes) {
+			final Set<Trip> trips = route.getTrips();
+			for (final Trip trip : trips) {
+				distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+				final Set<Segment> segments = trip.getSegments();
+				final Set<TripInstance> tripInstances = trip.getInstances();
+				for (final TripInstance tripInstance : tripInstances) {
+					for (final Segment segment : segments) {
+						if (segment.isFirst()) {
+							final Stop from = segment.getFrom();
+							final String fromArrivalTime = from.getStopTime()
+									.getSchedDepartureTime();
+							addStop(stops, tripInstance, from, fromArrivalTime);
+							final Stop to = segment.getTo();
+							final String toArrivalTime = Utils
+									.toHHMMssPST(timeEstimator.actual(
+											tripInstance, to));
+							addStop(stops, tripInstance, to, toArrivalTime);
+						} else {
+							final Stop to = segment.getTo();
+							final String toArrivalTime = Utils
+									.toHHMMssPST(timeEstimator.actual(
+											tripInstance, to));
+							addStop(stops, tripInstance, to, toArrivalTime);
+						}
+					}
+				}
+			}
+		}
+		return stops;
+	}
+
+	private void addStop(final Map<Stop, Map<TripInstance, String>> stops,
+			final TripInstance tripInstance, final Stop stop,
+			final String arrivalTime) {
+		final String scheduled = stop.getStopTime().getSchedArrivalTime();
+		Map<TripInstance, String> tripInstancesPerStop = stops.get(stop);
+
+		if (tripInstancesPerStop == null) {
+			tripInstancesPerStop = new HashMap<>();
+			tripInstancesPerStop.put(tripInstance, arrivalTime + "-"
+					+ scheduled);
+			stops.put(stop, tripInstancesPerStop);
+		} else {
+			tripInstancesPerStop.put(tripInstance, arrivalTime + "-"
+					+ scheduled);
+		}
 	}
 
 	@Override
@@ -68,7 +163,6 @@ public class D3StopsCreator extends D3Creator {
 	@Override
 	protected void addEdges(final PrintWriter writer) {
 		final Set<Segment> addedSegments = new HashSet<>();
-		final Set<Route> routes = routeDao.getRoutes();
 		writer.print("\"links\":[");
 		final Iterator<Route> routeIt = routes.iterator();
 		final StringBuilder sb = new StringBuilder();
@@ -87,21 +181,24 @@ public class D3StopsCreator extends D3Creator {
 						continue;
 					}
 					addedSegments.add(segment);
-					final int source = stopIdsIndexes.get(segment.getFrom()
-							.getId());
-					final int target = stopIdsIndexes.get(segment.getTo()
-							.getId());
-					sb.append("{\"source\":").append(source)
-							.append(",\"target\":").append(target)
-							.append(",\"value\":3,\"group\":1,\"name\":\"")
-							.append(route.getName())
-							.append("\",\"details\":\"\"},");
-
+					if (!stopIdsIndexes.isEmpty()) {
+						final int source = stopIdsIndexes.get(segment.getFrom()
+								.getId());
+						final int target = stopIdsIndexes.get(segment.getTo()
+								.getId());
+						sb.append("{\"source\":").append(source)
+								.append(",\"target\":").append(target)
+								.append(",\"value\":3,\"group\":1,\"name\":\"")
+								.append(segment.getId())
+								.append("\",\"details\":\"\"},");
+					}
 				}
 			}
 		}
-		sb.deleteCharAt(sb.length() - 1);
-		writer.print(sb.toString());
+		if (sb.length() > 0) {
+			sb.deleteCharAt(sb.length() - 1);
+			writer.print(sb.toString());
+		}
 		writer.print("]");
 	}
 

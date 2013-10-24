@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -17,6 +18,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import edu.uw.modelab.utils.EllipticalMercator;
+import edu.uw.modelab.utils.Threshold;
 
 public class TripInstancesPopulator extends BulkPopulator {
 
@@ -26,11 +28,14 @@ public class TripInstancesPopulator extends BulkPopulator {
 	private static final String SQL = "insert into trip_instance (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon, y, x) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	private static final String SQL_ALL_TRIP_IDS = "select id from trip";
 	private final JdbcTemplate template;
+	private final Map<Integer, Map<String, Threshold>> preprocessors;
 
 	public TripInstancesPopulator(final String folder, final boolean enabled,
-			final DataSource dataSource) {
+			final DataSource dataSource,
+			final Map<Integer, Map<String, Threshold>> preprocessors) {
 		super(folder, enabled, "\t");
 		this.template = new JdbcTemplate(dataSource);
+		this.preprocessors = preprocessors;
 	}
 
 	@Override
@@ -44,8 +49,9 @@ public class TripInstancesPopulator extends BulkPopulator {
 			@Override
 			public void execute(final Object tokens) {
 				final String[] strTokens = (String[]) tokens;
+				final Integer tripId;
 				try {
-					final Integer tripId = Integer.valueOf(strTokens[2]);
+					tripId = Integer.valueOf(strTokens[2]);
 					if (!tripIds.contains(tripId)) {
 						LOG.warn("Trip id is not in the database, discarding register...");
 						return;
@@ -55,7 +61,6 @@ public class TripInstancesPopulator extends BulkPopulator {
 					return;
 				}
 				try {
-					// do this per route
 					final double schedDeviation = Double.valueOf(strTokens[4]);
 					if ((schedDeviation < -2000) || (schedDeviation > 2000)) {
 						LOG.warn(
@@ -63,24 +68,43 @@ public class TripInstancesPopulator extends BulkPopulator {
 								schedDeviation);
 						return;
 					}
+
 					final double distanceAlongTrip = Double
 							.valueOf(strTokens[3]);
-					if ((distanceAlongTrip < 100)
-							|| (distanceAlongTrip > 23500)) {
-						LOG.warn(
-								"Ignoring register, beginning or end of trip - distance {} ",
-								distanceAlongTrip);
-						return;
+					final Map<String, Threshold> preprocessor = preprocessors
+							.get(tripId);
+					if (preprocessor != null) {
+						final Threshold distanceAlongTripThreshold = preprocessor
+								.get("DAT");
+
+						if ((distanceAlongTrip < distanceAlongTripThreshold
+								.getMin())
+								|| (distanceAlongTrip > distanceAlongTripThreshold
+										.getMax())) {
+							LOG.warn(
+									"Ignoring register, beginning or end of trip - distance {} ",
+									distanceAlongTrip);
+							return;
+						}
+					} else {
+						// at least remove the start of trips
+						if (distanceAlongTrip < 100) {
+							LOG.warn(
+									"Ignoring register, beginning of trip - distance {} ",
+									distanceAlongTrip);
+							return;
+						}
 					}
+
+					// do this per route
 					final double lat = Double.valueOf(strTokens[5]);
 					final double lon = Double.valueOf(strTokens[6]);
 					final double y = EllipticalMercator.mercY(lat);
 					final double x = EllipticalMercator.mercX(lon);
 					final TripInstanceInsertObject tiio = new TripInstanceInsertObject(
 							Long.valueOf(strTokens[0]), Long
-									.valueOf(strTokens[1]), Integer
-									.valueOf(strTokens[2]), distanceAlongTrip,
-							schedDeviation, lat, lon, y, x);
+									.valueOf(strTokens[1]), tripId,
+							distanceAlongTrip, schedDeviation, lat, lon, y, x);
 					tripInstances.add(tiio);
 				} catch (final Exception ex) {
 					LOG.error("Discarding register, unexpected exception",

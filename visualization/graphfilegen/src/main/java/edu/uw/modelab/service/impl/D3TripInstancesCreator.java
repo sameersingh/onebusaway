@@ -51,10 +51,8 @@ public class D3TripInstancesCreator extends D3Creator {
 						.append("_")
 						.append(Utils.toHHMMssPST(rtp.getTimeStamp()))
 						.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
-						.append(rtp.getLon())
-						.append(",")
-						.append(rtp.getLat())
-						.append("]},\"details\":\"bus long desc\",\"distance\":")
+						.append(rtp.getLon()).append(",").append(rtp.getLat())
+						.append("]},\"details\":\"\",\"distance\":")
 						.append(rtp.getDistanceAlongTrip())
 						.append(",\"sched_dev\":").append(rtp.getSchedDev())
 						.append("}");
@@ -98,7 +96,7 @@ public class D3TripInstancesCreator extends D3Creator {
 					.append(Utils.toHHMMssPST(rtp.getTimeStamp()))
 					.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(rtp.getLon()).append(",").append(rtp.getLat())
-					.append("]},\"details\":\"bus long desc\",\"distance\":")
+					.append("]},\"details\":\"\",\"distance\":")
 					.append(rtp.getDistanceAlongTrip())
 					.append(",\"sched_dev\":").append(rtp.getSchedDev())
 					.append("}");

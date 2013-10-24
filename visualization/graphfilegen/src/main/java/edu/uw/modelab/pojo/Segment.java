@@ -72,7 +72,12 @@ public class Segment {
 		return "{from:" + from + ",to:" + to + "}";
 	}
 
+	@Deprecated
 	public String name() {
 		return "seg[" + from.getId() + "-" + to.getId() + "]";
+	}
+
+	public String getId() {
+		return from.getId() + "-" + to.getId();
 	}
 }

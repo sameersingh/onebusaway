@@ -17,15 +17,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 import edu.uw.modelab.dao.RouteDao;
+import edu.uw.modelab.dao.TripInstanceDao;
 import edu.uw.modelab.pojo.Route;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.StopTime;
 import edu.uw.modelab.pojo.Trip;
+import edu.uw.modelab.pojo.TripInstance;
 
 public class JdbcRouteDao implements RouteDao {
 
 	private final JdbcTemplate template;
+	private final TripInstanceDao tripInstanceDao;
 
 	private static final String SELECT_ROUTE_BY_ID = "select r.name, r.agency_id, t.id"
 			+ " t.headsign, s.id, s.name, s.lat, s.lon, s.y, s.x, st.arrival_time,"
@@ -42,13 +45,16 @@ public class JdbcRouteDao implements RouteDao {
 			+ " join trip as t on r.id = t.route_id"
 			+ " join stop_time as st on t.id = st.trip_id"
 			+ " join stop as s on s.id = st.stop_id "
-			+ " order by r.name, t.id, st.stop_sequence";
+			+ " order by r.name, t.id, st.stop_sequence limit 100";
 
-	public JdbcRouteDao(final DataSource dataSource) {
+	public JdbcRouteDao(final DataSource dataSource,
+			final TripInstanceDao tripInstanceDao) {
 		this.template = new JdbcTemplate(dataSource);
+		this.tripInstanceDao = tripInstanceDao;
 	}
 
 	@Override
+	@Deprecated
 	public Route getRouteById(final int routeId) {
 		final Route route = new Route(routeId);
 		final List<Trip> trips = new ArrayList<>();
@@ -94,6 +100,11 @@ public class JdbcRouteDao implements RouteDao {
 						segment.setFirst(true);
 					}
 					trip.addSegment(segment);
+				}
+				final List<TripInstance> tripInstances = tripInstanceDao
+						.getTripInstancesForTripId(trip.getId());
+				for (final TripInstance tripInstance : tripInstances) {
+					trip.addInstance(tripInstance);
 				}
 				route.addTrip(trip);
 			}

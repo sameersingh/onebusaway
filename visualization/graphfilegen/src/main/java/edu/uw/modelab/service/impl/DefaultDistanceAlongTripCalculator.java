@@ -25,9 +25,11 @@ public class DefaultDistanceAlongTripCalculator implements
 	@Override
 	public void addDistancesAlongTrip(final Trip trip) {
 		final Set<TripInstance> instances = trip.getInstances();
-		final Set<Segment> segments = trip.getSegments();
-		for (final Segment segment : segments) {
-			addDistanceAlongTripToStopsInSegment(segment, instances);
+		if (!instances.isEmpty()) {
+			final Set<Segment> segments = trip.getSegments();
+			for (final Segment segment : segments) {
+				addDistanceAlongTripToStopsInSegment(segment, instances);
+			}
 		}
 	}
 

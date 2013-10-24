@@ -31,7 +31,7 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 			+ " and service_date = ? order by service_date, timestamp";
 
 	private static final String SELECT_TRIP_INSTANCES = "select timestamp, service_date, trip_id, lat, lon, y, x, distance_trip, sched_deviation"
-			+ " from trip_instance order by service_date, timestamp limit 30000";
+			+ " from trip_instance order by service_date, timestamp limit 60000";
 
 	private static final String SELECT_TRIP_INSTANCES_BY_TRIP_ID_AND_SERVICE_DATE_LESS = "select timestamp, service_date, trip_id, lat, lon, y, x, distance_trip, sched_deviation"
 			+ " from trip_instance"
