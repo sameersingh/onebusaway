@@ -1,6 +1,7 @@
 package edu.uw.modelab.service.impl;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,6 +36,17 @@ public class D3TripInstancesCreator extends D3Creator {
 		addNodes(writer, tripInstances);
 	}
 
+	@Override
+	protected void addNodes(final PrintWriter writer, final int tripId,
+			final long serviceDate) {
+		writer.print("\"nodes\": [");
+		final TripInstance tripInstance = tripInstanceDao.getTripInstance(
+				tripId, serviceDate);
+		final List<TripInstance> tripInstances = new ArrayList<>();
+		tripInstances.add(tripInstance);
+		addNodes(writer, tripInstances);
+	}
+
 	private void addNodes(final PrintWriter writer,
 			final List<TripInstance> tripInstances) {
 		final Iterator<TripInstance> it = tripInstances.iterator();
@@ -52,7 +64,7 @@ public class D3TripInstancesCreator extends D3Creator {
 						.append(Utils.toHHMMssPST(rtp.getTimeStamp()))
 						.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 						.append(rtp.getLon()).append(",").append(rtp.getLat())
-						.append("]},\"details\":\"\",\"distance\":")
+						.append("]},\"distance\":")
 						.append(rtp.getDistanceAlongTrip())
 						.append(",\"sched_dev\":").append(rtp.getSchedDev())
 						.append("}");
@@ -77,35 +89,6 @@ public class D3TripInstancesCreator extends D3Creator {
 	@Override
 	protected void addEdges(final PrintWriter writer, final int tripId) {
 		addEdges(writer);
-	}
-
-	@Override
-	protected void addNodes(final PrintWriter writer, final int tripId,
-			final long serviceDate) {
-		writer.print("\"nodes\": [");
-		final TripInstance tripInstance = tripInstanceDao.getTripInstance(
-				tripId, serviceDate);
-		final List<RealtimePosition> realtimes = tripInstance.getRealtimes();
-		final Iterator<RealtimePosition> realtimesIt = realtimes.iterator();
-		final StringBuilder sb = new StringBuilder();
-		while (realtimesIt.hasNext()) {
-			final RealtimePosition rtp = realtimesIt.next();
-			sb.append("{\"name\":\"")
-					.append(tripInstance.getId())
-					.append("_")
-					.append(Utils.toHHMMssPST(rtp.getTimeStamp()))
-					.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
-					.append(rtp.getLon()).append(",").append(rtp.getLat())
-					.append("]},\"details\":\"\",\"distance\":")
-					.append(rtp.getDistanceAlongTrip())
-					.append(",\"sched_dev\":").append(rtp.getSchedDev())
-					.append("}");
-			if (realtimesIt.hasNext()) {
-				sb.append(",");
-			}
-		}
-		writer.print(sb.toString());
-		writer.print("],");
 	}
 
 	@Override
