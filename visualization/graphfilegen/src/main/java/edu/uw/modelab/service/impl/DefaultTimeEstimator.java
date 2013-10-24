@@ -26,7 +26,7 @@ public class DefaultTimeEstimator implements TimeEstimator {
 	public long actualDiff(final TripInstance tripInstance,
 			final Segment segment) {
 		long result = 0;
-		final long toActual = getActualArrivalTimeBasedOnClosestPositions(
+		final long toActual = getActualArrivalTimeBasedOnDistanceAlongTrip(
 				segment.getTo(), tripInstance);
 		if (segment.isFirst()) {
 			// assume from actual is equal to scheduled one
@@ -34,7 +34,7 @@ public class DefaultTimeEstimator implements TimeEstimator {
 					.getSchedArrivalTime();
 			result = Utils.diff(fromActual, toActual);
 		} else {
-			final long fromActual = getActualArrivalTimeBasedOnClosestPositions(
+			final long fromActual = getActualArrivalTimeBasedOnDistanceAlongTrip(
 					segment.getFrom(), tripInstance);
 			result = (toActual - fromActual) / 1000;
 		}
@@ -43,13 +43,13 @@ public class DefaultTimeEstimator implements TimeEstimator {
 
 	@Override
 	public long actual(final TripInstance tripInstance, final Stop stop) {
-		// final long basedOnDistanceAlong =
-		// getActualArrivalTimeBasedOnDistanceAlongTrip(
-		// stop, tripInstance);
-		// return basedOnDistanceAlong;
-		final long basedOnClosestPositions = getActualArrivalTimeBasedOnClosestPositions(
+		final long basedOnDistanceAlong = getActualArrivalTimeBasedOnDistanceAlongTrip(
 				stop, tripInstance);
-		return basedOnClosestPositions;
+		return basedOnDistanceAlong;
+		// final long basedOnClosestPositions =
+		// getActualArrivalTimeBasedOnClosestPositions(
+		// stop, tripInstance);
+		// return basedOnClosestPositions;
 	}
 
 	@Override

@@ -45,7 +45,7 @@ public class JdbcRouteDao implements RouteDao {
 			+ " join trip as t on r.id = t.route_id"
 			+ " join stop_time as st on t.id = st.trip_id"
 			+ " join stop as s on s.id = st.stop_id "
-			+ " order by r.name, t.id, st.stop_sequence limit 100";
+			+ " order by r.name, t.id, st.stop_sequence limit 15000";
 
 	public JdbcRouteDao(final DataSource dataSource,
 			final TripInstanceDao tripInstanceDao) {

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -39,6 +38,7 @@ public class D3StopsCreator extends D3Creator {
 
 	// horrible, I'm in a hurry
 	private Set<Route> routes = null;
+	private Trip trip = null;
 
 	public D3StopsCreator(final String filename, final StopDao stopDao,
 			final RouteDao routeDao, final TripDao tripDao,
@@ -56,7 +56,37 @@ public class D3StopsCreator extends D3Creator {
 	@Override
 	protected void addNodes(final PrintWriter writer) {
 		writer.print("\"nodes\": [");
-		final Map<Stop, Map<TripInstance, String>> stops = buildStops();
+		routes = routeDao.getRoutes();
+		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
+		for (final Route route : routes) {
+			final Set<Trip> trips = route.getTrips();
+			for (final Trip trip : trips) {
+				nodesForEachTrip(stops, trip);
+			}
+		}
+		final String appended = appendStops(stops);
+		writer.print(appended);
+		writer.print("],");
+	}
+
+	@Override
+	protected void addNodes(final PrintWriter writer, final int tripId) {
+		writer.print("\"nodes\": [");
+		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
+		trip = tripDao.getTripById(tripId);
+		nodesForEachTrip(stops, trip);
+		final String appended = appendStops(stops);
+		writer.print(appended);
+		writer.print("],");
+	}
+
+	@Override
+	protected void addNodes(final PrintWriter writer, final int tripId,
+			final long serviceDate) {
+		addNodes(writer, tripId);
+	}
+
+	private String appendStops(final Map<Stop, Map<TripInstance, String>> stops) {
 		final Set<Entry<Stop, Map<TripInstance, String>>> entrySet = stops
 				.entrySet();
 		int index = 0;
@@ -89,46 +119,40 @@ public class D3StopsCreator extends D3Creator {
 		if (sb.length() > 0) {
 			sb.deleteCharAt(sb.length() - 1);
 		}
-		writer.print(sb.toString());
-		writer.print("],");
+		return sb.toString();
 	}
 
-	private Map<Stop, Map<TripInstance, String>> buildStops() {
-		routes = routeDao.getRoutes();
-		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
-		for (final Route route : routes) {
-			final Set<Trip> trips = route.getTrips();
-			for (final Trip trip : trips) {
-				distanceAlongTripCalculator.addDistancesAlongTrip(trip);
-				final Set<Segment> segments = trip.getSegments();
-				final Set<TripInstance> tripInstances = trip.getInstances();
-				for (final TripInstance tripInstance : tripInstances) {
-					for (final Segment segment : segments) {
-						if (segment.isFirst()) {
-							final Stop from = segment.getFrom();
-							final String fromArrivalTime = from.getStopTime()
-									.getSchedDepartureTime();
-							addStop(stops, tripInstance, from, fromArrivalTime);
-							final Stop to = segment.getTo();
-							final String toArrivalTime = Utils
-									.toHHMMssPST(timeEstimator.actual(
-											tripInstance, to));
-							addStop(stops, tripInstance, to, toArrivalTime);
-						} else {
-							final Stop to = segment.getTo();
-							final String toArrivalTime = Utils
-									.toHHMMssPST(timeEstimator.actual(
-											tripInstance, to));
-							addStop(stops, tripInstance, to, toArrivalTime);
-						}
-					}
+	private void nodesForEachTrip(final Map<Stop, Map<TripInstance, String>> stops,
+			final Trip trip) {
+		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+		final Set<Segment> segments = trip.getSegments();
+		final Set<TripInstance> tripInstances = trip.getInstances();
+		for (final TripInstance tripInstance : tripInstances) {
+			for (final Segment segment : segments) {
+				if (segment.isFirst()) {
+					final Stop from = segment.getFrom();
+					final String fromArrivalTime = from.getStopTime()
+							.getSchedDepartureTime();
+					buildStopsAttributesPerTripInstance(stops, tripInstance,
+							from, fromArrivalTime);
+					final Stop to = segment.getTo();
+					final String toArrivalTime = Utils
+							.toHHMMssPST(timeEstimator.actual(tripInstance, to));
+					buildStopsAttributesPerTripInstance(stops, tripInstance,
+							to, toArrivalTime);
+				} else {
+					final Stop to = segment.getTo();
+					final String toArrivalTime = Utils
+							.toHHMMssPST(timeEstimator.actual(tripInstance, to));
+					buildStopsAttributesPerTripInstance(stops, tripInstance,
+							to, toArrivalTime);
 				}
 			}
 		}
-		return stops;
 	}
 
-	private void addStop(final Map<Stop, Map<TripInstance, String>> stops,
+	private void buildStopsAttributesPerTripInstance(
+			final Map<Stop, Map<TripInstance, String>> stops,
 			final TripInstance tripInstance, final Stop stop,
 			final String arrivalTime) {
 		final String scheduled = stop.getStopTime().getSchedArrivalTime();
@@ -146,21 +170,6 @@ public class D3StopsCreator extends D3Creator {
 	}
 
 	@Override
-	protected void addNodes(final PrintWriter writer, final int tripId) {
-		writer.print("\"nodes\": [");
-		final List<Stop> stops = stopDao.getStopsByTripId(tripId);
-		addNodes(writer, stops);
-	}
-
-	@Override
-	protected void addNodes(final PrintWriter writer, final int tripId,
-			final long serviceDate) {
-		writer.print("\"nodes\": [");
-		final List<Stop> stops = stopDao.getStopsByTripId(tripId);
-		addNodes(writer, stops);
-	}
-
-	@Override
 	protected void addEdges(final PrintWriter writer) {
 		final Set<Segment> addedSegments = new HashSet<>();
 		writer.print("\"links\":[");
@@ -172,27 +181,7 @@ public class D3StopsCreator extends D3Creator {
 			final Iterator<Trip> tripIt = trips.iterator();
 			while (tripIt.hasNext()) {
 				final Trip trip = tripIt.next();
-				final Set<Segment> segments = trip.getSegments();
-				final Iterator<Segment> segmentIt = segments.iterator();
-				while (segmentIt.hasNext()) {
-					final Segment segment = segmentIt.next();
-					if (addedSegments.contains(segment)) {
-						LOG.info("Skipping segment, already added");
-						continue;
-					}
-					addedSegments.add(segment);
-					if (!stopIdsIndexes.isEmpty()) {
-						final int source = stopIdsIndexes.get(segment.getFrom()
-								.getId());
-						final int target = stopIdsIndexes.get(segment.getTo()
-								.getId());
-						sb.append("{\"source\":").append(source)
-								.append(",\"target\":").append(target)
-								.append(",\"value\":3,\"group\":1,\"name\":\"")
-								.append(segment.getId())
-								.append("\",\"details\":\"\"},");
-					}
-				}
+				edgesForEachTrip(addedSegments, sb, trip);
 			}
 		}
 		if (sb.length() > 0) {
@@ -202,70 +191,13 @@ public class D3StopsCreator extends D3Creator {
 		writer.print("]");
 	}
 
-	private void addNodes(final PrintWriter writer, final List<Stop> stops) {
-		final Map<Integer, Integer> numberOfTripsPerStop = tripDao
-				.getNumberOfTripsPerStop();
-		final Iterator<Stop> it = stops.iterator();
-		int index = 0;
-		while (it.hasNext()) {
-			final Stop stop = it.next();
-			final int numberOfTripForStop = numberOfTripsPerStop.get(stop
-					.getId());
-			stopIdsIndexes.put(stop.getId(), index++);
-			final StringBuilder sb = new StringBuilder("{\"name\":\"")
-					.append(stop.getName())
-					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
-					.append(stop.getLon()).append(",").append(stop.getLat())
-					.append("]},\"details\":\"\",").append("\"num_trips\":")
-					.append(numberOfTripForStop).append("}");
-			if (it.hasNext()) {
-				sb.append(",");
-			}
-			writer.print(sb.toString());
-		}
-		writer.print("],");
-	}
-
 	@Override
 	protected void addEdges(final PrintWriter writer, final int tripId) {
+		// already have the trip
 		final Set<Segment> addedSegments = new HashSet<>();
-		final Trip trip = tripDao.getTripById(tripId);
 		writer.print("\"links\":[");
-		timeEstimator.estimateArrivalTimes(trip);
-		final Set<Segment> segments = trip.getSegments();
-		final Iterator<Segment> segmentIt = segments.iterator();
 		final StringBuilder sb = new StringBuilder();
-		while (segmentIt.hasNext()) {
-			final Segment segment = segmentIt.next();
-			if (addedSegments.contains(segment)) {
-				LOG.info("Skipping segment, already added");
-				continue;
-			}
-			addedSegments.add(segment);
-			final int source = stopIdsIndexes.get(segment.getFrom().getId());
-			final int target = stopIdsIndexes.get(segment.getTo().getId());
-			sb.append("{\"source\":")
-					.append(source)
-					.append(",\"target\":")
-					.append(target)
-					.append(",\"value\":3,\"group\":1,\"name\":\"")
-					.append(trip.getHeadSign())
-					.append("\",\"details\":\"\"")
-					.append(",\"from_sched\":\"")
-					.append(segment.getFrom().getStopTime()
-							.getSchedArrivalTime())
-					.append("\",\"from_actual\":\"")
-					.append(Utils.toHHMMssPST(segment.getFrom().getStopTime()
-							.getActualArrivalTime()))
-					.append("\",\"to_sched\":\"")
-					.append(segment.getTo().getStopTime().getSchedArrivalTime())
-					.append("\",\"to_actual\":\"")
-					.append(Utils.toHHMMssPST(segment.getTo().getStopTime()
-							.getActualArrivalTime()))
-					.append("\",\"distance\":").append(segment.getDistance())
-					.append("},");
-
-		}
+		edgesForEachTrip(addedSegments, sb, trip);
 		sb.deleteCharAt(sb.length() - 1);
 		writer.print(sb.toString());
 		writer.print("]");
@@ -275,6 +207,31 @@ public class D3StopsCreator extends D3Creator {
 	protected void addEdges(final PrintWriter writer, final int tripId,
 			final long serviceDate) {
 		addEdges(writer, tripId);
+	}
+
+	private void edgesForEachTrip(final Set<Segment> addedSegments,
+			final StringBuilder sb, final Trip trip) {
+		final Set<Segment> segments = trip.getSegments();
+		final Iterator<Segment> segmentIt = segments.iterator();
+		while (segmentIt.hasNext()) {
+			final Segment segment = segmentIt.next();
+			if (addedSegments.contains(segment)) {
+				LOG.info("Skipping segment, already added");
+				continue;
+			}
+			addedSegments.add(segment);
+			if (!stopIdsIndexes.isEmpty()) {
+				final int source = stopIdsIndexes
+						.get(segment.getFrom().getId());
+				final int target = stopIdsIndexes.get(segment.getTo().getId());
+				sb.append("{\"source\":").append(source).append(",\"target\":")
+						.append(target)
+						.append(",\"value\":3,\"group\":1,\"name\":\"")
+						.append(segment.getId()).append("\",\"distance\":")
+						.append(segment.getDistance()).append("},");
+
+			}
+		}
 	}
 
 }

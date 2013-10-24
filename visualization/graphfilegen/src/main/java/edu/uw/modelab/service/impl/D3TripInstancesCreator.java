@@ -47,7 +47,7 @@ public class D3TripInstancesCreator extends D3Creator {
 			while (realtimesIt.hasNext()) {
 				final RealtimePosition rtp = realtimesIt.next();
 				sb.append("{\"name\":\"")
-						.append(tripInstance.getTripId())
+						.append(tripInstance.getId())
 						.append("_")
 						.append(Utils.toHHMMssPST(rtp.getTimeStamp()))
 						.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
@@ -91,7 +91,7 @@ public class D3TripInstancesCreator extends D3Creator {
 		while (realtimesIt.hasNext()) {
 			final RealtimePosition rtp = realtimesIt.next();
 			sb.append("{\"name\":\"")
-					.append(tripInstance.getTripId())
+					.append(tripInstance.getId())
 					.append("_")
 					.append(Utils.toHHMMssPST(rtp.getTimeStamp()))
 					.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")

@@ -72,8 +72,8 @@ public abstract class AbstractFileCreator implements FileCreator {
 					serviceDate);
 			pw = new PrintWriter(filename, "UTF-8");
 			beginning(pw);
-			addNodes(pw, tripId);
-			addEdges(pw, tripId);
+			addNodes(pw, tripId, serviceDate);
+			addEdges(pw, tripId, serviceDate);
 			end(pw);
 			pw.flush();
 			LOG.info("Output file created for trip {}", tripId);

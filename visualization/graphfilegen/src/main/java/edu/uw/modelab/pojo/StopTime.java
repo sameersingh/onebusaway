@@ -5,7 +5,6 @@ public class StopTime {
 	private final String schedArrivalTime;
 	private final String schedDepartureTime;
 	private final int stopSequence;
-	private long actualArrivalTime;
 
 	public StopTime(final String arrivalTime, final String departureTime,
 			final int stopSequence) {
@@ -24,14 +23,6 @@ public class StopTime {
 
 	public String getSchedDepartureTime() {
 		return schedDepartureTime;
-	}
-
-	public void setActualArrivalTime(final Long actualArrivalTime) {
-		this.actualArrivalTime = actualArrivalTime;
-	}
-
-	public long getActualArrivalTime() {
-		return actualArrivalTime;
 	}
 
 	@Override
