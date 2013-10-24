@@ -22,6 +22,7 @@ import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
+import edu.uw.modelab.service.DistanceAlongTripCalculator;
 import edu.uw.modelab.service.ErrorCalculator;
 import edu.uw.modelab.service.TimeEstimator;
 import edu.uw.modelab.utils.Utils;
@@ -39,12 +40,16 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	private final TimeEstimator timeEstimator;
 	private final String filename;
 	private final String featureYhatFileName;
+	private final DistanceAlongTripCalculator distanceAlongTripCalculator;
 
 	public DefaultErrorCalculator(final String filename, final TripDao tripDao,
-			final TimeEstimator timeEstimator, final String featureYhatFileName) {
+			final TimeEstimator timeEstimator,
+			final String featureYhatFileName,
+			final DistanceAlongTripCalculator distanceAlongTripCalculator) {
 		this.filename = filename;
 		this.tripDao = tripDao;
 		this.timeEstimator = timeEstimator;
+		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
 		this.featureYhatFileName = featureYhatFileName;
 		this.yHatPerSegmentPerTripInstancePerTrip = new HashMap<String, Double>();
 		this.errorObaPerKPerTripId = new LinkedHashMap<>();
@@ -118,6 +123,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 			trip = tripDao
 					.getTripByIdAndServiceDateFrom(tripId, 1378191600000L);
 		}
+		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
 		final Set<TripInstance> tripInstances = trip.getInstances();
 		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
 		final List<Segment> segments = new ArrayList<>(trip.getSegments());

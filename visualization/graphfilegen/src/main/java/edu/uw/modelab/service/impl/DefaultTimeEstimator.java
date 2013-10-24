@@ -26,16 +26,16 @@ public class DefaultTimeEstimator implements TimeEstimator {
 	public long actualDiff(final TripInstance tripInstance,
 			final Segment segment) {
 		long result = 0;
-		final long toActual = getActualArrivalTime(segment.getTo(),
-				tripInstance);
+		final long toActual = getActualArrivalTimeBasedOnClosestPositions(
+				segment.getTo(), tripInstance);
 		if (segment.isFirst()) {
 			// assume from actual is equal to scheduled one
 			final String fromActual = segment.getFrom().getStopTime()
 					.getSchedArrivalTime();
 			result = Utils.diff(fromActual, toActual);
 		} else {
-			final long fromActual = getActualArrivalTime(segment.getFrom(),
-					tripInstance);
+			final long fromActual = getActualArrivalTimeBasedOnClosestPositions(
+					segment.getFrom(), tripInstance);
 			result = (toActual - fromActual) / 1000;
 		}
 		return result;
@@ -43,7 +43,13 @@ public class DefaultTimeEstimator implements TimeEstimator {
 
 	@Override
 	public long actual(final TripInstance tripInstance, final Stop stop) {
-		return getActualArrivalTime(stop, tripInstance);
+		// final long basedOnDistanceAlong =
+		// getActualArrivalTimeBasedOnDistanceAlongTrip(
+		// stop, tripInstance);
+		// return basedOnDistanceAlong;
+		final long basedOnClosestPositions = getActualArrivalTimeBasedOnClosestPositions(
+				stop, tripInstance);
+		return basedOnClosestPositions;
 	}
 
 	@Override
@@ -64,7 +70,78 @@ public class DefaultTimeEstimator implements TimeEstimator {
 		}
 	}
 
-	private long getActualArrivalTime(final Stop stop,
+	private long getActualArrivalTimeBasedOnDistanceAlongTrip(final Stop stop,
+			final TripInstance tripInstance) {
+		// ugly method, improve
+
+		final List<RealtimePosition> rtps = tripInstance.getRealtimes();
+		final double stopDistanceAlongTrip = stop.getDistanceAlongTrip();
+
+		double before = 0;
+		double after = Double.MAX_VALUE;
+		RealtimePosition rtpBefore = null;
+		RealtimePosition rtpAfter = null;
+		final double[] diffs = new double[rtps.size()];
+		int i = 0;
+		for (final RealtimePosition rtp : rtps) {
+			final double distanceAlongTrip = rtp.getDistanceAlongTrip();
+			if ((distanceAlongTrip < stopDistanceAlongTrip)
+					&& (distanceAlongTrip > before)) {
+				before = distanceAlongTrip;
+				rtpBefore = rtp;
+			} else if ((distanceAlongTrip > stopDistanceAlongTrip)
+					&& (distanceAlongTrip < after)) {
+				after = distanceAlongTrip;
+				rtpAfter = rtp;
+			}
+			diffs[i++] = Math.abs(distanceAlongTrip - stopDistanceAlongTrip);
+		}
+
+		// assume not before and after can be null at the same time
+		if (rtpBefore == null) {
+			final int closestIndex = getClosestPoint(diffs);
+			rtpBefore = rtps.get(closestIndex);
+			LOG.debug("taking the closest due to lack of before");
+		} else if (rtpAfter == null) {
+			final int closestIndex = getClosestPoint(diffs);
+			rtpAfter = rtps.get(closestIndex);
+			LOG.debug("taking the closest due to lack of after");
+		}
+
+		final double ds = stopDistanceAlongTrip;
+		final double di = rtpBefore.getDistanceAlongTrip();
+		final double dj = rtpAfter.getDistanceAlongTrip();
+		final long ti = rtpBefore.getTimeStamp();
+		final long tj = rtpAfter.getTimeStamp();
+		final long ts = (long) (((ds - di) / (dj - di)) * (tj - ti)) + ti;
+		// LOG.debug("di {} - ti {} - dj {} tj {} - ds {} ts {} - sched {}", di,
+		// Utils.toHHMMssPST(ti), dj, Utils.toHHMMssPST(tj), ds,
+		// Utils.toHHMMssPST(ts), stop.getStopTime().getSchedArrivalTime());
+		final long diff = Utils.diff(stop.getStopTime().getSchedArrivalTime(),
+				ts);
+		if (diff > 1200) {
+			LOG.debug(
+					"ALERT - stopId {} tripId {} tripInstance {} ts {} scheduled {}",
+					stop.getId(), tripInstance.getTripId(), tripInstance
+							.getServiceDate(), Utils.toHHMMssPST(ts), stop
+							.getStopTime().getSchedArrivalTime());
+		}
+		return ts;
+	}
+
+	private int getClosestPoint(final double[] diffs) {
+		double minor = Double.MAX_VALUE;
+		int closestIndex = 0;
+		for (int s = 0; s < diffs.length; s++) {
+			if (diffs[s] < minor) {
+				minor = diffs[s];
+				closestIndex = s;
+			}
+		}
+		return closestIndex;
+	}
+
+	private long getActualArrivalTimeBasedOnClosestPositions(final Stop stop,
 			final TripInstance tripInstance) {
 		final double toX = stop.getX();
 		final double toY = stop.getY();

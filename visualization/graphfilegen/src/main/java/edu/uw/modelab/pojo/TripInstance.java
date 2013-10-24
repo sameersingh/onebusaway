@@ -23,6 +23,10 @@ public class TripInstance {
 		return realtimes;
 	}
 
+	public RealtimePosition getRealtime(final int position) {
+		return realtimes.get(position);
+	}
+
 	public long getServiceDate() {
 		return serviceDate;
 	}

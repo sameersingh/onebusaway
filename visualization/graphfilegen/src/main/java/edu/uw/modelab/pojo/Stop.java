@@ -9,6 +9,7 @@ public class Stop {
 	private final double y;
 	private final double x;
 	private StopTime stopTime;
+	private double distanceAlongTrip;
 
 	public Stop(final int id, final String name, final double lat,
 			final double lon, final double y, final double x) {
@@ -18,6 +19,14 @@ public class Stop {
 		this.lon = lon;
 		this.y = y;
 		this.x = x;
+	}
+
+	public void setDistanceAlongTrip(final double distanceAlongTrip) {
+		this.distanceAlongTrip = distanceAlongTrip;
+	}
+
+	public double getDistanceAlongTrip() {
+		return this.distanceAlongTrip;
 	}
 
 	public void setStopTime(final StopTime stopTime) {
@@ -81,6 +90,7 @@ public class Stop {
 	@Override
 	public String toString() {
 		return "{id=" + id + ",name=" + name + ",lat=" + lat + ",lon=" + lon
-				+ ",time=" + stopTime + "}";
+				+ ",time=" + stopTime + ", distanceAlongTrip= "
+				+ distanceAlongTrip + "}";
 	}
 }

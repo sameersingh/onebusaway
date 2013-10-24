@@ -95,13 +95,15 @@ public class Utils {
 		try {
 			d1 = format.parse(DATE_START + from);
 			d2 = format.parse(DATE_END + toHHMMssPST(toTimestamp));
-			diff = ((d2.getTime() - d1.getTime()) / 1000);
+			final long diffInMillis = d2.getTime() - d1.getTime();
+			if (diffInMillis != 0) {
+				diff = diffInMillis / 1000;
+			}
 		} catch (final Exception e) {
 			LOG.error("Exception calculating diff between {} and {}", from,
 					toTimestamp);
 		}
-		return diff;
-
+		return diff < 0 ? -diff : diff;
 	}
 
 	public static long diff(final String to, final String from) {

@@ -106,12 +106,16 @@
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="timeEstimator" />
 		<constructor-arg value="${features.yhat.file}" />
+		<constructor-arg ref= "distanceAlongTripCalculator" />
 	</bean>
 	
 	<bean id="dotCreator" class="edu.uw.modelab.service.impl.DotCreator">
 		<constructor-arg value="${output.folder}/oba.dot" />
 		<constructor-arg ref="stopDao" />
 		<constructor-arg ref="routeDao" />
+	</bean>
+	
+	<bean id="distanceAlongTripCalculator" class="edu.uw.modelab.service.impl.DefaultDistanceAlongTripCalculator">
 	</bean>
 
 </beans> 

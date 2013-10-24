@@ -55,6 +55,23 @@ public class TripInstancesPopulator extends BulkPopulator {
 					return;
 				}
 				try {
+					// do this per route
+					final double schedDeviation = Double.valueOf(strTokens[4]);
+					if ((schedDeviation < -2000) || (schedDeviation > 2000)) {
+						LOG.warn(
+								"Ignoring register, scheduled deviation is {} ",
+								schedDeviation);
+						return;
+					}
+					final double distanceAlongTrip = Double
+							.valueOf(strTokens[3]);
+					if ((distanceAlongTrip < 100)
+							|| (distanceAlongTrip > 23500)) {
+						LOG.warn(
+								"Ignoring register, beginning or end of trip - distance {} ",
+								distanceAlongTrip);
+						return;
+					}
 					final double lat = Double.valueOf(strTokens[5]);
 					final double lon = Double.valueOf(strTokens[6]);
 					final double y = EllipticalMercator.mercY(lat);
@@ -62,9 +79,8 @@ public class TripInstancesPopulator extends BulkPopulator {
 					final TripInstanceInsertObject tiio = new TripInstanceInsertObject(
 							Long.valueOf(strTokens[0]), Long
 									.valueOf(strTokens[1]), Integer
-									.valueOf(strTokens[2]), Double
-									.valueOf(strTokens[3]), Double
-									.valueOf(strTokens[4]), lat, lon, y, x);
+									.valueOf(strTokens[2]), distanceAlongTrip,
+							schedDeviation, lat, lon, y, x);
 					tripInstances.add(tiio);
 				} catch (final Exception ex) {
 					LOG.error("Discarding register, unexpected exception",
