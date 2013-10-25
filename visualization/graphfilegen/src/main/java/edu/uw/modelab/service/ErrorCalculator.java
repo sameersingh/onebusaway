@@ -2,8 +2,11 @@ package edu.uw.modelab.service;
 
 public interface ErrorCalculator {
 
-	void calculateError(int tripId);
+	// move to timeService
+	void calculateTimeBetweenStops(int tripId);
 
-	void calculateError(final int tripId, int k, Error error);
+	void calculateObaAndModeError(final int tripId, int k, Error error);
+
+	void calculateScheduledError(int tripId);
 
 }

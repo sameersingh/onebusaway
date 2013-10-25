@@ -7,7 +7,7 @@ import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DelayCalculator;
-import edu.uw.modelab.service.TimeEstimator;
+import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.utils.Utils;
 
 public class DefaultDelayCalculator implements DelayCalculator {
@@ -15,9 +15,9 @@ public class DefaultDelayCalculator implements DelayCalculator {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(DefaultDelayCalculator.class);
 
-	private final TimeEstimator timeEstimator;
+	private final TimeService timeEstimator;
 
-	public DefaultDelayCalculator(final TimeEstimator timeEstimator) {
+	public DefaultDelayCalculator(final TimeService timeEstimator) {
 		this.timeEstimator = timeEstimator;
 	}
 

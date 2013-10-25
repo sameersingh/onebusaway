@@ -24,7 +24,7 @@ import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DistanceAlongTripCalculator;
 import edu.uw.modelab.service.ErrorCalculator;
-import edu.uw.modelab.service.TimeEstimator;
+import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.utils.Utils;
 
 public class DefaultErrorCalculator implements ErrorCalculator {
@@ -35,15 +35,14 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	private final Map<String, Double> yHatPerSegmentPerTripInstancePerTrip;
 	private final Map<Integer, Map<Integer, Double>> errorObaPerKPerTripId;
 	private final Map<Integer, Map<Integer, Double>> errorModePerKPerTripId;
-	private final Map<Integer, Map<Integer, Double>> errorSchedulePerKPerTripId;
 	private final TripDao tripDao;
-	private final TimeEstimator timeEstimator;
+	private final TimeService timeEstimator;
 	private final String filename;
 	private final String featureYhatFileName;
 	private final DistanceAlongTripCalculator distanceAlongTripCalculator;
 
 	public DefaultErrorCalculator(final String filename, final TripDao tripDao,
-			final TimeEstimator timeEstimator,
+			final TimeService timeEstimator,
 			final String featureYhatFileName,
 			final DistanceAlongTripCalculator distanceAlongTripCalculator) {
 		this.filename = filename;
@@ -54,7 +53,6 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		this.yHatPerSegmentPerTripInstancePerTrip = new HashMap<String, Double>();
 		this.errorObaPerKPerTripId = new LinkedHashMap<>();
 		this.errorModePerKPerTripId = new LinkedHashMap<>();
-		this.errorSchedulePerKPerTripId = new LinkedHashMap<>();
 	}
 
 	public void init() {
@@ -82,7 +80,8 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	}
 
 	@Override
-	public void calculateError(final int tripId) {
+	@Deprecated
+	public void calculateTimeBetweenStops(final int tripId) {
 		final Trip trip = tripDao.getTripById(tripId);
 		final Set<TripInstance> tripInstances = trip.getInstances();
 		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
@@ -113,7 +112,50 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	}
 
 	@Override
-	public void calculateError(final int tripId, final int k,
+	public void calculateScheduledError(final int tripId) {
+
+		final Trip trip = tripDao.getTripById(tripId);
+		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+
+		final Set<TripInstance> tripInstances = trip.getInstances();
+		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
+		final List<Segment> segments = new ArrayList<>(trip.getSegments());
+
+		final int numberOfSegments = segments.size();
+		final int i = 0;
+		final List<Double> errorsSchedule = new ArrayList<>();
+		while (tripInstancesIt.hasNext()) {
+			final TripInstance tripInstance = tripInstancesIt.next();
+			for (final Segment segment : segments) {
+				double actual_I = 0;
+				double sched_I = 0;
+				if (i == numberOfSegments) {
+					actual_I = getActualLast(segments.get(i - 1), tripInstance);
+					sched_I = getScheduledLast(segments.get(i - 1),
+							tripInstance);
+				} else {
+					actual_I = getActual(segments.get(i), tripInstance);
+					sched_I = getScheduled(segments.get(i), tripInstance);
+				}
+
+				final double errSchedule = Math.pow(
+						(actual_I - sched_I) / 1000, 2);
+				errorsSchedule.add(errSchedule);
+			}
+		}
+
+		double sumErrorsSchedule = 0;
+		for (final Double errorSchedule : errorsSchedule) {
+			sumErrorsSchedule += errorSchedule;
+		}
+
+		final double errorSchedule = Math.sqrt(sumErrorsSchedule
+				/ errorsSchedule.size());
+		System.out.println("Schedule Error: " + errorSchedule);
+	}
+
+	@Override
+	public void calculateObaAndModeError(final int tripId, final int k,
 			final edu.uw.modelab.service.Error error) {
 		Trip trip = null;
 		if (error == edu.uw.modelab.service.Error.TRAINING) {
@@ -132,7 +174,6 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		assert k < numberOfSegments;
 		final List<Double> errorsOba = new ArrayList<>();
 		final List<Double> errorsMode = new ArrayList<>();
-		final List<Double> errorsSchedule = new ArrayList<>();
 		while (tripInstancesIt.hasNext()) {
 			final TripInstance tripInstance = tripInstancesIt.next();
 			int j = 0;
@@ -141,14 +182,10 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 				final long scheduledDiff = getScheduledDiff(
 						segments.get(i - 1), segments.get(j));
 				long actual_I = 0;
-				long sched_I = 0;
 				if (i == numberOfSegments) {
 					actual_I = getActualLast(segments.get(i - 1), tripInstance);
-					sched_I = getScheduledLast(segments.get(i - 1),
-							tripInstance);
 				} else {
 					actual_I = getActual(segments.get(i), tripInstance);
-					sched_I = getScheduled(segments.get(i), tripInstance);
 				}
 
 				final long t_true_I = actual_I;
@@ -164,11 +201,8 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 						(t_true_I - t_hat_oba_I) / 1000, 2);
 				final double errModeI = Math.pow(
 						(t_true_I - t_hat_mode_I) / 1000, 2);
-				final double errSchedI = Math.pow((t_true_I - sched_I) / 1000,
-						2);
 				errorsOba.add(errObaI);
 				errorsMode.add(errModeI);
-				errorsSchedule.add(errSchedI);
 				i++;
 				j++;
 			}
@@ -182,14 +216,9 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		for (final Double errorMode : errorsMode) {
 			sumErrorsMode += errorMode;
 		}
-		double sumErrorsSchedule = 0;
-		for (final Double errorSchedule : errorsSchedule) {
-			sumErrorsSchedule += errorSchedule;
-		}
+
 		final double errorObaK = Math.sqrt(sumErrorsOba / errorsOba.size());
 		final double errorModeK = Math.sqrt(sumErrorsMode / errorsMode.size());
-		final double errorScheduleK = Math.sqrt(sumErrorsSchedule
-				/ errorsSchedule.size());
 
 		Map<Integer, Double> obaErrorMap = errorObaPerKPerTripId.get(tripId);
 		if (obaErrorMap == null) {
@@ -209,19 +238,8 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 			modeErrorMap.put(k, errorModeK);
 		}
 
-		Map<Integer, Double> scheduleErrorMap = errorSchedulePerKPerTripId
-				.get(tripId);
-		if (scheduleErrorMap == null) {
-			scheduleErrorMap = new LinkedHashMap<>();
-			scheduleErrorMap.put(k, errorScheduleK);
-			errorSchedulePerKPerTripId.put(tripId, scheduleErrorMap);
-		} else {
-			scheduleErrorMap.put(k, errorScheduleK);
-		}
-
 		System.out.println(errorObaPerKPerTripId.get(tripId).get(k) + "\t"
-				+ errorModePerKPerTripId.get(tripId).get(k) + "\t"
-				+ errorSchedulePerKPerTripId.get(tripId).get(k));
+				+ errorModePerKPerTripId.get(tripId).get(k));
 	}
 
 	private long getActual(final Segment segment,

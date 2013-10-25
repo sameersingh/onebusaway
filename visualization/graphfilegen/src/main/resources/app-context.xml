@@ -121,7 +121,7 @@
 	<bean id="stopsCreator" class="edu.uw.modelab.service.impl.D3StopsCreator">
 		<constructor-arg value="${output.folder}/stops.json" />
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref="timeService" />
 		<constructor-arg ref= "distanceAlongTripCalculator" />
 	</bean>
 	
@@ -131,10 +131,10 @@
 	</bean>
 	
 	<bean id="delayCalculator" class="edu.uw.modelab.service.impl.DefaultDelayCalculator">
-		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref="timeService" />
 	</bean>
 	
-	<bean id="timeEstimator" class="edu.uw.modelab.service.impl.DefaultTimeEstimator" />
+	<bean id="timeService" class="edu.uw.modelab.service.impl.DefaultTimeService" />
 	
 	<bean id="featureFileCreator" class="edu.uw.modelab.service.impl.PerSegmentFeatureFileCreator" >
 		<constructor-arg value="${output.folder}/features_training.dat" />
