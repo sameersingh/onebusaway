@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -12,10 +13,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.uw.modelab.dao.RouteDao;
-import edu.uw.modelab.dao.StopDao;
 import edu.uw.modelab.dao.TripDao;
-import edu.uw.modelab.pojo.Route;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
@@ -30,23 +28,18 @@ public class D3StopsCreator extends D3Creator {
 			.getLogger(D3StopsCreator.class);
 
 	private final Map<Integer, Integer> stopIdsIndexes;
-	private final StopDao stopDao;
-	private final RouteDao routeDao;
 	private final TripDao tripDao;
 	private final TimeEstimator timeEstimator;
 	private final DistanceAlongTripCalculator distanceAlongTripCalculator;
 
 	// horrible, I'm in a hurry
-	private Set<Route> routes = null;
+	private Set<Trip> trips = null;
 	private Trip trip = null;
 
-	public D3StopsCreator(final String filename, final StopDao stopDao,
-			final RouteDao routeDao, final TripDao tripDao,
+	public D3StopsCreator(final String filename, final TripDao tripDao,
 			final TimeEstimator timeEstimator,
 			final DistanceAlongTripCalculator distanceAlongTripCalculator) {
 		super(filename);
-		this.stopDao = stopDao;
-		this.routeDao = routeDao;
 		this.tripDao = tripDao;
 		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
 		this.timeEstimator = timeEstimator;
@@ -54,15 +47,13 @@ public class D3StopsCreator extends D3Creator {
 	}
 
 	@Override
+	@Deprecated
 	protected void addNodes(final PrintWriter writer) {
 		writer.print("\"nodes\": [");
-		routes = routeDao.getRoutes();
+		this.trips = tripDao.getTrips();
 		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
-		for (final Route route : routes) {
-			final Set<Trip> trips = route.getTrips();
-			for (final Trip trip : trips) {
-				nodesForEachTrip(stops, trip);
-			}
+		for (final Trip trip : trips) {
+			nodesForEachTrip(stops, trip);
 		}
 		final String appended = appendStops(stops);
 		writer.print(appended);
@@ -73,7 +64,7 @@ public class D3StopsCreator extends D3Creator {
 	protected void addNodes(final PrintWriter writer, final int tripId) {
 		writer.print("\"nodes\": [");
 		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
-		trip = tripDao.getTripById(tripId);
+		this.trip = tripDao.getTripById(tripId);
 		nodesForEachTrip(stops, trip);
 		final String appended = appendStops(stops);
 		writer.print(appended);
@@ -122,8 +113,8 @@ public class D3StopsCreator extends D3Creator {
 		return sb.toString();
 	}
 
-	private void nodesForEachTrip(final Map<Stop, Map<TripInstance, String>> stops,
-			final Trip trip) {
+	private void nodesForEachTrip(
+			final Map<Stop, Map<TripInstance, String>> stops, final Trip trip) {
 		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
 		final Set<Segment> segments = trip.getSegments();
 		final Set<TripInstance> tripInstances = trip.getInstances();
@@ -157,7 +148,6 @@ public class D3StopsCreator extends D3Creator {
 			final String arrivalTime) {
 		final String scheduled = stop.getStopTime().getSchedArrivalTime();
 		Map<TripInstance, String> tripInstancesPerStop = stops.get(stop);
-
 		if (tripInstancesPerStop == null) {
 			tripInstancesPerStop = new HashMap<>();
 			tripInstancesPerStop.put(tripInstance, arrivalTime + "-"
@@ -173,16 +163,11 @@ public class D3StopsCreator extends D3Creator {
 	protected void addEdges(final PrintWriter writer) {
 		final Set<Segment> addedSegments = new HashSet<>();
 		writer.print("\"links\":[");
-		final Iterator<Route> routeIt = routes.iterator();
 		final StringBuilder sb = new StringBuilder();
-		while (routeIt.hasNext()) {
-			final Route route = routeIt.next();
-			final Set<Trip> trips = route.getTrips();
-			final Iterator<Trip> tripIt = trips.iterator();
-			while (tripIt.hasNext()) {
-				final Trip trip = tripIt.next();
-				edgesForEachTrip(addedSegments, sb, trip);
-			}
+		final Iterator<Trip> tripIt = this.trips.iterator();
+		while (tripIt.hasNext()) {
+			final Trip trip = tripIt.next();
+			edgesForEachTrip(addedSegments, sb, trip);
 		}
 		if (sb.length() > 0) {
 			sb.deleteCharAt(sb.length() - 1);
@@ -197,7 +182,7 @@ public class D3StopsCreator extends D3Creator {
 		final Set<Segment> addedSegments = new HashSet<>();
 		writer.print("\"links\":[");
 		final StringBuilder sb = new StringBuilder();
-		edgesForEachTrip(addedSegments, sb, trip);
+		edgesForEachTrip(addedSegments, sb, this.trip);
 		sb.deleteCharAt(sb.length() - 1);
 		writer.print(sb.toString());
 		writer.print("]");
@@ -232,6 +217,27 @@ public class D3StopsCreator extends D3Creator {
 
 			}
 		}
+	}
+
+	@Override
+	protected void addNodes(final PrintWriter writer,
+			final List<Integer> tripIds) {
+		writer.print("\"nodes\": [");
+		this.trips = tripDao.getTripsIn(tripIds);
+		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
+		for (final Trip trip : trips) {
+			nodesForEachTrip(stops, trip);
+		}
+		final String appended = appendStops(stops);
+		writer.print(appended);
+		writer.print("],");
+	}
+
+	@Override
+	protected void addEdges(final PrintWriter writer,
+			final List<Integer> tripIds) {
+		addEdges(writer);
+
 	}
 
 }

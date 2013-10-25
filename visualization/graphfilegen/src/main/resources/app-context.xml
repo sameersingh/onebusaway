@@ -120,8 +120,6 @@
 
 	<bean id="stopsCreator" class="edu.uw.modelab.service.impl.D3StopsCreator">
 		<constructor-arg value="${output.folder}/stops.json" />
-		<constructor-arg ref="stopDao" />
-		<constructor-arg ref="routeDao" />
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="timeEstimator" />
 		<constructor-arg ref= "distanceAlongTripCalculator" />

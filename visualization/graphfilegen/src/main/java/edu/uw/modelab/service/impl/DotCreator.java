@@ -100,4 +100,18 @@ public class DotCreator extends AbstractFileCreator {
 		// TODO Auto-generated method stub
 
 	}
+
+	@Override
+	protected void addNodes(final PrintWriter writer,
+			final List<Integer> tripIds) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void addEdges(final PrintWriter writer,
+			final List<Integer> tripIds) {
+		// TODO Auto-generated method stub
+
+	}
 }

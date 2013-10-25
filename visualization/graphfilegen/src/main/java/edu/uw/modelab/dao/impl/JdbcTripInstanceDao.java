@@ -13,6 +13,8 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import edu.uw.modelab.dao.TripInstanceDao;
 import edu.uw.modelab.pojo.RealtimePosition;
@@ -33,6 +35,9 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 	private static final String SELECT_TRIP_INSTANCES = "select timestamp, service_date, trip_id, lat, lon, y, x, distance_trip, sched_deviation"
 			+ " from trip_instance order by service_date, timestamp limit 60000";
 
+	private static final String SELECT_TRIP_INSTANCES_IN = "select timestamp, service_date, trip_id, lat, lon, y, x, distance_trip, sched_deviation"
+			+ " from trip_instance where trip_id in (:tripIds) order by service_date, timestamp";
+
 	private static final String SELECT_TRIP_INSTANCES_BY_TRIP_ID_AND_SERVICE_DATE_LESS = "select timestamp, service_date, trip_id, lat, lon, y, x, distance_trip, sched_deviation"
 			+ " from trip_instance"
 			+ " where trip_id = ? and service_date < ?"
@@ -44,9 +49,11 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 			+ " order by service_date, timestamp";
 
 	private final JdbcTemplate template;
+	private final NamedParameterJdbcTemplate namedTemplate;
 
 	public JdbcTripInstanceDao(final DataSource dataSource) {
 		this.template = new JdbcTemplate(dataSource);
+		this.namedTemplate = new NamedParameterJdbcTemplate(dataSource);
 	}
 
 	@Override
@@ -135,6 +142,23 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
 		template.query(SELECT_TRIP_INSTANCES_BY_TRIP_ID_AND_SERVICE_FROM,
 				new Object[] { tripId, serviceDate },
+				new TripInstanceRowMapper(tripInstances));
+		final List<TripInstance> result = new ArrayList<>();
+		final Iterator<Entry<Long, TripInstance>> it = tripInstances.entrySet()
+				.iterator();
+		while (it.hasNext()) {
+			result.add(it.next().getValue());
+		}
+		return result;
+	}
+
+	@Override
+	public List<TripInstance> getTripInstancesForTripIds(
+			final List<Integer> tripIds) {
+		final MapSqlParameterSource parameters = new MapSqlParameterSource(
+				"tripIds", tripIds);
+		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
+		namedTemplate.query(SELECT_TRIP_INSTANCES_IN, parameters,
 				new TripInstanceRowMapper(tripInstances));
 		final List<TripInstance> result = new ArrayList<>();
 		final Iterator<Entry<Long, TripInstance>> it = tripInstances.entrySet()

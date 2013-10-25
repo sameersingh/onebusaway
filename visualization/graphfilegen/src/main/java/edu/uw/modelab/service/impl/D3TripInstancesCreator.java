@@ -25,7 +25,7 @@ public class D3TripInstancesCreator extends D3Creator {
 		writer.print("\"nodes\": [");
 		final List<TripInstance> tripInstances = tripInstanceDao
 				.getTripInstances();
-		addNodes(writer, tripInstances);
+		doAddNodes(writer, tripInstances);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class D3TripInstancesCreator extends D3Creator {
 		writer.print("\"nodes\": [");
 		final List<TripInstance> tripInstances = tripInstanceDao
 				.getTripInstancesForTripId(tripId);
-		addNodes(writer, tripInstances);
+		doAddNodes(writer, tripInstances);
 	}
 
 	@Override
@@ -44,10 +44,10 @@ public class D3TripInstancesCreator extends D3Creator {
 				tripId, serviceDate);
 		final List<TripInstance> tripInstances = new ArrayList<>();
 		tripInstances.add(tripInstance);
-		addNodes(writer, tripInstances);
+		doAddNodes(writer, tripInstances);
 	}
 
-	private void addNodes(final PrintWriter writer,
+	private void doAddNodes(final PrintWriter writer,
 			final List<TripInstance> tripInstances) {
 		final Iterator<TripInstance> it = tripInstances.iterator();
 		while (it.hasNext()) {
@@ -94,6 +94,21 @@ public class D3TripInstancesCreator extends D3Creator {
 	@Override
 	protected void addEdges(final PrintWriter writer, final int tripId,
 			final long serviceDate) {
+		addEdges(writer);
+	}
+
+	@Override
+	protected void addNodes(final PrintWriter writer,
+			final List<Integer> tripIds) {
+		writer.print("\"nodes\": [");
+		final List<TripInstance> tripInstances = tripInstanceDao
+				.getTripInstancesForTripIds(tripIds);
+		doAddNodes(writer, tripInstances);
+	}
+
+	@Override
+	protected void addEdges(final PrintWriter writer,
+			final List<Integer> tripIds) {
 		addEdges(writer);
 	}
 
