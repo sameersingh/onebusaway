@@ -90,19 +90,24 @@ public class D3StopsCreator extends D3Creator {
 					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(stop.getLon()).append(",").append(stop.getLat())
 					.append("]},\"trip_instances\":[");
-			final Iterator<Entry<TripInstance, String>> tripInstancesEntryIt = entry
-					.getValue().entrySet().iterator();
-			while (tripInstancesEntryIt.hasNext()) {
-				final Entry<TripInstance, String> tripInstanceEntry = tripInstancesEntryIt
-						.next();
-				final TripInstance tripInstance = tripInstanceEntry.getKey();
-				final String[] tokens = tripInstanceEntry.getValue().split("-");
-				sb.append("{\"id\":\"").append(tripInstance.getId())
-						.append("\",\"arrival\":\"").append(tokens[0])
-						.append("\",\"scheduled\":\"").append(tokens[1])
-						.append("\"}");
-				if (tripInstancesEntryIt.hasNext()) {
-					sb.append(",");
+			final Map<TripInstance, String> values = entry.getValue();
+			if (values != null) {
+				final Iterator<Entry<TripInstance, String>> tripInstancesEntryIt = values
+						.entrySet().iterator();
+				while (tripInstancesEntryIt.hasNext()) {
+					final Entry<TripInstance, String> tripInstanceEntry = tripInstancesEntryIt
+							.next();
+					final TripInstance tripInstance = tripInstanceEntry
+							.getKey();
+					final String[] tokens = tripInstanceEntry.getValue().split(
+							"-");
+					sb.append("{\"id\":\"").append(tripInstance.getId())
+							.append("\",\"arrival\":\"").append(tokens[0])
+							.append("\",\"scheduled\":\"").append(tokens[1])
+							.append("\"}");
+					if (tripInstancesEntryIt.hasNext()) {
+						sb.append(",");
+					}
 				}
 			}
 			sb.append("]},");
@@ -118,25 +123,43 @@ public class D3StopsCreator extends D3Creator {
 		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
 		final Set<Segment> segments = trip.getSegments();
 		final Set<TripInstance> tripInstances = trip.getInstances();
-		for (final TripInstance tripInstance : tripInstances) {
+		if (!tripInstances.isEmpty()) {
+			for (final TripInstance tripInstance : tripInstances) {
+				for (final Segment segment : segments) {
+					if (segment.isFirst()) {
+						final Stop from = segment.getFrom();
+						final String fromArrivalTime = from.getStopTime()
+								.getSchedDepartureTime();
+						buildStopsAttributesPerTripInstance(stops,
+								tripInstance, from, fromArrivalTime);
+						final Stop to = segment.getTo();
+						final String toArrivalTime = Utils
+								.toHHMMssPST(timeEstimator.actual(tripInstance,
+										to));
+						buildStopsAttributesPerTripInstance(stops,
+								tripInstance, to, toArrivalTime);
+					} else {
+						final Stop to = segment.getTo();
+						final String toArrivalTime = Utils
+								.toHHMMssPST(timeEstimator.actual(tripInstance,
+										to));
+						buildStopsAttributesPerTripInstance(stops,
+								tripInstance, to, toArrivalTime);
+					}
+				}
+			}
+		} else {
+			// again, ugly stuff, repeated code... need to refactor this asap
+			// cannot calculate actual because there are no instances
 			for (final Segment segment : segments) {
 				if (segment.isFirst()) {
 					final Stop from = segment.getFrom();
-					final String fromArrivalTime = from.getStopTime()
-							.getSchedDepartureTime();
-					buildStopsAttributesPerTripInstance(stops, tripInstance,
-							from, fromArrivalTime);
+					stops.put(from, null);
 					final Stop to = segment.getTo();
-					final String toArrivalTime = Utils
-							.toHHMMssPST(timeEstimator.actual(tripInstance, to));
-					buildStopsAttributesPerTripInstance(stops, tripInstance,
-							to, toArrivalTime);
+					stops.put(to, null);
 				} else {
 					final Stop to = segment.getTo();
-					final String toArrivalTime = Utils
-							.toHHMMssPST(timeEstimator.actual(tripInstance, to));
-					buildStopsAttributesPerTripInstance(stops, tripInstance,
-							to, toArrivalTime);
+					stops.put(to, null);
 				}
 			}
 		}
