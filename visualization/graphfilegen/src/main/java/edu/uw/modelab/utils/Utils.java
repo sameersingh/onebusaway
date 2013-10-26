@@ -74,6 +74,7 @@ public class Utils {
 		return result;
 	}
 
+	// monday = 1, sunday = 7
 	public static int dayOfWeek(final long timestamp) {
 		final DateTime dt = new DateTime(timestamp,
 				DateTimeZone.forID("America/Los_Angeles"));
@@ -134,7 +135,7 @@ public class Utils {
 	public static String label(final TripInstance tripInstance,
 			final Segment segment) {
 		return tripInstance.getTripId() + "_" + tripInstance.getServiceDate()
-				+ "_" + segment.name();
+				+ "_" + segment.getId();
 	}
 
 	public static void main(final String[] args) {
@@ -237,6 +238,7 @@ public class Utils {
 		for (final double i : timeOfDays) {
 			sb.append(decimalFormat.format(i) + "\t");
 		}
+		sb.deleteCharAt(sb.length() - 1);
 		return sb.toString();
 	}
 }

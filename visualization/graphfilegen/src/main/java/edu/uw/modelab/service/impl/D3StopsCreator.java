@@ -86,7 +86,9 @@ public class D3StopsCreator extends D3Creator {
 		for (final Entry<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> entry : entrySet) {
 			final Stop stop = entry.getKey();
 			stopIdsIndexes.put(stop.getId(), index++);
-			sb.append("{\"name\":\"")
+			sb.append("{\"id\":")
+					.append(stop.getId())
+					.append(",\"name\":\"")
 					.append(stop.getName())
 					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(stop.getLon()).append(",").append(stop.getLat())

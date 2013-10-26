@@ -141,6 +141,7 @@
 		<constructor-arg value="${output.folder}/features_test.dat" />
 		<constructor-arg value="${output.folder}/labels_training.txt" />
 		<constructor-arg value="${output.folder}/labels_test.txt" />
+		<constructor-arg value="${output.folder}/features_names.txt" />
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="delayCalculator" />
 	</bean>

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -153,6 +154,12 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		final double errorSchedule = Math.sqrt(sumErrorsSchedule
 				/ errorsSchedule.size());
 		System.out.println("Schedule Error: " + errorSchedule);
+
+		Collections.sort(errorsSchedule);
+		for (final Double error : errorsSchedule) {
+			System.out.println(error);
+		}
+
 	}
 
 	@Override
