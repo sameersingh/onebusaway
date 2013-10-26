@@ -42,8 +42,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	private final DistanceAlongTripCalculator distanceAlongTripCalculator;
 
 	public DefaultErrorCalculator(final String filename, final TripDao tripDao,
-			final TimeService timeEstimator,
-			final String featureYhatFileName,
+			final TimeService timeEstimator, final String featureYhatFileName,
 			final DistanceAlongTripCalculator distanceAlongTripCalculator) {
 		this.filename = filename;
 		this.tripDao = tripDao;
@@ -122,22 +121,24 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		final List<Segment> segments = new ArrayList<>(trip.getSegments());
 
 		final int numberOfSegments = segments.size();
-		final int i = 0;
+		int i = 0;
 		final List<Double> errorsSchedule = new ArrayList<>();
 		while (tripInstancesIt.hasNext()) {
 			final TripInstance tripInstance = tripInstancesIt.next();
 			for (final Segment segment : segments) {
 				double actual_I = 0;
 				double sched_I = 0;
-				if (i == numberOfSegments) {
-					actual_I = getActualLast(segments.get(i - 1), tripInstance);
-					sched_I = getScheduledLast(segments.get(i - 1),
-							tripInstance);
+				if (segment.isFirst()) {
+					sched_I = getScheduled(segment, tripInstance);
+					actual_I = sched_I;
+				} else if (i == (numberOfSegments - 1)) {
+					sched_I = getScheduledLast(segment, tripInstance);
+					actual_I = getActualLast(segment, tripInstance);
 				} else {
-					actual_I = getActual(segments.get(i), tripInstance);
-					sched_I = getScheduled(segments.get(i), tripInstance);
+					actual_I = getActual(segment, tripInstance);
+					sched_I = getScheduled(segment, tripInstance);
 				}
-
+				i++;
 				final double errSchedule = Math.pow(
 						(actual_I - sched_I) / 1000, 2);
 				errorsSchedule.add(errSchedule);

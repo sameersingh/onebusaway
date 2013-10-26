@@ -195,4 +195,16 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 		}
 	}
 
+	@Override
+	public void createFeatures(final List<Integer> tripIds) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void createFeatureLabels(final List<Integer> tripIds) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

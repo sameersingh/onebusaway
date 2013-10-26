@@ -51,7 +51,7 @@ public class D3StopsCreator extends D3Creator {
 	protected void addNodes(final PrintWriter writer) {
 		writer.print("\"nodes\": [");
 		this.trips = tripDao.getTrips();
-		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
+		final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> stops = new LinkedHashMap<>();
 		for (final Trip trip : trips) {
 			nodesForEachTrip(stops, trip);
 		}
@@ -63,7 +63,7 @@ public class D3StopsCreator extends D3Creator {
 	@Override
 	protected void addNodes(final PrintWriter writer, final int tripId) {
 		writer.print("\"nodes\": [");
-		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
+		final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> stops = new LinkedHashMap<>();
 		this.trip = tripDao.getTripById(tripId);
 		nodesForEachTrip(stops, trip);
 		final String appended = appendStops(stops);
@@ -77,35 +77,60 @@ public class D3StopsCreator extends D3Creator {
 		addNodes(writer, tripId);
 	}
 
-	private String appendStops(final Map<Stop, Map<TripInstance, String>> stops) {
-		final Set<Entry<Stop, Map<TripInstance, String>>> entrySet = stops
+	private String appendStops(
+			final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> stops) {
+		final Set<Entry<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>>> entrySet = stops
 				.entrySet();
 		int index = 0;
 		final StringBuilder sb = new StringBuilder();
-		for (final Entry<Stop, Map<TripInstance, String>> entry : entrySet) {
+		for (final Entry<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> entry : entrySet) {
 			final Stop stop = entry.getKey();
 			stopIdsIndexes.put(stop.getId(), index++);
 			sb.append("{\"name\":\"")
 					.append(stop.getName())
 					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 					.append(stop.getLon()).append(",").append(stop.getLat())
-					.append("]},\"trip_instances\":[");
-			final Map<TripInstance, String> values = entry.getValue();
-			if (values != null) {
-				final Iterator<Entry<TripInstance, String>> tripInstancesEntryIt = values
+					.append("]},\"trips\":[");
+			final Map<Trip, Map<TripInstance, TripInstanceValue>> tripEntries = entry
+					.getValue();
+			if (tripEntries != null) {
+				final Iterator<Entry<Trip, Map<TripInstance, TripInstanceValue>>> tripsEntryIt = tripEntries
 						.entrySet().iterator();
-				while (tripInstancesEntryIt.hasNext()) {
-					final Entry<TripInstance, String> tripInstanceEntry = tripInstancesEntryIt
+				while (tripsEntryIt.hasNext()) {
+					final Entry<Trip, Map<TripInstance, TripInstanceValue>> tripEntry = tripsEntryIt
 							.next();
-					final TripInstance tripInstance = tripInstanceEntry
-							.getKey();
-					final String[] tokens = tripInstanceEntry.getValue().split(
-							"-");
-					sb.append("{\"id\":\"").append(tripInstance.getId())
-							.append("\",\"arrival\":\"").append(tokens[0])
-							.append("\",\"scheduled\":\"").append(tokens[1])
-							.append("\"}");
-					if (tripInstancesEntryIt.hasNext()) {
+					final Trip trip = tripEntry.getKey();
+					sb.append("{\"id\":").append(trip.getId());
+					final Map<TripInstance, TripInstanceValue> tripInstances = tripEntry
+							.getValue();
+					sb.append(",\"trip_instances\":[");
+					if (tripInstances != null) {
+						final Iterator<Entry<TripInstance, TripInstanceValue>> tripInstancesIt = tripInstances
+								.entrySet().iterator();
+						while (tripInstancesIt.hasNext()) {
+							final Entry<TripInstance, TripInstanceValue> tripInstanceEntry = tripInstancesIt
+									.next();
+							final TripInstance tripInstance = tripInstanceEntry
+									.getKey();
+							final TripInstanceValue tripInstanceValue = tripInstanceEntry
+									.getValue();
+							sb.append("{\"service_date\":")
+									.append(tripInstance.getServiceDate())
+									.append(",\"arrival\":\"")
+									.append(tripInstanceValue.getArrivalTime())
+									.append("\",\"scheduled\":\"")
+									.append(tripInstanceValue
+											.getScheduledTime())
+									.append("\",\"sched_error\":")
+									.append(tripInstanceValue
+											.getScheduledError()).append("}");
+							if (tripInstancesIt.hasNext()) {
+								sb.append(",");
+							}
+						}
+					}
+					sb.append("]}");
+					if (tripsEntryIt.hasNext()) {
 						sb.append(",");
 					}
 				}
@@ -119,7 +144,8 @@ public class D3StopsCreator extends D3Creator {
 	}
 
 	private void nodesForEachTrip(
-			final Map<Stop, Map<TripInstance, String>> stops, final Trip trip) {
+			final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> stops,
+			final Trip trip) {
 		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
 		final Set<Segment> segments = trip.getSegments();
 		final Set<TripInstance> tripInstances = trip.getInstances();
@@ -131,20 +157,20 @@ public class D3StopsCreator extends D3Creator {
 						final String fromArrivalTime = from.getStopTime()
 								.getSchedDepartureTime();
 						buildStopsAttributesPerTripInstance(stops,
-								tripInstance, from, fromArrivalTime);
+								tripInstance, trip, from, fromArrivalTime);
 						final Stop to = segment.getTo();
 						final String toArrivalTime = Utils
 								.toHHMMssPST(timeEstimator.actual(tripInstance,
 										to));
 						buildStopsAttributesPerTripInstance(stops,
-								tripInstance, to, toArrivalTime);
+								tripInstance, trip, to, toArrivalTime);
 					} else {
 						final Stop to = segment.getTo();
 						final String toArrivalTime = Utils
 								.toHHMMssPST(timeEstimator.actual(tripInstance,
 										to));
 						buildStopsAttributesPerTripInstance(stops,
-								tripInstance, to, toArrivalTime);
+								tripInstance, trip, to, toArrivalTime);
 					}
 				}
 			}
@@ -154,31 +180,64 @@ public class D3StopsCreator extends D3Creator {
 			for (final Segment segment : segments) {
 				if (segment.isFirst()) {
 					final Stop from = segment.getFrom();
-					stops.put(from, null);
+					buildStopsWithEmptyAttributesPerTripInstance(stops, trip,
+							from);
 					final Stop to = segment.getTo();
-					stops.put(to, null);
+					buildStopsWithEmptyAttributesPerTripInstance(stops, trip,
+							to);
 				} else {
 					final Stop to = segment.getTo();
-					stops.put(to, null);
+					buildStopsWithEmptyAttributesPerTripInstance(stops, trip,
+							to);
 				}
 			}
 		}
 	}
 
+	private void buildStopsWithEmptyAttributesPerTripInstance(
+			final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> stops,
+			final Trip trip, final Stop stop) {
+		Map<Trip, Map<TripInstance, TripInstanceValue>> tripsPerStop = stops
+				.get(stop);
+		if (tripsPerStop == null) {
+			tripsPerStop = new LinkedHashMap<>();
+			tripsPerStop.put(trip, null);
+			stops.put(stop, tripsPerStop);
+		} else {
+			tripsPerStop.put(trip, null);
+		}
+	}
+
+	// find a way to add oba and mode stuff
 	private void buildStopsAttributesPerTripInstance(
-			final Map<Stop, Map<TripInstance, String>> stops,
-			final TripInstance tripInstance, final Stop stop,
+			final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> stops,
+			final TripInstance tripInstance, final Trip trip, final Stop stop,
 			final String arrivalTime) {
 		final String scheduled = stop.getStopTime().getSchedArrivalTime();
-		Map<TripInstance, String> tripInstancesPerStop = stops.get(stop);
-		if (tripInstancesPerStop == null) {
-			tripInstancesPerStop = new HashMap<>();
-			tripInstancesPerStop.put(tripInstance, arrivalTime + "-"
-					+ scheduled);
-			stops.put(stop, tripInstancesPerStop);
+		Map<Trip, Map<TripInstance, TripInstanceValue>> tripsPerStop = stops
+				.get(stop);
+		if (tripsPerStop == null) {
+			tripsPerStop = new LinkedHashMap<>();
+			final Map<TripInstance, TripInstanceValue> tripInstancesPerStop = new LinkedHashMap<>();
+			final TripInstanceValue value = new TripInstanceValue(arrivalTime,
+					scheduled);
+			tripInstancesPerStop.put(tripInstance, value);
+			tripsPerStop.put(trip, tripInstancesPerStop);
+			stops.put(stop, tripsPerStop);
 		} else {
-			tripInstancesPerStop.put(tripInstance, arrivalTime + "-"
-					+ scheduled);
+			Map<TripInstance, TripInstanceValue> tripInstancesPerStop = tripsPerStop
+					.get(trip);
+			if (tripInstancesPerStop == null) {
+				tripInstancesPerStop = new LinkedHashMap<>();
+				final TripInstanceValue value = new TripInstanceValue(
+						arrivalTime, scheduled);
+				tripInstancesPerStop.put(tripInstance, value);
+				tripsPerStop.put(trip, tripInstancesPerStop);
+			} else {
+				final TripInstanceValue value = new TripInstanceValue(
+						arrivalTime, scheduled);
+				tripInstancesPerStop.put(tripInstance, value);
+			}
 		}
 	}
 
@@ -247,7 +306,7 @@ public class D3StopsCreator extends D3Creator {
 			final List<Integer> tripIds) {
 		writer.print("\"nodes\": [");
 		this.trips = tripDao.getTripsIn(tripIds);
-		final Map<Stop, Map<TripInstance, String>> stops = new LinkedHashMap<>();
+		final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceValue>>> stops = new LinkedHashMap<>();
 		for (final Trip trip : trips) {
 			nodesForEachTrip(stops, trip);
 		}
@@ -260,6 +319,50 @@ public class D3StopsCreator extends D3Creator {
 	protected void addEdges(final PrintWriter writer,
 			final List<Integer> tripIds) {
 		addEdges(writer);
+
+	}
+
+	private class TripInstanceValue {
+		private final String arrivalTime;
+		private final String scheduledTime;
+		private final long scheduledError;
+		private long obaError;
+		private long modeError;
+
+		public TripInstanceValue(final String arrivalTime,
+				final String scheduledTime) {
+			this.arrivalTime = arrivalTime;
+			this.scheduledTime = scheduledTime;
+			scheduledError = Utils.diff(arrivalTime, scheduledTime);
+		}
+
+		public long getScheduledError() {
+			return scheduledError;
+		}
+
+		public long getObaError() {
+			return obaError;
+		}
+
+		public void setObaError(final long obaError) {
+			this.obaError = obaError;
+		}
+
+		public long getModeError() {
+			return modeError;
+		}
+
+		public void setModeError(final long modeError) {
+			this.modeError = modeError;
+		}
+
+		public String getArrivalTime() {
+			return arrivalTime;
+		}
+
+		public String getScheduledTime() {
+			return scheduledTime;
+		}
 
 	}
 

@@ -58,13 +58,13 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 
 	@Override
 	public List<TripInstance> getTripInstancesForTripId(final int tripId) {
-		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
+		final Map<String, TripInstance> tripInstances = new LinkedHashMap<>();
 		template.query(SELECT_TRIP_INSTANCES_BY_TRIP_ID,
 				new Object[] { tripId }, new TripInstanceRowMapper(
 						tripInstances));
 		final List<TripInstance> result = new ArrayList<>();
-		final Iterator<Entry<Long, TripInstance>> it = tripInstances.entrySet()
-				.iterator();
+		final Iterator<Entry<String, TripInstance>> it = tripInstances
+				.entrySet().iterator();
 		while (it.hasNext()) {
 			result.add(it.next().getValue());
 		}
@@ -73,7 +73,7 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 
 	@Override
 	public TripInstance getTripInstance(final int tripId, final long serviceDate) {
-		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
+		final Map<String, TripInstance> tripInstances = new LinkedHashMap<>();
 		template.query(SELECT_TRIP_INSTANCE_BY_TRIP_ID_AND_SERVICE_DATE,
 				new Object[] { tripId, serviceDate },
 				new TripInstanceRowMapper(tripInstances));
@@ -83,9 +83,10 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 	private static final class TripInstanceRowMapper implements
 			RowMapper<TripInstance> {
 
-		private final Map<Long, TripInstance> tripInstances;
+		private final Map<String, TripInstance> tripInstances;
 
-		public TripInstanceRowMapper(final Map<Long, TripInstance> tripInstances) {
+		public TripInstanceRowMapper(
+				final Map<String, TripInstance> tripInstances) {
 			this.tripInstances = tripInstances;
 		}
 
@@ -93,10 +94,12 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 		public TripInstance mapRow(final ResultSet rs, final int idx)
 				throws SQLException {
 			final long serviceDate = rs.getLong(2);
-			TripInstance tripInstance = tripInstances.get(serviceDate);
+			final int tripId = rs.getInt(3);
+			final String key = new TripInstance(serviceDate, tripId).getId();
+			TripInstance tripInstance = tripInstances.get(key);
 			if (tripInstance == null) {
-				tripInstance = new TripInstance(serviceDate, rs.getInt(3));
-				tripInstances.put(serviceDate, tripInstance);
+				tripInstance = new TripInstance(serviceDate, tripId);
+				tripInstances.put(key, tripInstance);
 			}
 			final RealtimePosition rp = new RealtimePosition(rs.getLong(1),
 					rs.getDouble(8), rs.getDouble(9), rs.getDouble(4),
@@ -108,12 +111,12 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 
 	@Override
 	public List<TripInstance> getTripInstances() {
-		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
+		final Map<String, TripInstance> tripInstances = new LinkedHashMap<>();
 		template.query(SELECT_TRIP_INSTANCES, new TripInstanceRowMapper(
 				tripInstances));
 		final List<TripInstance> result = new ArrayList<>();
-		final Iterator<Entry<Long, TripInstance>> it = tripInstances.entrySet()
-				.iterator();
+		final Iterator<Entry<String, TripInstance>> it = tripInstances
+				.entrySet().iterator();
 		while (it.hasNext()) {
 			result.add(it.next().getValue());
 		}
@@ -123,13 +126,13 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 	@Override
 	public List<TripInstance> getTripInstancesForTripIdAndServiceDateLessThan(
 			final int tripId, final long serviceDate) {
-		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
+		final Map<String, TripInstance> tripInstances = new LinkedHashMap<>();
 		template.query(SELECT_TRIP_INSTANCES_BY_TRIP_ID_AND_SERVICE_DATE_LESS,
 				new Object[] { tripId, serviceDate },
 				new TripInstanceRowMapper(tripInstances));
 		final List<TripInstance> result = new ArrayList<>();
-		final Iterator<Entry<Long, TripInstance>> it = tripInstances.entrySet()
-				.iterator();
+		final Iterator<Entry<String, TripInstance>> it = tripInstances
+				.entrySet().iterator();
 		while (it.hasNext()) {
 			result.add(it.next().getValue());
 		}
@@ -139,13 +142,13 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 	@Override
 	public List<TripInstance> getTripInstancesForTripIdAndServiceDateFrom(
 			final int tripId, final long serviceDate) {
-		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
+		final Map<String, TripInstance> tripInstances = new LinkedHashMap<>();
 		template.query(SELECT_TRIP_INSTANCES_BY_TRIP_ID_AND_SERVICE_FROM,
 				new Object[] { tripId, serviceDate },
 				new TripInstanceRowMapper(tripInstances));
 		final List<TripInstance> result = new ArrayList<>();
-		final Iterator<Entry<Long, TripInstance>> it = tripInstances.entrySet()
-				.iterator();
+		final Iterator<Entry<String, TripInstance>> it = tripInstances
+				.entrySet().iterator();
 		while (it.hasNext()) {
 			result.add(it.next().getValue());
 		}
@@ -157,12 +160,12 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 			final List<Integer> tripIds) {
 		final MapSqlParameterSource parameters = new MapSqlParameterSource(
 				"tripIds", tripIds);
-		final Map<Long, TripInstance> tripInstances = new LinkedHashMap<>();
+		final Map<String, TripInstance> tripInstances = new LinkedHashMap<>();
 		namedTemplate.query(SELECT_TRIP_INSTANCES_IN, parameters,
 				new TripInstanceRowMapper(tripInstances));
 		final List<TripInstance> result = new ArrayList<>();
-		final Iterator<Entry<Long, TripInstance>> it = tripInstances.entrySet()
-				.iterator();
+		final Iterator<Entry<String, TripInstance>> it = tripInstances
+				.entrySet().iterator();
 		while (it.hasNext()) {
 			result.add(it.next().getValue());
 		}

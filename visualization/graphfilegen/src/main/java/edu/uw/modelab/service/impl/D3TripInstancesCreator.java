@@ -60,7 +60,11 @@ public class D3TripInstancesCreator extends D3Creator {
 				final RealtimePosition rtp = realtimesIt.next();
 				sb.append("{\"name\":\"")
 						.append(tripInstance.getId())
-						.append("_")
+						.append("\",\"trip_id\":")
+						.append(tripInstance.getTripId())
+						.append(",\"service_date\":")
+						.append(tripInstance.getServiceDate())
+						.append(",\"timestamp\":\"")
 						.append(Utils.toHHMMssPST(rtp.getTimeStamp()))
 						.append("\",\"group\":3,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
 						.append(rtp.getLon()).append(",").append(rtp.getLat())

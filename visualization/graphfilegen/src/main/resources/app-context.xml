@@ -148,7 +148,7 @@
 	<bean id="errorCalculator" class="edu.uw.modelab.service.impl.DefaultErrorCalculator" init-method="init" >
 		<constructor-arg value="${output.folder}/oba_errors.dat" />
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref="timeService" />
 		<constructor-arg value="${features.yhat.file}" />
 		<constructor-arg ref= "distanceAlongTripCalculator" />
 	</bean>
