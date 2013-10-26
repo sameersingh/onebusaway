@@ -102,9 +102,11 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 					final long serviceDate = tripInstance.getServiceDate();
 					final int dayOfWeek = Utils.dayOfWeek(serviceDate);
 					final int monthOfYear = Utils.monthOfYear(serviceDate);
+					final int year = Utils.year(serviceDate);
 					for (final Segment segment : segments) {
-						// correct this, september for testing
-						if (monthOfYear == 9) {
+						// october 2013 for testing
+						if ((year == 2013)
+								&& ((monthOfYear == 10) || (monthOfYear == 9))) {
 							pwTest.println(appendLine(segment, tripInstance,
 									monthOfYear, dayOfWeek,
 									uniqueSegmentsAsList, uniqueTripIdsAsList));

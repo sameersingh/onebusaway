@@ -173,6 +173,8 @@ public class Utils {
 		System.out.println(Utils.getTimeOfDayVector("07:55:00", "8:15:00"));
 		System.out.println(Utils.getTimeOfDayVector("23:50:00", "24:10:00"));
 
+		System.out.println(Utils.year(1380265200000L));
+
 	}
 
 	public static long time(final long serviceDate, final String actual) {
@@ -240,5 +242,11 @@ public class Utils {
 		}
 		sb.deleteCharAt(sb.length() - 1);
 		return sb.toString();
+	}
+
+	public static int year(final long timestamp) {
+		final DateTime dt = new DateTime(timestamp,
+				DateTimeZone.forID("America/Los_Angeles"));
+		return dt.getYear();
 	}
 }
