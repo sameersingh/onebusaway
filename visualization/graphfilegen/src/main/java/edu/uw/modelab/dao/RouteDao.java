@@ -10,4 +10,6 @@ public interface RouteDao {
 
 	Set<Route> getRoutes();
 
+	Set<Route> getRoutesIncomplete();
+
 }

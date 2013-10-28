@@ -46,7 +46,7 @@ public class DotCreator extends AbstractFileCreator {
 	@Override
 	protected void addEdges(final PrintWriter pw) {
 		final Set<Segment> addedSegments = new HashSet<>();
-		final Set<Route> routes = routeDao.getRoutes();
+		final Set<Route> routes = routeDao.getRoutesIncomplete();
 		final Iterator<Route> routeIt = routes.iterator();
 		while (routeIt.hasNext()) {
 			final Route route = routeIt.next();

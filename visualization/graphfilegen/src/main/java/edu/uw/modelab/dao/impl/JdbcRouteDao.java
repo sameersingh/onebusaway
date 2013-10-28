@@ -45,7 +45,7 @@ public class JdbcRouteDao implements RouteDao {
 			+ " join trip as t on r.id = t.route_id"
 			+ " join stop_time as st on t.id = st.trip_id"
 			+ " join stop as s on s.id = st.stop_id "
-			+ " order by r.name, t.id, st.stop_sequence limit 15000";
+			+ " order by r.name, t.id, st.stop_sequence";
 
 	public JdbcRouteDao(final DataSource dataSource,
 			final TripInstanceDao tripInstanceDao) {
@@ -84,6 +84,11 @@ public class JdbcRouteDao implements RouteDao {
 
 	@Override
 	public Set<Route> getRoutes() {
+		return getRoutes(true);
+
+	}
+
+	private Set<Route> getRoutes(final boolean full) {
 		final Set<Route> routes = new HashSet<>();
 		final Map<Integer, List<Trip>> tripsPerRoute = new LinkedHashMap<>();
 		final Map<Integer, List<Stop>> stopsPerTrip = new LinkedHashMap<>();
@@ -101,15 +106,22 @@ public class JdbcRouteDao implements RouteDao {
 					}
 					trip.addSegment(segment);
 				}
-				final List<TripInstance> tripInstances = tripInstanceDao
-						.getTripInstancesForTripId(trip.getId());
-				for (final TripInstance tripInstance : tripInstances) {
-					trip.addInstance(tripInstance);
+				if (full) {
+					final List<TripInstance> tripInstances = tripInstanceDao
+							.getTripInstancesForTripId(trip.getId());
+					for (final TripInstance tripInstance : tripInstances) {
+						trip.addInstance(tripInstance);
+					}
 				}
 				route.addTrip(trip);
 			}
 		}
 		return routes;
+	}
+
+	@Override
+	public Set<Route> getRoutesIncomplete() {
+		return getRoutes(false);
 	}
 
 	private static final class RouteRowsMapper implements RowMapper<Object> {
