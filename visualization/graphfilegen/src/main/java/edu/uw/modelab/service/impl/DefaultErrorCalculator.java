@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -170,6 +171,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	}
 
 	@Override
+	@Deprecated
 	public void calculateObaAndModeError(final int tripId, final int k,
 			final edu.uw.modelab.service.Error error) {
 		Trip trip = null;
@@ -261,9 +263,9 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 				+ errorModePerKPerTripId.get(tripId).get(k));
 
 		// System.out.println("Diff OBA");
-		for (final Double diffO : diffOba) {
-			// System.out.println(diffO);
-		}
+		// for (final Double diffO : diffOba) {
+		// System.out.println(diffO);
+		// }
 		// System.out.println("Diff MODE");
 		// for (final Double diffM : diffMode) {
 		// System.out.println(diffM);
@@ -338,5 +340,146 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		result[0] = errorObaI;
 		result[1] = errorModeI;
 		return result;
+	}
+
+	@Override
+	public void calculateObaAndModeError(final List<Integer> tripIds,
+			final int k) {
+
+		final Set<Trip> trips = tripDao.getTripsIn(tripIds);
+		final Set<Trip> tripsTrain = new LinkedHashSet<>(trips.size());
+		final Set<Trip> tripsTest = new LinkedHashSet<>(trips.size());
+		splitDataset(trips, tripsTrain, tripsTest);
+
+		final List<Double> errorsObaTrain = new ArrayList<>();
+		final List<Double> errorsModeTrain = new ArrayList<>();
+		final List<Double> diffObaTrain = new ArrayList<>();
+		final List<Double> diffModeTrain = new ArrayList<>();
+		for (final Trip tripTrain : tripsTrain) {
+			doCalculations(tripTrain, k, errorsObaTrain, errorsModeTrain,
+					diffObaTrain, diffModeTrain);
+		}
+
+		double sumErrorsObaTrain = 0;
+		for (final Double errorObaTrain : errorsObaTrain) {
+			sumErrorsObaTrain += errorObaTrain;
+		}
+		double sumErrorsModeTrain = 0;
+		for (final Double errorModeTrain : errorsModeTrain) {
+			sumErrorsModeTrain += errorModeTrain;
+		}
+
+		final double errorObaTrainK = Math.sqrt(sumErrorsObaTrain
+				/ errorsObaTrain.size());
+		final double errorModeTrainK = Math.sqrt(sumErrorsModeTrain
+				/ errorsModeTrain.size());
+
+		// ----------------
+
+		final List<Double> errorsObaTest = new ArrayList<>();
+		final List<Double> errorsModeTest = new ArrayList<>();
+		final List<Double> diffObaTest = new ArrayList<>();
+		final List<Double> diffModeTest = new ArrayList<>();
+		for (final Trip tripTest : tripsTest) {
+			doCalculations(tripTest, k, errorsObaTest, errorsModeTest,
+					diffObaTest, diffModeTest);
+		}
+
+		double sumErrorsObaTest = 0;
+		for (final Double errorObaTest : errorsObaTest) {
+			sumErrorsObaTest += errorObaTest;
+		}
+		double sumErrorsModeTest = 0;
+		for (final Double errorModeTest : errorsModeTest) {
+			sumErrorsModeTest += errorModeTest;
+		}
+
+		final double errorObaTestK = Math.sqrt(sumErrorsObaTest
+				/ errorsObaTest.size());
+		final double errorModeTestK = Math.sqrt(sumErrorsModeTest
+				/ errorsModeTest.size());
+
+		System.out.println(errorObaTestK + "\t" + errorModeTestK);
+
+		// System.out.println("Diff OBA");
+		// for (final Double diffOTest : diffObaTest) {
+		// System.out.println(diffOTest);
+		// }
+		// System.out.println("Diff MODE");
+		// for (final Double diffMTest : diffModeTest) {
+		// System.out.println(diffMTest);
+		// }
+	}
+
+	private void doCalculations(final Trip trip, final int k,
+			final List<Double> errorsOba, final List<Double> errorsMode,
+			final List<Double> diffOba, final List<Double> diffMode) {
+		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+		final Set<TripInstance> tripInstances = trip.getInstances();
+		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
+		final List<Segment> segments = new ArrayList<>(trip.getSegments());
+		final int numberOfSegments = segments.size();
+
+		assert k < numberOfSegments;
+		while (tripInstancesIt.hasNext()) {
+			final TripInstance tripInstance = tripInstancesIt.next();
+			int j = 0;
+			int i = k;
+			while (i <= numberOfSegments) {
+				final long scheduledDiff = getScheduledDiff(
+						segments.get(i - 1), segments.get(j));
+				long actual_I = 0;
+				if (i == numberOfSegments) {
+					actual_I = getActualLast(segments.get(i - 1), tripInstance);
+				} else {
+					actual_I = getActual(segments.get(i), tripInstance);
+				}
+
+				final long t_true_I = actual_I;
+				final long actual_J = getActual(segments.get(j), tripInstance);
+				final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
+				final String key_J = Utils.label(tripInstance, segments.get(j));
+				final double y_hat_J_sec = yHatPerSegmentPerTripInstancePerTrip
+						.get(key_J);
+				final long y_hat_J = Math.round(y_hat_J_sec) * -1000;
+				final long t_hat_mode_I = t_hat_oba_I + y_hat_J;
+
+				final double diffObaI = (t_true_I - t_hat_oba_I) / 1000;
+				final double diffModeI = (t_true_I - t_hat_mode_I) / 1000;
+				final double errObaI = Math.pow(diffObaI, 2);
+				final double errModeI = Math.pow(diffModeI, 2);
+				errorsOba.add(errObaI);
+				errorsMode.add(errModeI);
+				diffOba.add(Math.abs(diffObaI));
+				diffMode.add(Math.abs(diffModeI));
+				i++;
+				j++;
+			}
+		}
+	}
+
+	private void splitDataset(final Set<Trip> trips,
+			final Set<Trip> tripsTrain, final Set<Trip> tripsTest) {
+		for (final Trip trip : trips) {
+			final Trip trainTrip = new Trip(trip.getId(), trip.getHeadSign());
+			trainTrip.setSegments(trip.getSegments());
+			final Trip testTrip = new Trip(trip.getId(), trip.getHeadSign());
+			testTrip.setSegments(trip.getSegments());
+			final Set<TripInstance> instances = trip.getInstances();
+			for (final TripInstance tripInstance : instances) {
+				final long serviceDate = tripInstance.getServiceDate();
+				final int monthOfYear = Utils.monthOfYear(serviceDate);
+				final int year = Utils.year(serviceDate);
+				// october september 2013 for testing
+				if ((year == 2013)
+						&& ((monthOfYear == 10) || (monthOfYear == 9))) {
+					testTrip.addInstance(tripInstance);
+					tripsTest.add(testTrip);
+				} else {
+					trainTrip.addInstance(tripInstance);
+					tripsTrain.add(trainTrip);
+				}
+			}
+		}
 	}
 }

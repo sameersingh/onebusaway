@@ -18,6 +18,7 @@ import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DelayCalculator;
+import edu.uw.modelab.service.DistanceAlongTripCalculator;
 import edu.uw.modelab.service.FeatureFileCreator;
 import edu.uw.modelab.utils.Utils;
 
@@ -36,11 +37,13 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 	private final String labelsFileTest;
 	private final TripDao tripDao;
 	private final DelayCalculator delayCalculator;
+	private final DistanceAlongTripCalculator distanceAlongTripCalculator;
 
 	public PerSegmentFeatureFileCreator(final String featureFileTraining,
 			final String featureFileTest, final String labelsFileTraining,
 			final String labelsFileTest, final String featureNames,
-			final TripDao tripDao, final DelayCalculator delayCalculator) {
+			final TripDao tripDao, final DelayCalculator delayCalculator,
+			final DistanceAlongTripCalculator distanceAlongTripCalculator) {
 		this.featureFileTraining = featureFileTraining;
 		this.featureFileTest = featureFileTest;
 		this.labelsFileTraining = labelsFileTraining;
@@ -48,6 +51,7 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 		this.featureNames = featureNames;
 		this.tripDao = tripDao;
 		this.delayCalculator = delayCalculator;
+		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
 	}
 
 	@Override
@@ -59,6 +63,9 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 	@Override
 	public void createFeatures(final List<Integer> tripIds) {
 		final Set<Trip> trips = tripDao.getTripsIn(tripIds);
+		for (final Trip trip : trips) {
+			distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+		}
 
 		PrintWriter pwTrain = null;
 		PrintWriter pwTest = null;
@@ -104,7 +111,7 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 					final int monthOfYear = Utils.monthOfYear(serviceDate);
 					final int year = Utils.year(serviceDate);
 					for (final Segment segment : segments) {
-						// october 2013 for testing
+						// october september 2013 for testing
 						if ((year == 2013)
 								&& ((monthOfYear == 10) || (monthOfYear == 9))) {
 							pwTest.println(appendLine(segment, tripInstance,
@@ -150,6 +157,7 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 		final StringBuilder sb = new StringBuilder();
 		sb.append("bias").append(END_LINE);
 		sb.append("distance").append(END_LINE);
+
 		sb.append("0-2").append(END_LINE);
 		sb.append("2-4").append(END_LINE);
 		sb.append("4-6").append(END_LINE);
@@ -162,6 +170,7 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append("18-20").append(END_LINE);
 		sb.append("20-22").append(END_LINE);
 		sb.append("22-24").append(END_LINE);
+
 		sb.append("monday").append(END_LINE);
 		sb.append("tuesday").append(END_LINE);
 		sb.append("wednesday").append(END_LINE);

@@ -8,7 +8,7 @@ public class Trip {
 
 	private final int id;
 	private String headSign;
-	private final Set<Segment> segments;
+	private Set<Segment> segments;
 	private final Set<TripInstance> instances;
 
 	public Trip(final int id) {
@@ -28,6 +28,10 @@ public class Trip {
 
 	public void addSegment(final Segment segment) {
 		this.segments.add(segment);
+	}
+
+	public void setSegments(final Set<Segment> segments) {
+		this.segments = segments;
 	}
 
 	public Set<Segment> getSegments() {
