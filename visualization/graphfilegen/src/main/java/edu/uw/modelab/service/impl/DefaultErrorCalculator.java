@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -112,9 +111,18 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	}
 
 	@Override
-	public void calculateScheduledError(final int tripId) {
-
-		final Trip trip = tripDao.getTripById(tripId);
+	public void calculateScheduledError(final int tripId,
+			final edu.uw.modelab.service.Error error) {
+		Trip trip = null;
+		if (error == edu.uw.modelab.service.Error.TRAINING) {
+			trip = tripDao.getTripByIdAndServiceDateLessThan(tripId,
+					1378191600000L);
+		} else if (error == edu.uw.modelab.service.Error.TEST) {
+			trip = tripDao
+					.getTripByIdAndServiceDateFrom(tripId, 1378191600000L);
+		} else {
+			trip = tripDao.getTripById(tripId);
+		}
 		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
 
 		final Set<TripInstance> tripInstances = trip.getInstances();
@@ -145,7 +153,6 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 				errorsSchedule.add(errSchedule);
 			}
 		}
-
 		double sumErrorsSchedule = 0;
 		for (final Double errorSchedule : errorsSchedule) {
 			sumErrorsSchedule += errorSchedule;
@@ -153,12 +160,12 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 
 		final double errorSchedule = Math.sqrt(sumErrorsSchedule
 				/ errorsSchedule.size());
-		System.out.println("Schedule Error: " + errorSchedule);
+		// System.out.println("Schedule Error: " + errorSchedule);
 
-		Collections.sort(errorsSchedule);
-		for (final Double error : errorsSchedule) {
-			System.out.println(error);
-		}
+		// Collections.sort(errorsSchedule);
+		// for (final Double error : errorsSchedule) {
+		// System.out.println(error);
+		// }
 
 	}
 
@@ -182,6 +189,8 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		assert k < numberOfSegments;
 		final List<Double> errorsOba = new ArrayList<>();
 		final List<Double> errorsMode = new ArrayList<>();
+		final List<Double> diffOba = new ArrayList<>();
+		final List<Double> diffMode = new ArrayList<>();
 		while (tripInstancesIt.hasNext()) {
 			final TripInstance tripInstance = tripInstancesIt.next();
 			int j = 0;
@@ -205,12 +214,14 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 				final long y_hat_J = Math.round(y_hat_J_sec) * -1000;
 				final long t_hat_mode_I = t_hat_oba_I + y_hat_J;
 
-				final double errObaI = Math.pow(
-						(t_true_I - t_hat_oba_I) / 1000, 2);
-				final double errModeI = Math.pow(
-						(t_true_I - t_hat_mode_I) / 1000, 2);
+				final double diffObaI = (t_true_I - t_hat_oba_I) / 1000;
+				final double diffModeI = (t_true_I - t_hat_mode_I) / 1000;
+				final double errObaI = Math.pow(diffObaI, 2);
+				final double errModeI = Math.pow(diffModeI, 2);
 				errorsOba.add(errObaI);
 				errorsMode.add(errModeI);
+				diffOba.add(Math.abs(diffObaI));
+				diffMode.add(Math.abs(diffModeI));
 				i++;
 				j++;
 			}
@@ -248,6 +259,15 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 
 		System.out.println(errorObaPerKPerTripId.get(tripId).get(k) + "\t"
 				+ errorModePerKPerTripId.get(tripId).get(k));
+
+		// System.out.println("Diff OBA");
+		for (final Double diffO : diffOba) {
+			// System.out.println(diffO);
+		}
+		// System.out.println("Diff MODE");
+		// for (final Double diffM : diffMode) {
+		// System.out.println(diffM);
+		// }
 	}
 
 	private long getActual(final Segment segment,
@@ -293,4 +313,30 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		return Utils.diff(segmentISched, segmentJSched);
 	}
 
+	@Override
+	public long[] getObaAndModeErrors(final TripInstance tripInstance,
+			final Segment segment) {
+		final long[] result = new long[2];
+		final String segmentISched = segment.getTo().getStopTime()
+				.getSchedArrivalTime();
+		final String segmentJSched = segment.getFrom().getStopTime()
+				.getSchedArrivalTime();
+		final long scheduledDiff = Utils.diff(segmentISched, segmentJSched);
+		final long actual_I = getActualLast(segment, tripInstance);
+
+		final long t_true_I = actual_I;
+		final long actual_J = getActual(segment, tripInstance);
+		final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
+		final String key_J = Utils.label(tripInstance, segment);
+		final double y_hat_J_sec = yHatPerSegmentPerTripInstancePerTrip
+				.get(key_J);
+		final long y_hat_J = Math.round(y_hat_J_sec) * -1000;
+		final long t_hat_mode_I = t_hat_oba_I + y_hat_J;
+
+		final long errorObaI = (t_true_I - t_hat_oba_I) / 1000;
+		final long errorModeI = (t_true_I - t_hat_mode_I) / 1000;
+		result[0] = errorObaI;
+		result[1] = errorModeI;
+		return result;
+	}
 }

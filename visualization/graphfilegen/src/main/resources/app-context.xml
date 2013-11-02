@@ -123,6 +123,9 @@
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="timeService" />
 		<constructor-arg ref= "distanceAlongTripCalculator" />
+		<constructor-arg ref="stopDao" />
+		<constructor-arg ref="routeDao" />
+		<constructor-arg ref="errorCalculator" />
 	</bean>
 	
 	<bean id="tripInstancesCreator" class="edu.uw.modelab.service.impl.D3TripInstancesCreator">
@@ -144,8 +147,9 @@
 		<constructor-arg value="${output.folder}/features_names.txt" />
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="delayCalculator" />
+		<constructor-arg ref="distanceAlongTripCalculator" />
 	</bean>
-	
+
 	<bean id="errorCalculator" class="edu.uw.modelab.service.impl.DefaultErrorCalculator" init-method="init" >
 		<constructor-arg value="${output.folder}/oba_errors.dat" />
 		<constructor-arg ref="tripDao" />

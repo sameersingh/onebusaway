@@ -1,5 +1,8 @@
 package edu.uw.modelab.service;
 
+import edu.uw.modelab.pojo.Segment;
+import edu.uw.modelab.pojo.TripInstance;
+
 public interface ErrorCalculator {
 
 	// move to timeService
@@ -7,6 +10,8 @@ public interface ErrorCalculator {
 
 	void calculateObaAndModeError(final int tripId, int k, Error error);
 
-	void calculateScheduledError(int tripId);
+	void calculateScheduledError(int tripId, Error error);
+
+	long[] getObaAndModeErrors(TripInstance tripInstance, Segment segment);
 
 }

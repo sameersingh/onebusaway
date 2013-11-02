@@ -26,7 +26,7 @@ public class DefaultTimeService implements TimeService {
 	public long actualDiff(final TripInstance tripInstance,
 			final Segment segment) {
 		long result = 0;
-		final long toActual = getActualArrivalTimeBasedOnClosestPositions(
+		final long toActual = getActualArrivalTimeBasedOnDistanceAlongTrip(
 				segment.getTo(), tripInstance);
 		if (segment.isFirst()) {
 			// assume from actual is equal to scheduled one
@@ -34,7 +34,7 @@ public class DefaultTimeService implements TimeService {
 					.getSchedArrivalTime();
 			result = Utils.diff(fromActual, toActual);
 		} else {
-			final long fromActual = getActualArrivalTimeBasedOnClosestPositions(
+			final long fromActual = getActualArrivalTimeBasedOnDistanceAlongTrip(
 					segment.getFrom(), tripInstance);
 			result = (toActual - fromActual) / 1000;
 		}
@@ -43,16 +43,13 @@ public class DefaultTimeService implements TimeService {
 
 	@Override
 	public long actual(final TripInstance tripInstance, final Stop stop) {
-		// final long basedOnDistanceAlong =
-		// getActualArrivalTimeBasedOnDistanceAlongTrip(
-		// stop, tripInstance);
-		// return basedOnDistanceAlong;
-		final long basedOnClosestPositions = getActualArrivalTimeBasedOnClosestPositions(
+		final long basedOnDistanceAlong = getActualArrivalTimeBasedOnDistanceAlongTrip(
 				stop, tripInstance);
-		return basedOnClosestPositions;
+		return basedOnDistanceAlong;
 	}
 
 	@Override
+	@Deprecated
 	public void estimateArrivalTimes(final Trip trip) {
 		final Set<Segment> segments = trip.getSegments();
 		final Set<TripInstance> tripInstances = trip.getInstances();
@@ -112,19 +109,28 @@ public class DefaultTimeService implements TimeService {
 		final double dj = rtpAfter.getDistanceAlongTrip();
 		final long ti = rtpBefore.getTimeStamp();
 		final long tj = rtpAfter.getTimeStamp();
+
+		final long other = getActualArrivalTimeBasedOnClosestPositions(stop,
+				tripInstance);
 		final long ts = (long) (((ds - di) / (dj - di)) * (tj - ti)) + ti;
-		// LOG.debug("di {} - ti {} - dj {} tj {} - ds {} ts {} - sched {}", di,
-		// Utils.toHHMMssPST(ti), dj, Utils.toHHMMssPST(tj), ds,
-		// Utils.toHHMMssPST(ts), stop.getStopTime().getSchedArrivalTime());
+		LOG.debug(
+				"di {} - ti {} - dj {} tj {} - ds {} ts {} - sched {} - tc {}",
+				di, Utils.toHHMMssPST(ti), dj, Utils.toHHMMssPST(tj), ds,
+				Utils.toHHMMssPST(ts),
+				stop.getStopTime().getSchedArrivalTime(),
+				Utils.toHHMMssPST(other));
 		final long diff = Utils.diff(stop.getStopTime().getSchedArrivalTime(),
 				ts);
-		if (diff > 1200) {
-			LOG.debug(
-					"ALERT - stopId {} tripId {} tripInstance {} ts {} scheduled {}",
-					stop.getId(), tripInstance.getTripId(), tripInstance
-							.getServiceDate(), Utils.toHHMMssPST(ts), stop
-							.getStopTime().getSchedArrivalTime());
-		}
+		/*
+		 * if (diff > 1200) { LOG.debug(
+		 * "ALERT - stopId {} tripId {} tripInstance {} ts {} scheduled {}",
+		 * stop.getId(), tripInstance.getTripId(), tripInstance
+		 * .getServiceDate(), Utils.toHHMMssPST(ts), stop
+		 * .getStopTime().getSchedArrivalTime()); }
+		 */
+
+		// LOG.info("td: {} - tc: {}", Utils.toHHMMssPST(ts),
+		// Utils.toHHMMssPST(other));
 		return ts;
 	}
 
