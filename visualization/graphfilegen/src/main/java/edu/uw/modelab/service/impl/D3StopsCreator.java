@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import edu.uw.modelab.dao.RouteDao;
 import edu.uw.modelab.dao.StopDao;
 import edu.uw.modelab.dao.TripDao;
-import edu.uw.modelab.pojo.Route;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
@@ -61,25 +60,8 @@ public class D3StopsCreator extends D3Creator {
 
 	@Override
 	protected void addNodes(final PrintWriter writer) {
-		writer.print("\"nodes\": [");
-		final List<Stop> stops = stopDao.getStops();
-		final Iterator<Stop> it = stops.iterator();
-		int index = 0;
-		while (it.hasNext()) {
-			final Stop stop = it.next();
-			stopIdsIndexes.put(stop.getId(), index++);
-			final StringBuilder sb = new StringBuilder("{\"name\":\"")
-					.append(stop.getName())
-					.append("\",\"group\":2,\"coords\":{\"type\": \"Point\",\"coordinates\":[")
-					.append(stop.getLon()).append(",").append(stop.getLat())
-					.append("]}");
-			if (it.hasNext()) {
-				sb.append(",");
-			}
-			writer.print(sb.toString());
-		}
-		writer.print("],");
-
+		final List<Integer> tripIds = tripDao.getTripIds();
+		addNodes(writer, tripIds);
 	}
 
 	@Override
@@ -87,7 +69,6 @@ public class D3StopsCreator extends D3Creator {
 		writer.print("\"nodes\": [");
 		final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceData>>> stops = new LinkedHashMap<>();
 		this.trip = tripDao.getTripById(tripId);
-
 		nodesForEachTrip(stops, trip);
 		final String appended = appendStops(stops);
 		writer.print(appended);
@@ -279,43 +260,7 @@ public class D3StopsCreator extends D3Creator {
 
 	@Override
 	protected void addEdges(final PrintWriter writer) {
-		final Set<Segment> addedSegments = new HashSet<>();
-		final Set<Route> routes = routeDao.getRoutesIncomplete();
-		writer.print("\"links\":[");
-		final Iterator<Route> routeIt = routes.iterator();
-		final StringBuilder sb = new StringBuilder();
-		while (routeIt.hasNext()) {
-			final Route route = routeIt.next();
-			final Set<Trip> trips = route.getTrips();
-			final Iterator<Trip> tripIt = trips.iterator();
-			while (tripIt.hasNext()) {
-				final Trip trip = tripIt.next();
-				final Set<Segment> segments = trip.getSegments();
-				final Iterator<Segment> segmentIt = segments.iterator();
-				while (segmentIt.hasNext()) {
-					final Segment segment = segmentIt.next();
-					if (addedSegments.contains(segment)) {
-						LOG.info("Skipping segment, already added");
-						continue;
-					}
-					addedSegments.add(segment);
-					final int source = stopIdsIndexes.get(segment.getFrom()
-							.getId());
-					final int target = stopIdsIndexes.get(segment.getTo()
-							.getId());
-					sb.append("{\"source\":").append(source)
-							.append(",\"target\":").append(target)
-							.append(",\"value\":3,\"group\":1,\"name\":\"")
-							.append(route.getName())
-							.append("\",\"details\":\"\"},");
-
-				}
-			}
-		}
-		sb.deleteCharAt(sb.length() - 1);
-		writer.print(sb.toString());
-		writer.print("]");
-
+		addEdgesWithTrips(writer);
 	}
 
 	protected void addEdgesWithTrips(final PrintWriter writer) {

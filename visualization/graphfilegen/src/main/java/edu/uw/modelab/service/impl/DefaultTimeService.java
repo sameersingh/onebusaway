@@ -93,8 +93,10 @@ public class DefaultTimeService implements TimeService {
 			diffs[i++] = Math.abs(distanceAlongTrip - stopDistanceAlongTrip);
 		}
 
-		// assume not before and after can be null at the same time
-		if (rtpBefore == null) {
+		if ((rtpBefore == null) && (rtpAfter == null)) {
+			return getActualArrivalTimeBasedOnClosestPositions(stop,
+					tripInstance);
+		} else if (rtpBefore == null) {
 			final int closestIndex = getClosestPoint(diffs);
 			rtpBefore = rtps.get(closestIndex);
 			LOG.debug("taking the closest due to lack of before");
@@ -110,15 +112,10 @@ public class DefaultTimeService implements TimeService {
 		final long ti = rtpBefore.getTimeStamp();
 		final long tj = rtpAfter.getTimeStamp();
 
-		final long other = getActualArrivalTimeBasedOnClosestPositions(stop,
-				tripInstance);
 		final long ts = (long) (((ds - di) / (dj - di)) * (tj - ti)) + ti;
-		LOG.debug(
-				"di {} - ti {} - dj {} tj {} - ds {} ts {} - sched {} - tc {}",
-				di, Utils.toHHMMssPST(ti), dj, Utils.toHHMMssPST(tj), ds,
-				Utils.toHHMMssPST(ts),
-				stop.getStopTime().getSchedArrivalTime(),
-				Utils.toHHMMssPST(other));
+		LOG.debug("di {} - ti {} - dj {} tj {} - ds {} ts {} - sched {}", di,
+				Utils.toHHMMssPST(ti), dj, Utils.toHHMMssPST(tj), ds,
+				Utils.toHHMMssPST(ts), stop.getStopTime().getSchedArrivalTime());
 		final long diff = Utils.diff(stop.getStopTime().getSchedArrivalTime(),
 				ts);
 		/*

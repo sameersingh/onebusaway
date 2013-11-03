@@ -55,6 +55,8 @@ public class JdbcTripDao implements TripDao {
 			+ " group by s.id"
 			+ " order by trip_counts";
 
+	private static final String SELECT_TRIP_IDS = "select id from trip";
+
 	public JdbcTripDao(final DataSource dataSource,
 			final TripInstanceDao tripInstanceDao) {
 		this.template = new JdbcTemplate(dataSource);
@@ -261,6 +263,13 @@ public class JdbcTripDao implements TripDao {
 				trips, stopsPerTrip));
 		postProcessTrips(trips, stopsPerTrip);
 		return trips;
+	}
+
+	@Override
+	public List<Integer> getTripIds() {
+		final List<Integer> tripIds = template.queryForList(SELECT_TRIP_IDS,
+				Integer.class);
+		return tripIds;
 	}
 
 }

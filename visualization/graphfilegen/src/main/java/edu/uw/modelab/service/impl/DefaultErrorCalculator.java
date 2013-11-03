@@ -319,26 +319,30 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	public long[] getObaAndModeErrors(final TripInstance tripInstance,
 			final Segment segment) {
 		final long[] result = new long[2];
-		final String segmentISched = segment.getTo().getStopTime()
-				.getSchedArrivalTime();
-		final String segmentJSched = segment.getFrom().getStopTime()
-				.getSchedArrivalTime();
-		final long scheduledDiff = Utils.diff(segmentISched, segmentJSched);
-		final long actual_I = getActualLast(segment, tripInstance);
+		try {
+			final String segmentISched = segment.getTo().getStopTime()
+					.getSchedArrivalTime();
+			final String segmentJSched = segment.getFrom().getStopTime()
+					.getSchedArrivalTime();
+			final long scheduledDiff = Utils.diff(segmentISched, segmentJSched);
+			final long actual_I = getActualLast(segment, tripInstance);
 
-		final long t_true_I = actual_I;
-		final long actual_J = getActual(segment, tripInstance);
-		final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
-		final String key_J = Utils.label(tripInstance, segment);
-		final double y_hat_J_sec = yHatPerSegmentPerTripInstancePerTrip
-				.get(key_J);
-		final long y_hat_J = Math.round(y_hat_J_sec) * -1000;
-		final long t_hat_mode_I = t_hat_oba_I + y_hat_J;
+			final long t_true_I = actual_I;
+			final long actual_J = getActual(segment, tripInstance);
+			final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
+			final String key_J = Utils.label(tripInstance, segment);
+			final double y_hat_J_sec = yHatPerSegmentPerTripInstancePerTrip
+					.get(key_J);
+			final long y_hat_J = Math.round(y_hat_J_sec) * -1000;
+			final long t_hat_mode_I = t_hat_oba_I + y_hat_J;
 
-		final long errorObaI = (t_true_I - t_hat_oba_I) / 1000;
-		final long errorModeI = (t_true_I - t_hat_mode_I) / 1000;
-		result[0] = errorObaI;
-		result[1] = errorModeI;
+			final long errorObaI = (t_true_I - t_hat_oba_I) / 1000;
+			final long errorModeI = (t_true_I - t_hat_mode_I) / 1000;
+			result[0] = errorObaI;
+			result[1] = errorModeI;
+		} catch (final Exception exc) {
+			LOG.error("Don't have info on this segment and tripInstance");
+		}
 		return result;
 	}
 
