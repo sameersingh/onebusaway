@@ -143,6 +143,7 @@ public class DefaultTimeService implements TimeService {
 		return closestIndex;
 	}
 
+	@Deprecated
 	private long getActualArrivalTimeBasedOnClosestPositions(final Stop stop,
 			final TripInstance tripInstance) {
 		final double toX = stop.getX();

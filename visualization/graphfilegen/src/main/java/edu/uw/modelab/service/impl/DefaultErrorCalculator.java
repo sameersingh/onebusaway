@@ -351,6 +351,9 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 			final int k) {
 
 		final Set<Trip> trips = tripDao.getTripsIn(tripIds);
+		for (final Trip trip : trips) {
+			distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+		}
 		final Set<Trip> tripsTrain = new LinkedHashSet<>(trips.size());
 		final Set<Trip> tripsTest = new LinkedHashSet<>(trips.size());
 		splitDataset(trips, tripsTrain, tripsTest);
@@ -418,7 +421,6 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	private void doCalculations(final Trip trip, final int k,
 			final List<Double> errorsOba, final List<Double> errorsMode,
 			final List<Double> diffOba, final List<Double> diffMode) {
-		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
 		final Set<TripInstance> tripInstances = trip.getInstances();
 		final Iterator<TripInstance> tripInstancesIt = tripInstances.iterator();
 		final List<Segment> segments = new ArrayList<>(trip.getSegments());

@@ -84,16 +84,16 @@ public class TripInstancesPopulator extends BulkPopulator {
 							LOG.warn(
 									"Ignoring register, beginning or end of trip - distance {} ",
 									distanceAlongTrip);
-							// return;
+							return;
 						}
 					} else {
-						// at least remove the start of trips
-						// if (distanceAlongTrip < 100) {
-						// LOG.warn(
-						// "Ignoring register, beginning of trip - distance {} ",
-						// distanceAlongTrip);
-						// return;
-						// }
+						// at least remove final the start final of trips
+						if (distanceAlongTrip < 100) {
+							LOG.warn(
+									"Ignoring register, beginning of trip - distance {} ",
+									distanceAlongTrip);
+							return;
+						}
 					}
 
 					// do this per route
