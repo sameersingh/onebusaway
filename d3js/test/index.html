@@ -23,13 +23,13 @@ margin: 35px 0;
 
 .stop {
   stroke: #000;
-  stroke-width: 0.0px;
-  fill: #00d;
-  fill-opacity: 0.2;
+  stroke-width: 0.25px;
+  fill: #777;
+  fill-opacity: 0.5;
 }
 
 .segment {
-  stroke: #999;
+  stroke: #ddd;
   stroke-opacity: .7;
   stroke-width: 1px;
 }
@@ -46,6 +46,10 @@ margin: 35px 0;
   stroke-width: 0.5px;
 }
 
+.timeSlider {
+  width: 960px;
+}
+
 body {
   margin: 0;
 }
@@ -57,15 +61,21 @@ path {
   stroke-linecap: round;
 }
 
-.major_road { stroke: #776; stroke-opacity: .4;}
-.minor_road { stroke: #ccb; stroke-opacity: .4;}
-.highway { stroke: #669; stroke-width: 1.2px; stroke-opacity: .4;}
-.rail { stroke: #7de; stroke-opacity: .4;}
+.major_road { stroke: #776; stroke-opacity: .3;}
+.minor_road { stroke: #ccb; stroke-opacity: .3;}
+.highway { stroke: #669; stroke-width: 1.2px; stroke-opacity: .1;}
+.rail { stroke: #7de; stroke-opacity: .3;}
 </style>
 <body>
 <div class="wrapper">
-<div id="slider3"></div>
-<h2>Time selected: <span id="slider3text">-</span></h2>
+<div id="demo">
+  <div id="stopSize"></div>
+  <div id="time"></div>
+  <div class="animation">
+    <label for="animationChk">Animation: </label>
+    <input type="checkbox" name="animationChk" id="animationChk">
+</div>
+</div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/d3.geo.tile.v0.min.js"></script>
 <script src="../colorbrewer.js"></script>
@@ -83,20 +93,7 @@ var numRoutes = {min:0, max:2};
 var stopColors = d3.scale.ordinal()
     .range(colorbrewer.Set1[9]);
     //d3.scale.category20();
-var routeColors = d3.scale.linear()
-    .domain([numRoutes.min, numRoutes.max])
-    .range(["black", "steelblue"])
-    .interpolate(d3.interpolateLab);
-var tripColors = d3.scale.linear()
-    .domain([numRoutes.min, numRoutes.max])
-    .range(["black", "red"])
-    .interpolate(d3.interpolateLab);
-/*
-var force = d3.layout.force()
-    .charge(-120)
-    .linkDistance(30)
-    .size([width, height]);
-*/
+
 var tiler = d3.geo.tile()
     .size([width, height]);
 
@@ -105,79 +102,155 @@ var svg = d3.select("body").append("svg")
     .attr("height", height);
 
 var projection = d3.geo.mercator()
-    //.rotate([122.2, 0, 0])
     .center([centerLong, centerLat])
-    //.parallels([47.0, 49.0])
     .scale(scale)
-    //.scale((1 << 15) / 2 / Math.PI)
 var path = d3.geo.path()
     .projection(projection);
 
-var txtFile = new XMLHttpRequest();
-txtFile.open("GET", "seattle_neighborhoods/files", true);
-txtFile.onreadystatechange = function()
-{
-  if (txtFile.readyState === 4) {  // document is ready to parse.
-    if (txtFile.status === 200) {  // file is found
-      allText = txtFile.responseText; 
-      seattle_neighborhoods = txtFile.responseText.split("\n");
-      seattle_neighborhoods.forEach(function(n) {
-        d3.json("seattle_neighborhoods/"+n, function(collection) {
-          svg.select("g") //.selectAll('path')
-            //.datum(collection)
-            .append('path')
-            .datum(collection)
-            .attr('d', d3.geo.path().projection(projection))
-            .style('fill', '#eee')
-            .style('fill-opacity', 0.2)
-            .style('stroke', '#eee')
-            .style('stroke-width', '0.75px');
-        });
-      })
-    }
-  }
-}
-txtFile.send(null);
-
-//*
-svg.selectAll("g")
-    .data(tiler
-      .scale(projection.scale() * 2 * Math.PI)
-      .translate(projection([0, 0])))
-  .enter().append("g")
-    .each(function(d) {
-      var g = d3.select(this);
-      d3.json("http://" + ["a", "b", "c"][(d[0] * 31 + d[1]) % 3] + ".tile.openstreetmap.us/vectiles-highroad/" + d[2] + "/" + d[0] + "/" + d[1] + ".json", function(error, json) {
-        g.selectAll("path")
-            .data(json.features.sort(function(a, b) { return a.properties.sort_key - b.properties.sort_key; }))
-          .enter().append("path")
-            .attr("class", function(d) { return d.properties.kind; })
-            .attr("d", path);
-      });
-    });
-//*/
+loadBackground();
 
 var tripStops = null;
 var tripInstances = null;
 
+// Checkboxes for Error Types
+var stopSizeDiv = d3.select("#stopSize")
+stopSizeDiv.append("h4").text("Stop size")
+var stopSizeSched = stopSizeDiv.append("input")
+    .attr("type", "radio")
+    .attr("name", "stopSizeRadio")
+    .attr("value", "sched")
+    .attr("id", "stopSizeRadioSched")
+//    .attr("checked", "true")
+stopSizeDiv.append("label")
+    .attr("for", "stopSizeRadioSched")
+    .text("Schedule Error")
+var stopSizeOBA = stopSizeDiv.append("input")
+    .attr("type", "radio")
+    .attr("name", "stopSizeRadio")
+    .attr("value", "oba")
+    .attr("id", "stopSizeRadioOBA")
+stopSizeDiv.append("label")
+    .attr("for", "stopSizeRadioOBA")
+    .text("OBA Error")
+var stopSizeMode = stopSizeDiv.append("input")
+    .attr("type", "radio")
+    .attr("name", "stopSizeRadio")
+    .attr("value", "mode")
+    .attr("id", "stopSizeRadioMode")
+stopSizeDiv.append("label")
+    .attr("for", "stopSizeRadioMode")
+    .text("Machine Learning Error")
+// Enable mode buttons.
+  d3.selectAll("#stopSize input[name=stopSizeRadio]").on("change", function() {
+    redrawStops(tripStops, this.value)
+  });
+
+// Time Slider for Events
+var minTime = 8
+var numHours = 16
+var timeout = null
+var animateTime = false;
+var sliderDiv = d3.select("#time")
+sliderDiv.append("span").text("Time selected: ")
+var sliderText = sliderDiv
+  .append("span")
+  .text("-")
+sliderDiv.append("br")
+var slider = sliderDiv
+  .append("input")
+  .attr("type", "range")
+  .attr("class", "timeSlider")
+  .attr("min", minTime*6.0)
+  .attr("max", (minTime + numHours)*6.0)
+var timeValue = 0;
+slider
+  .on("change", function(d) {
+    console.log(this.value/6.0);
+    timeValue = this.value/6.0;
+    var t = labelToTime(timeValue);
+    sliderText.text(t.hour + ":" + t.mins + "*");
+    redrawEvents(tripInstances, t);
+  })
+
+// animation support
+d3.select("#animationChk").on("change", function(d) {
+  animateTime = !animateTime;
+  if(animateTime) {
+    updateTrips();
+  } else {
+    clearTimeout(timeout);
+  }
+})
+
 // load stations
-d3.json("stops_21767755.json", function(error, graph) {
+d3.json("stops.json", function(error, graph) {
   tripStops = graph;
   createLinks(tripStops, "stop", "segment", 3);
 });
 
-d3.json("trip_instances_21767755.json", function(error, graph) {
+// load bus positions
+//*
+d3.json("trip_instances_new.json", function(error, graph) {
   tripInstances = graph;
-  createLinks(tripInstances, "event", "trip", schedDev2Radius);
+  console.log("Positions loaded")
+  createLinks(tripInstances, "event", "trip", function(d) { return schedDev2Radius(d.sched_dev) });
+  console.log("Positions rendered")
+  // Animation!
+  //d3.timer(updateTrips, 0, 1000 * 5);
+  //updateTrips();
 });
+//*/
 
-function schedDev2Radius(d) { 
-  var delay = Math.max(0, d.sched_dev)
+
+
+function schedDev2Radius(sched_dev) { 
+  var delay = Math.max(0, sched_dev)
   var r = Math.sqrt(delay + 4)/10.0; 
   if(isNaN(r)) { 
     console.log(delay);
     return 0; 
   } else return r;
+}
+
+function labelToTime(value) {
+  var min = 0
+  var hour = min + Math.floor(value)
+  if(hour < 10) hourStr = "0" + hour;
+  else hourStr = hour + ""
+  var mins = Math.round((min+value-hour)*60.0/10.0)
+  return { hour: hourStr, mins: mins }
+}
+
+function getErrorFromNode(n, stopSizeMode) {
+  var tot_err = 0.0
+  var count = 0
+  n.trips.forEach(function(trip) {
+    trip.trip_instances.forEach(function(instance) {
+      var error = 0.0
+      if(stopSizeMode == "sched") error = instance.sched_error;
+      else if(stopSizeMode == "mode") error = instance.mode_error;
+      else error = instance.oba_error;
+      tot_err += Math.abs(error)
+      count += 1
+    })
+  })
+  if(count == 0) return 10;
+  else return tot_err/count;
+}
+
+function updateTrips() {
+  timeValue = timeValue + (1.0/6.0);
+  if(Math.abs(timeValue - Math.round(timeValue)) < 0.01) timeValue = Math.round(timeValue)
+  if(timeValue > (minTime + numHours)) timeValue = minTime;
+  if(timeValue < minTime) timeValue = minTime;
+  console.log(timeValue)
+  var t = labelToTime(timeValue);
+  sliderText.text(t.hour + ":" + t.mins + "*");
+  //slider.attr("value", timeValue*6.0);
+  slider.property("value", timeValue*6.0);
+  redrawEvents(tripInstances, t)
+  timeout = setTimeout(updateTrips, 2500)
+  return false;
 }
 
 function createLinks(graph, nodeClass, linkClass, nodeRadius) {
@@ -190,7 +263,6 @@ function createLinks(graph, nodeClass, linkClass, nodeRadius) {
       .attr("x2", function(d) { return projection(graph.nodes[d.target].coords.coordinates)[0]; })
       .attr("y2", function(d) { return projection(graph.nodes[d.target].coords.coordinates)[1]; })
       //.style("stroke-width", function(d) { return Math.sqrt(d.value); })
-      .style("stroke", function(d) { return routeColors(d.value); });
 
   var node = svg.selectAll(".node")
       .data(graph.nodes)
@@ -207,34 +279,74 @@ function createLinks(graph, nodeClass, linkClass, nodeRadius) {
       .text(function(d) { return JSON.stringify(d); });
 }
 
-function redrawLinks(graph, value) {
-  var hour = Math.floor(value);
-  var minutes = Math.round((value - hour)*60.0/10.0);
+function redrawStops(graph, stopSizeMode) {
+  var nodes = svg.selectAll(".stop")
+                .data(graph.nodes);
+  nodes.transition()
+    .duration(500)
+    .attr("r", function(d) { return 10.0*schedDev2Radius(getErrorFromNode(d, stopSizeMode)); })
+}
+
+function redrawEvents(graph, time) {
+  var hour = time.hour; //Math.floor(value);
+  var minutes = time.mins; //Math.round((value - hour)*60.0/10.0);
   d3.select('#slider3text').text(hour + ":" + minutes + "*");
   var nodes = svg.selectAll(".event")
                 .data(graph.nodes);
-  console.log(nodes);
   nodes.transition()
     .duration(500)
+    .attr("r", function(d) { 
+      if(d.timestamp.indexOf(hour+":"+minutes) == 0) return schedDev2Radius(d.sched_dev);
+      else return 0; })//*/
     .attr("opacity", function(d) { 
-      if(d.name.indexOf("_"+hour+":"+minutes) != -1) return 1.0;
+      if(d.timestamp.indexOf(hour+":"+minutes) == 0) return 1.0;
       else return 0.0; });
-      /*.attr("r", function(d) { 
-      if(d.name.indexOf("_"+value+":") != -1) return schedDev2Radius(d);
-      else return 0; })*/
 }
 
-d3.select('#slider3')
-  .call(d3.slider()
-    .on("slide", function(evt, value) {
-      redrawLinks(tripInstances, value);
-    })
-    .axis(true)
-    .min(10.5)
-    .max(13.5)
-    .step(1.0/6.0)
-    //.axis(d3.svg.axis().ticks(22))
-  );
+function loadBackground() {
+  var neighborhoodFiles = new XMLHttpRequest();
+  neighborhoodFiles.open("GET", "seattle_neighborhoods/files", true);
+  neighborhoodFiles.onreadystatechange = function()
+  {
+    if (neighborhoodFiles.readyState === 4) {  // document is ready to parse.
+      if (neighborhoodFiles.status === 200) {  // file is found
+        allText = neighborhoodFiles.responseText; 
+        seattle_neighborhoods = neighborhoodFiles.responseText.split("\n");
+        seattle_neighborhoods.forEach(function(n) {
+          d3.json("seattle_neighborhoods/"+n, function(collection) {
+            svg.select("g") //.selectAll('path')
+              //.datum(collection)
+              .append('path')
+              .datum(collection)
+              .attr('d', d3.geo.path().projection(projection))
+              .style('fill', '#eee')
+              .style('fill-opacity', 0.2)
+              .style('stroke', '#ddd')
+              .style('stroke-width', '0.75px');
+          });
+        })
+      }
+    }
+  }
+  neighborhoodFiles.send(null);
+
+  // load seattle map from openstreet map
+  svg.selectAll("g")
+      .data(tiler
+        .scale(projection.scale() * 2 * Math.PI)
+        .translate(projection([0, 0])))
+    .enter().append("g")
+      .each(function(d) {
+        var g = d3.select(this);
+        d3.json("http://" + ["a", "b", "c"][(d[0] * 31 + d[1]) % 3] + ".tile.openstreetmap.us/vectiles-highroad/" + d[2] + "/" + d[0] + "/" + d[1] + ".json", function(error, json) {
+          g.selectAll("path")
+              .data(json.features.sort(function(a, b) { return a.properties.sort_key - b.properties.sort_key; }))
+            .enter().append("path")
+              .attr("class", function(d) { return d.properties.kind; })
+              .attr("d", path);
+        });
+      });
+}
 
 </script>
 </div>
