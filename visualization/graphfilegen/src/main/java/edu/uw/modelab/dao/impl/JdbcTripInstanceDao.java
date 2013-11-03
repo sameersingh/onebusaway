@@ -3,6 +3,7 @@ package edu.uw.modelab.dao.impl;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -172,4 +173,66 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 		return result;
 	}
 
+	private static final class TripInstanceLimitedRowMapper implements
+			RowMapper<TripInstance> {
+
+		private final Map<Integer, Map<Long, TripInstance>> tripInstances;
+		private final int max;
+
+		public TripInstanceLimitedRowMapper(
+				final Map<Integer, Map<Long, TripInstance>> tripInstances,
+				final int max) {
+			this.tripInstances = tripInstances;
+			this.max = max;
+		}
+
+		@Override
+		public TripInstance mapRow(final ResultSet rs, final int idx)
+				throws SQLException {
+			final long serviceDate = rs.getLong(2);
+			final int tripId = rs.getInt(3);
+			final RealtimePosition rp = new RealtimePosition(rs.getLong(1),
+					rs.getDouble(8), rs.getDouble(9), rs.getDouble(4),
+					rs.getDouble(5), rs.getDouble(6), rs.getDouble(7));
+			Map<Long, TripInstance> tripInstanceMap = tripInstances.get(tripId);
+			if (tripInstanceMap == null) {
+				tripInstanceMap = new HashMap<>();
+				final TripInstance tripInstance = new TripInstance(serviceDate,
+						tripId);
+				tripInstance.addRealtime(rp);
+				tripInstanceMap.put(serviceDate, tripInstance);
+				tripInstances.put(tripId, tripInstanceMap);
+			} else {
+				TripInstance tripInstance = tripInstanceMap.get(serviceDate);
+				if (tripInstance == null) {
+					if (tripInstanceMap.size() < max) {
+						tripInstance = new TripInstance(serviceDate, tripId);
+						tripInstance.addRealtime(rp);
+						tripInstanceMap.put(serviceDate, tripInstance);
+					}
+				} else {
+					tripInstance.addRealtime(rp);
+				}
+			}
+			return null;
+		}
+	}
+
+	@Override
+	public List<TripInstance> getTripInstancesForTripIds(
+			final List<Integer> tripIds, final int max) {
+		final MapSqlParameterSource parameters = new MapSqlParameterSource(
+				"tripIds", tripIds);
+		final Map<Integer, Map<Long, TripInstance>> tripInstances = new LinkedHashMap<>();
+		namedTemplate.query(SELECT_TRIP_INSTANCES_IN, parameters,
+				new TripInstanceLimitedRowMapper(tripInstances, max));
+		final List<TripInstance> result = new ArrayList<>();
+		final Iterator<Entry<Integer, Map<Long, TripInstance>>> it = tripInstances
+				.entrySet().iterator();
+		while (it.hasNext()) {
+			final Map<Long, TripInstance> map = it.next().getValue();
+			result.addAll(map.values());
+		}
+		return result;
+	}
 }

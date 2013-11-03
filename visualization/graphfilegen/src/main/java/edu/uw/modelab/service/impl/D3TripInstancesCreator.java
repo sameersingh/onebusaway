@@ -106,7 +106,7 @@ public class D3TripInstancesCreator extends D3Creator {
 			final List<Integer> tripIds) {
 		writer.print("\"nodes\": [");
 		final List<TripInstance> tripInstances = tripInstanceDao
-				.getTripInstancesForTripIds(tripIds);
+				.getTripInstancesForTripIds(tripIds, 20);
 		doAddNodes(writer, tripInstances);
 	}
 

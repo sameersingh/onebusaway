@@ -20,4 +20,6 @@ public interface TripInstanceDao {
 	List<TripInstance> getTripInstancesForTripIdAndServiceDateFrom(int tripId,
 			long serviceDate);
 
+	List<TripInstance> getTripInstancesForTripIds(List<Integer> tripIds, int max);
+
 }
