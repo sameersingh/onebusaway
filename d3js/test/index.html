@@ -86,7 +86,8 @@ var width = 960,
     height = 960;
 
 //var centerLong = -122.3491, centerLat = 47.6204, scale = 175000;
-var centerLong = -122.3491, centerLat = 47.59, scale = 210000;
+//var centerLong = -122.3491, centerLat = 47.59, scale = 210000;
+var centerLong = -122.24, centerLat = 47.65, scale = 150000;
 
 var numRoutes = {min:0, max:2};
 
@@ -186,21 +187,17 @@ d3.select("#animationChk").on("change", function(d) {
 d3.json("stops.json", function(error, graph) {
   tripStops = graph;
   createLinks(tripStops, "stop", "segment", 3);
+  // load bus positions
+  d3.json("trip_instances.json", function(error, graph) {
+    tripInstances = graph;
+    console.log("Positions loaded")
+    createLinks(tripInstances, "event", "trip", function(d) { return schedDev2Radius(d.sched_dev) });
+    console.log("Positions rendered")
+    // Animation!
+    //d3.timer(updateTrips, 0, 1000 * 5);
+    //updateTrips();
+  });
 });
-
-// load bus positions
-//*
-d3.json("trip_instances_new.json", function(error, graph) {
-  tripInstances = graph;
-  console.log("Positions loaded")
-  createLinks(tripInstances, "event", "trip", function(d) { return schedDev2Radius(d.sched_dev) });
-  console.log("Positions rendered")
-  // Animation!
-  //d3.timer(updateTrips, 0, 1000 * 5);
-  //updateTrips();
-});
-//*/
-
 
 
 function schedDev2Radius(sched_dev) { 
