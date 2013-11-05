@@ -184,11 +184,11 @@ stopSizeDiv.append("input")
     .attr("value", "-1")
     .attr("id", "stopErrFrom")
 stopSizeDiv.append("br")
-stopSizeDiv.append("label").text("To (unix epoch in secs): ")
+stopSizeDiv.append("label").text("Duration (in hours): ")
 stopSizeDiv.append("input")
     .attr("type", "number")
-    .attr("value", "-1")
-    .attr("id", "stopErrTo")
+    .attr("value", "12")
+    .attr("id", "stopErrDuration")
 stopSizeDiv.append("br")
 var stopErrRangeUpdate = stopSizeDiv.append("input")
     .attr("type", "button")
@@ -196,7 +196,10 @@ var stopErrRangeUpdate = stopSizeDiv.append("input")
 stopSizeDiv.append("hr")
 stopErrRangeUpdate.on("click", function() {
   stopErrFrom = document.getElementById("stopErrFrom").value
-  stopErrTo = document.getElementById("stopErrTo").value
+  var hours = document.getElementById("stopErrDuration").value
+  if(stopErrFrom > 0)
+    stopErrTo = stopErrFrom + 3600 * hours
+  else stopErrTo = -1
   redrawStops(tripStops, stopErrSelected, stopErrFrom, stopErrTo)
 })
 // Enable mode buttons.
@@ -206,8 +209,8 @@ stopErrRangeUpdate.on("click", function() {
   });
 
 // Time Slider for Events
-var minTime = 8
-var numHours = 16
+var minTime = 5
+var numHours = 19
 var timeout = null
 var animateTime = false;
 var sliderDiv = d3.select("#time")
@@ -226,7 +229,7 @@ var slider = sliderDiv
 var timeValue = 0;
 slider
   .on("change", function(d) {
-    console.log(this.value/6.0);
+    //console.log(this.value/6.0);
     timeValue = this.value/6.0;
     var t = labelToTime(timeValue);
     sliderText.text(t.hour + ":" + t.mins + "*");
@@ -248,14 +251,29 @@ d3.json("stops.json", function(error, graph) {
   tripStops = graph;
   createLinks(tripStops, "stop", "segment", 3);
   // load bus positions
-  d3.json("trip_instances.json", function(error, graph) {
-    tripInstances = graph;
-    console.log("Positions loaded")
+  d3.json("trip_instances2.json", function(error, graph) {
+    var numPoints = 25000
+    tripInstances = graph
+    tripInstances.nodes = getRandomSubarray(graph.nodes, numPoints);
+    tripInstances.nodes.forEach(function(n) {
+      n.timeSlot = {hour: parseInt(n.timestamp.substring(0,2)),mins: Math.floor(parseInt(n.timestamp.substring(3,5))/10)};
+    })
+    console.log("Positions loaded: " + tripInstances.nodes.length)
     createLinks(tripInstances, "event", "trip", function(d) { return schedDev2Radius(d.sched_dev) });
     console.log("Positions rendered")
   });
 });
 
+function getRandomSubarray(arr, size) {
+    var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
+    while (i-- > min) {
+        index = Math.floor(i * Math.random());
+        temp = shuffled[index];
+        shuffled[index] = shuffled[i];
+        shuffled[i] = temp;
+    }
+    return shuffled.slice(min);
+}
 
 function schedDev2Radius(sched_dev) { 
   var delay = Math.max(0, sched_dev)
@@ -272,7 +290,7 @@ function labelToTime(value) {
   if(hour < 10) hourStr = "0" + hour;
   else hourStr = hour + ""
   var mins = Math.round((min+value-hour)*60.0/10.0)
-  return { hour: hourStr, mins: mins }
+  return { hour: hour, mins: mins }
 }
 
 function getErrorFromNode(n, stopSizeMode, stopErrFrom, stopErrTo) {
@@ -293,7 +311,7 @@ function getErrorFromNode(n, stopSizeMode, stopErrFrom, stopErrTo) {
       })
     })
   }
-  if(count == 0) return 10;
+  if(count == 0) return 5;
   else return tot_err/count;
 }
 
@@ -302,7 +320,7 @@ function updateTrips() {
   if(Math.abs(timeValue - Math.round(timeValue)) < 0.01) timeValue = Math.round(timeValue)
   if(timeValue > (minTime + numHours)) timeValue = minTime;
   if(timeValue < minTime) timeValue = minTime;
-  console.log(timeValue)
+  //console.log(timeValue)
   var t = labelToTime(timeValue);
   sliderText.text(t.hour + ":" + t.mins + "*");
   //slider.attr("value", timeValue*6.0);
@@ -349,17 +367,18 @@ function redrawStops(graph, stopSizeMode, stopErrFrom, stopErrTo) {
 function redrawEvents(graph, time) {
   var hour = time.hour; //Math.floor(value);
   var minutes = time.mins; //Math.round((value - hour)*60.0/10.0);
-  d3.select('#slider3text').text(hour + ":" + minutes + "*");
+  //d3.select('#slider3text').text(hour + ":" + minutes + "*");
   var nodes = svg.selectAll(".event")
                 .data(graph.nodes);
   nodes.transition()
     .duration(500)
     .attr("r", function(d) { 
-      if(d.timestamp.indexOf(hour+":"+minutes) == 0) return schedDev2Radius(d.sched_dev);
+      if(d.timeSlot.hour == hour && d.timeSlot.mins == minutes) return schedDev2Radius(d.sched_dev);
+      //if(d.timestamp.indexOf(hour+":"+minutes) == 0) return schedDev2Radius(d.sched_dev);
       else return 0; })//*/
-    .attr("opacity", function(d) { 
-      if(d.timestamp.indexOf(hour+":"+minutes) == 0) return 1.0;
-      else return 0.0; });
+    //.attr("opacity", function(d) { 
+    //  if(d.timeSlot.hour == hour && d.timeSlot.mins == minutes) return 1.0;
+    //  else return 0.0; });
 }
 
 function loadBackground() {
