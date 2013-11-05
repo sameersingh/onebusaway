@@ -14,11 +14,17 @@ h2 {
 }
 
 .wrapper div {
-margin: 35px 0;
+margin: 2px 0;
 }
 
 .wrapper {
-  width: 960px;
+  width: 965px;
+  float: left;
+}
+
+.ui {
+  float: right;
+  margin: 50px;
 }
 
 .stop {
@@ -47,11 +53,15 @@ margin: 35px 0;
 }
 
 .timeSlider {
-  width: 960px;
+  width: 300px;
 }
 
 body {
   margin: 0;
+}
+
+h4 {
+  margin: 10px;
 }
 
 path {
@@ -67,15 +77,21 @@ path {
 .rail { stroke: #7de; stroke-opacity: .3;}
 </style>
 <body>
-<div class="wrapper">
-<div id="demo">
+<div class="ui">
+  <h2>Real-time Modeling of City Events</h2>
+  <h3>An Exploration on Seattle's Public Transportation</h3> 
+  <h4>University of Washington</h4>
+  <hr>
   <div id="stopSize"></div>
   <div id="time"></div>
   <div class="animation">
-    <label for="animationChk">Animation: </label>
+    <label for="animationChk">Animate Filter: </label>
     <input type="checkbox" name="animationChk" id="animationChk">
+  </div>
+  <hr>
 </div>
-</div>
+<div id="visual" class="wrapper"></div>
+<div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/d3.geo.tile.v0.min.js"></script>
 <script src="../colorbrewer.js"></script>
@@ -98,7 +114,7 @@ var stopColors = d3.scale.ordinal()
 var tiler = d3.geo.tile()
     .size([width, height]);
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#visual").append("svg")
     .attr("width", width)
     .attr("height", height);
 
@@ -114,9 +130,24 @@ var tripStops = null;
 var tripInstances = null;
 
 // Checkboxes for Error Types
+var stopErrSelected = "constant"
+var stopErrFrom = -1
+var stopErrTo = -1
+
 var stopSizeDiv = d3.select("#stopSize")
 stopSizeDiv.append("h4").text("Stop size")
-var stopSizeSched = stopSizeDiv.append("input")
+stopSizeDiv.append("input")
+    .attr("type", "radio")
+    .attr("name", "stopSizeRadio")
+    .attr("value", "constant")
+    .attr("id", "stopSizeRadioConstant")
+    .attr("checked", "true")
+//    .attr("checked", "true")
+stopSizeDiv.append("label")
+    .attr("for", "stopSizeRadioConstant")
+    .text("Constant Radius")
+stopSizeDiv.append("br")
+stopSizeDiv.append("input")
     .attr("type", "radio")
     .attr("name", "stopSizeRadio")
     .attr("value", "sched")
@@ -125,7 +156,8 @@ var stopSizeSched = stopSizeDiv.append("input")
 stopSizeDiv.append("label")
     .attr("for", "stopSizeRadioSched")
     .text("Schedule Error")
-var stopSizeOBA = stopSizeDiv.append("input")
+stopSizeDiv.append("br")
+stopSizeDiv.append("input")
     .attr("type", "radio")
     .attr("name", "stopSizeRadio")
     .attr("value", "oba")
@@ -133,17 +165,41 @@ var stopSizeOBA = stopSizeDiv.append("input")
 stopSizeDiv.append("label")
     .attr("for", "stopSizeRadioOBA")
     .text("OBA Error")
-var stopSizeMode = stopSizeDiv.append("input")
+stopSizeDiv.append("br")
+stopSizeDiv.append("input")
     .attr("type", "radio")
     .attr("name", "stopSizeRadio")
     .attr("value", "mode")
     .attr("id", "stopSizeRadioMode")
 stopSizeDiv.append("label")
     .attr("for", "stopSizeRadioMode")
-    .text("Machine Learning Error")
+    .text("Our Error")
+stopSizeDiv.append("br")
+stopSizeDiv.append("label").text("From (unix epoch in secs): ")
+stopSizeDiv.append("input")
+    .attr("type", "number")
+    .attr("value", "-1")
+    .attr("id", "stopErrFrom")
+stopSizeDiv.append("br")
+stopSizeDiv.append("label").text("To (unix epoch in secs): ")
+stopSizeDiv.append("input")
+    .attr("type", "number")
+    .attr("value", "-1")
+    .attr("id", "stopErrTo")
+stopSizeDiv.append("br")
+var stopErrRangeUpdate = stopSizeDiv.append("input")
+    .attr("type", "button")
+    .attr("value", "Update")
+stopSizeDiv.append("hr")
+stopErrRangeUpdate.on("click", function() {
+  stopErrFrom = document.getElementById("stopErrFrom").value
+  stopErrTo = document.getElementById("stopErrTo").value
+  redrawStops(tripStops, stopErrSelected, stopErrFrom, stopErrTo)
+})
 // Enable mode buttons.
   d3.selectAll("#stopSize input[name=stopSizeRadio]").on("change", function() {
-    redrawStops(tripStops, this.value)
+    stopErrSelected = this.value
+    redrawStops(tripStops, stopErrSelected, stopErrFrom, stopErrTo)
   });
 
 // Time Slider for Events
@@ -152,7 +208,8 @@ var numHours = 16
 var timeout = null
 var animateTime = false;
 var sliderDiv = d3.select("#time")
-sliderDiv.append("span").text("Time selected: ")
+sliderDiv.append("h4").text("GPS Events")
+sliderDiv.append("span").text("Filter GPS events by time: ")
 var sliderText = sliderDiv
   .append("span")
   .text("-")
@@ -193,16 +250,13 @@ d3.json("stops.json", function(error, graph) {
     console.log("Positions loaded")
     createLinks(tripInstances, "event", "trip", function(d) { return schedDev2Radius(d.sched_dev) });
     console.log("Positions rendered")
-    // Animation!
-    //d3.timer(updateTrips, 0, 1000 * 5);
-    //updateTrips();
   });
 });
 
 
 function schedDev2Radius(sched_dev) { 
   var delay = Math.max(0, sched_dev)
-  var r = Math.sqrt(delay + 4)/10.0; 
+  var r = Math.sqrt(delay + 4)/5.0; 
   if(isNaN(r)) { 
     console.log(delay);
     return 0; 
@@ -218,19 +272,24 @@ function labelToTime(value) {
   return { hour: hourStr, mins: mins }
 }
 
-function getErrorFromNode(n, stopSizeMode) {
+function getErrorFromNode(n, stopSizeMode, stopErrFrom, stopErrTo) {
   var tot_err = 0.0
   var count = 0
-  n.trips.forEach(function(trip) {
-    trip.trip_instances.forEach(function(instance) {
-      var error = 0.0
-      if(stopSizeMode == "sched") error = instance.sched_error;
-      else if(stopSizeMode == "mode") error = instance.mode_error;
-      else error = instance.oba_error;
-      tot_err += Math.abs(error)
-      count += 1
+  if(stopSizeMode != "constant") {
+    n.trips.forEach(function(trip) {
+      trip.trip_instances.forEach(function(instance) {
+        var t = instance.service_date/1000
+        if(stopErrFrom < 0 || stopErrTo < 0 || (t >= stopErrFrom && t <= stopErrTo)) {
+          var error = 0.0
+          if(stopSizeMode == "sched") error = instance.sched_error;
+          else if(stopSizeMode == "mode") error = instance.mode_error;
+          else error = instance.oba_error;
+          tot_err += Math.abs(error)
+          count += 1
+        }
+      })
     })
-  })
+  }
   if(count == 0) return 10;
   else return tot_err/count;
 }
@@ -246,7 +305,7 @@ function updateTrips() {
   //slider.attr("value", timeValue*6.0);
   slider.property("value", timeValue*6.0);
   redrawEvents(tripInstances, t)
-  timeout = setTimeout(updateTrips, 2500)
+  timeout = setTimeout(updateTrips, 1000)
   return false;
 }
 
@@ -276,12 +335,12 @@ function createLinks(graph, nodeClass, linkClass, nodeRadius) {
       .text(function(d) { return JSON.stringify(d); });
 }
 
-function redrawStops(graph, stopSizeMode) {
+function redrawStops(graph, stopSizeMode, stopErrFrom, stopErrTo) {
   var nodes = svg.selectAll(".stop")
                 .data(graph.nodes);
   nodes.transition()
     .duration(500)
-    .attr("r", function(d) { return 10.0*schedDev2Radius(getErrorFromNode(d, stopSizeMode)); })
+    .attr("r", function(d) { return 5.0*schedDev2Radius(getErrorFromNode(d, stopSizeMode, stopErrFrom, stopErrTo)); })
 }
 
 function redrawEvents(graph, time) {
