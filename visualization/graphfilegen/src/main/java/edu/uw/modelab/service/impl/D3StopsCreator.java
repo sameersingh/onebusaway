@@ -13,8 +13,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.uw.modelab.dao.RouteDao;
-import edu.uw.modelab.dao.StopDao;
 import edu.uw.modelab.dao.TripDao;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
@@ -26,6 +24,10 @@ import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.ui.TripInstanceData;
 import edu.uw.modelab.utils.Utils;
 
+/**
+ * Refactor when there's time... horrible class
+ * 
+ */
 public class D3StopsCreator extends D3Creator {
 
 	private static final Logger LOG = LoggerFactory
@@ -33,8 +35,6 @@ public class D3StopsCreator extends D3Creator {
 
 	private final Map<Integer, Integer> stopIdsIndexes;
 	private final TripDao tripDao;
-	private final StopDao stopDao;
-	private final RouteDao routeDao;
 	private final TimeService timeEstimator;
 	private final DistanceAlongTripCalculator distanceAlongTripCalculator;
 	private final ErrorCalculator errorCalculator;
@@ -46,14 +46,11 @@ public class D3StopsCreator extends D3Creator {
 	public D3StopsCreator(final String filename, final TripDao tripDao,
 			final TimeService timeEstimator,
 			final DistanceAlongTripCalculator distanceAlongTripCalculator,
-			final StopDao stopDao, final RouteDao routeDao,
 			final ErrorCalculator errorCalculator) {
 		super(filename);
 		this.tripDao = tripDao;
 		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
 		this.timeEstimator = timeEstimator;
-		this.stopDao = stopDao;
-		this.routeDao = routeDao;
 		this.errorCalculator = errorCalculator;
 		stopIdsIndexes = new HashMap<Integer, Integer>(8110);
 	}

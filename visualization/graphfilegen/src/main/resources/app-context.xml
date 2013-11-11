@@ -123,8 +123,6 @@
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="timeService" />
 		<constructor-arg ref= "distanceAlongTripCalculator" />
-		<constructor-arg ref="stopDao" />
-		<constructor-arg ref="routeDao" />
 		<constructor-arg ref="errorCalculator" />
 	</bean>
 	
@@ -151,11 +149,13 @@
 	</bean>
 
 	<bean id="errorCalculator" class="edu.uw.modelab.service.impl.DefaultErrorCalculator" init-method="init" >
-		<constructor-arg value="${output.folder}/oba_errors.dat" />
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="timeService" />
-		<constructor-arg value="${features.yhat.file}" />
 		<constructor-arg ref= "distanceAlongTripCalculator" />
+		<constructor-arg value="${yhat.train.file}" />
+		<constructor-arg value="${yhat.test.file}" />
+		<constructor-arg value="${y.train.file}" />
+		<constructor-arg value="${y.test.file}" />
 	</bean>
 	
 	<bean id="dotCreator" class="edu.uw.modelab.service.impl.DotCreator">

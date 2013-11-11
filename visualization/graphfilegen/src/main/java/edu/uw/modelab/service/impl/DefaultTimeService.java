@@ -1,10 +1,8 @@
 package edu.uw.modelab.service.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,11 +10,14 @@ import org.slf4j.LoggerFactory;
 import edu.uw.modelab.pojo.RealtimePosition;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
-import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.utils.Utils;
 
+/**
+ * Calculates the actual arrival times based on distance along trip
+ * 
+ */
 public class DefaultTimeService implements TimeService {
 
 	private static final Logger LOG = LoggerFactory
@@ -46,24 +47,6 @@ public class DefaultTimeService implements TimeService {
 		final long basedOnDistanceAlong = getActualArrivalTimeBasedOnDistanceAlongTrip(
 				stop, tripInstance);
 		return basedOnDistanceAlong;
-	}
-
-	@Override
-	@Deprecated
-	public void estimateArrivalTimes(final Trip trip) {
-		final Set<Segment> segments = trip.getSegments();
-		final Set<TripInstance> tripInstances = trip.getInstances();
-		for (final Segment segment : segments) {
-			final Stop from = segment.getFrom();
-			final Stop to = segment.getTo();
-			final long actualArrivalTime = estimatedTime(to, tripInstances);
-			LOG.info("From: " + from);
-			LOG.info("To: " + to);
-			LOG.info("Scheduled arrival time: "
-					+ to.getStopTime().getSchedArrivalTime());
-			LOG.info("Actual arrival time: "
-					+ Utils.toHHMMssPST(actualArrivalTime));
-		}
 	}
 
 	private long getActualArrivalTimeBasedOnDistanceAlongTrip(final Stop stop,
@@ -144,6 +127,8 @@ public class DefaultTimeService implements TimeService {
 	}
 
 	@Deprecated
+	// first approach, deprecated... just use it when you cannot find before and
+	// after points in the second approach
 	private long getActualArrivalTimeBasedOnClosestPositions(final Stop stop,
 			final TripInstance tripInstance) {
 		final double toX = stop.getX();
@@ -177,49 +162,6 @@ public class DefaultTimeService implements TimeService {
 				+ distances.get(1).distance;
 		final long tHat = (long) (t1 + (((t2 - t1) * weightNumerator) / weightDenominator));
 		return tHat;
-	}
-
-	private long estimatedTime(final Stop to,
-			final Set<TripInstance> tripInstances) {
-		final double toX = to.getX();
-		final double toY = to.getY();
-		final List<Long> estimatedTimePerInstance = new ArrayList<>(
-				tripInstances.size());
-		for (final TripInstance tripInstance : tripInstances) {
-			final List<RealtimePosition> rtps = tripInstance.getRealtimes();
-			final List<IndexedDistance> distances = new ArrayList<>();
-			int i = 0;
-			for (final RealtimePosition rtp : rtps) {
-				distances.add(new IndexedDistance(i++, Utils.euclideanDistance(
-						rtp.getX(), toX, rtp.getY(), toY)));
-			}
-			Collections.sort(distances);
-			final RealtimePosition closest = rtps.get(distances.get(0).index);
-			final RealtimePosition secondClosest = rtps
-					.get(distances.get(1).index);
-
-			long t1;
-			long t2;
-			double weightNumerator;
-			final double weightDenominator;
-			if (closest.getTimeStamp() < secondClosest.getTimeStamp()) {
-				t1 = closest.getTimeStamp();
-				t2 = secondClosest.getTimeStamp();
-				weightNumerator = distances.get(0).distance;
-			} else {
-				t1 = secondClosest.getTimeStamp();
-				t2 = closest.getTimeStamp();
-				weightNumerator = distances.get(1).distance;
-			}
-			weightDenominator = distances.get(0).distance
-					+ distances.get(1).distance;
-			final long tHat = (long) (t1 + (((t2 - t1) * weightNumerator) / weightDenominator));
-			estimatedTimePerInstance.add(tHat);
-		}
-		LOG.info("Actual Times {}",
-				Arrays.toString(estimatedTimePerInstance.toArray()));
-		// TODO must do the average here
-		return estimatedTimePerInstance.get(0);
 	}
 
 	private class IndexedDistance implements Comparable<IndexedDistance> {

@@ -4,23 +4,35 @@ import matplotlib.pyplot as plt
 
 def main():
     
-    error("oba_mode_errors_train.dat", "train_error.png", "Train")
-    error("oba_mode_errors_test.dat", "test_error.png", "Test")
+    #error("oba_mode_errors_train.dat", "train_error.pdf", 458.96118101939373, "Train")
+    error("oba_mode_errors_test.dat", "test_error.pdf", 421.45747166636295, "Test")
 
 
-def error(filename, output_filename, type):
+def error(filename, output_filename, sched_error_value, type):
     data = np.loadtxt(filename)
     k = np.arange(1,data.shape[0]+1,1)
     oba_error = np.array(data[:,0]).reshape(data.shape[0],1)
     mode_error = np.array(data[:,1]).reshape(data.shape[0],1)
-    sched_error = np.array(data[:,2]).reshape(data.shape[0],1)
+    #sched_error = np.empty(data.shape[0]).reshape(data.shape[0],1)
+    #sched_error.fill(sched_error_value)
     fig = plt.figure()
-    fig.suptitle("Error vs. K - {}".format(type), fontsize=13, fontweight='bold')
-    plt.plot(k, oba_error, "r")
-    plt.plot(k, mode_error, "g")
-    plt.plot(k, sched_error, "b")
-    plt.xlabel("k")
-    plt.legend(['OBA', 'MODE', 'SCHED'], loc="upper left")
+    #fig.suptitle("Error vs. K - {} set".format(type), fontsize=13, fontweight='bold')
+    fontsize = 14
+    ax = plt.gca()
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label1.set_fontsize(fontsize)
+        tick.label1.set_fontweight('bold')
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label1.set_fontsize(fontsize)
+        tick.label1.set_fontweight('bold')
+        
+    plt.plot(k, oba_error, "b", lw=3)
+    plt.plot(k, mode_error, "r", lw=3)
+    #plt.plot(k, sched_error, "b")
+    plt.xlabel("K = number of segments", fontweight='bold')
+    plt.ylabel("RMSE in seconds", fontweight='bold')
+    
+    plt.legend(['OBA', 'OUR'], loc="lower right")
     plt.savefig(output_filename)
     plt.show()
 

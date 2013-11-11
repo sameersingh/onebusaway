@@ -73,6 +73,7 @@ public class TripInstancesPopulator extends BulkPopulator {
 							.valueOf(strTokens[3]);
 					final Map<String, Threshold> preprocessor = preprocessors
 							.get(tripId);
+					// do a better preprocessing thing here
 					if (preprocessor != null) {
 						final Threshold distanceAlongTripThreshold = preprocessor
 								.get("DAT");

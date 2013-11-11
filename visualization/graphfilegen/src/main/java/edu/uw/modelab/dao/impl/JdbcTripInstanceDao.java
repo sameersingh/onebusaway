@@ -49,6 +49,15 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 			+ " where trip_id = ? and service_date >= ?"
 			+ " order by service_date, timestamp";
 
+	private static final String SELECT_AVG_SCHED_DEVIATION_PER_SERVICE_DATE = "select service_date, avg(sched_deviation) from trip_instance"
+			+ " group by service_date order by service_date";
+
+	private static final String SELECT_TIMESTAMP_SCHED_DEVIATION = "select timestamp, sched_deviation from trip_instance";
+
+	private static final String SELECT_ALL = "select ti.timestamp, ti.service_date, ti.trip_id, ti.sched_deviation, r.name from trip_instance as ti"
+			+ " join trip as t on t.id = ti.trip_id"
+			+ " join route as r on t.route_id = r.id";
+
 	private final JdbcTemplate template;
 	private final NamedParameterJdbcTemplate namedTemplate;
 
@@ -235,4 +244,57 @@ public class JdbcTripInstanceDao implements TripInstanceDao {
 		}
 		return result;
 	}
+
+	@Override
+	public Map<Long, Double> getAvgScheduleErrorPerServiceDate() {
+		final Map<Long, Double> result = new LinkedHashMap<>();
+		template.query(SELECT_AVG_SCHED_DEVIATION_PER_SERVICE_DATE,
+				new AverageScheduleRowMapper(result));
+		return result;
+	}
+
+	private static final class AverageScheduleRowMapper implements
+			RowMapper<Object> {
+
+		private final Map<Long, Double> avgSchedule;
+
+		public AverageScheduleRowMapper(final Map<Long, Double> avgSchedule) {
+			this.avgSchedule = avgSchedule;
+		}
+
+		@Override
+		public Object mapRow(final ResultSet rs, final int rowNum)
+				throws SQLException {
+			avgSchedule.put(rs.getLong(1), rs.getDouble(2));
+			return null;
+		}
+
+	}
+
+	@Override
+	public Map<Long, Integer> getTimestampAndSchedDevation() {
+		final Map<Long, Integer> result = new LinkedHashMap<>();
+		template.query(SELECT_TIMESTAMP_SCHED_DEVIATION,
+				new TimeStampScheduleDeviationRowMapper(result));
+		return result;
+	}
+
+	private static final class TimeStampScheduleDeviationRowMapper implements
+			RowMapper<Object> {
+
+		private final Map<Long, Integer> map;
+
+		public TimeStampScheduleDeviationRowMapper(final Map<Long, Integer> map) {
+			this.map = map;
+		}
+
+		@Override
+		public Object mapRow(final ResultSet rs, final int rowNum)
+				throws SQLException {
+			map.put(rs.getLong(1), rs.getInt(2));
+			return null;
+		}
+
+	}
+
 }

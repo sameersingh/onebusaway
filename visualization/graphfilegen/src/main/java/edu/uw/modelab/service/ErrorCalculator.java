@@ -7,15 +7,11 @@ import edu.uw.modelab.pojo.TripInstance;
 
 public interface ErrorCalculator {
 
-	// move to timeService
-	void calculateTimeBetweenStops(int tripId);
-
-	void calculateObaAndModeError(int tripId, int k, Error error);
-
 	void calculateObaAndModeError(final List<Integer> tripIds, int k);
 
-	void calculateScheduledError(int tripId, Error error);
+	void calculateScheduledError(int tripId);
 
+	// visualization purposes... need to update this
 	long[] getObaAndModeErrors(TripInstance tripInstance, Segment segment);
 
 }
