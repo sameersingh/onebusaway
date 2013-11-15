@@ -12,6 +12,8 @@ public interface TripDao {
 
 	List<Integer> getTripIds();
 
+	List<Integer> getTripIds(int amount);
+
 	Trip getTripByIdAndServiceDateLessThan(int tripId, long serviceDate);
 
 	Map<Integer, Integer> getNumberOfTripsPerStop();

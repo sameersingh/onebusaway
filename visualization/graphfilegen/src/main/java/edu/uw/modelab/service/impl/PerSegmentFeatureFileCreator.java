@@ -20,6 +20,7 @@ import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DelayCalculator;
 import edu.uw.modelab.service.DistanceAlongTripCalculator;
 import edu.uw.modelab.service.FeatureFileCreator;
+import edu.uw.modelab.service.TestSetCondition;
 import edu.uw.modelab.utils.Utils;
 
 public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
@@ -38,12 +39,14 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 	private final TripDao tripDao;
 	private final DelayCalculator delayCalculator;
 	private final DistanceAlongTripCalculator distanceAlongTripCalculator;
+	private final TestSetCondition testSetCondition;
 
 	public PerSegmentFeatureFileCreator(final String featureFileTraining,
 			final String featureFileTest, final String labelsFileTraining,
 			final String labelsFileTest, final String featureNames,
 			final TripDao tripDao, final DelayCalculator delayCalculator,
-			final DistanceAlongTripCalculator distanceAlongTripCalculator) {
+			final DistanceAlongTripCalculator distanceAlongTripCalculator,
+			final TestSetCondition testSetCondition) {
 		this.featureFileTraining = featureFileTraining;
 		this.featureFileTest = featureFileTest;
 		this.labelsFileTraining = labelsFileTraining;
@@ -52,6 +55,13 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 		this.tripDao = tripDao;
 		this.delayCalculator = delayCalculator;
 		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
+		this.testSetCondition = testSetCondition;
+	}
+
+	@Override
+	public void createFeatures() {
+		final Set<Trip> trips = tripDao.getTrips();
+		doCreateFeatures(trips);
 	}
 
 	@Override
@@ -63,6 +73,10 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 	@Override
 	public void createFeatures(final List<Integer> tripIds) {
 		final Set<Trip> trips = tripDao.getTripsIn(tripIds);
+		doCreateFeatures(trips);
+	}
+
+	private void doCreateFeatures(final Set<Trip> trips) {
 		for (final Trip trip : trips) {
 			distanceAlongTripCalculator.addDistancesAlongTrip(trip);
 		}
@@ -109,22 +123,25 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 					final long serviceDate = tripInstance.getServiceDate();
 					final int dayOfWeek = Utils.dayOfWeek(serviceDate);
 					final int monthOfYear = Utils.monthOfYear(serviceDate);
-					final int year = Utils.year(serviceDate);
-					for (final Segment segment : segments) {
-						final String label = Utils.label(tripInstance, segment);
-						// october september 2013 for testing
-						if ((year == 2013)
-								&& ((monthOfYear == 10) || (monthOfYear == 9))) {
+					if (testSetCondition.isForTest(serviceDate)) {
+						for (final Segment segment : segments) {
+							final String label = Utils.label(tripInstance,
+									segment);
 							pwTest.println(appendLine(segment, tripInstance,
 									monthOfYear, dayOfWeek,
 									uniqueSegmentsAsList, uniqueTripIdsAsList));
 							pwTestLabels.println(label);
-						} else {
+						}
+					} else {
+						for (final Segment segment : segments) {
+							final String label = Utils.label(tripInstance,
+									segment);
 							pwTrain.println(appendLine(segment, tripInstance,
 									monthOfYear, dayOfWeek,
 									uniqueSegmentsAsList, uniqueTripIdsAsList));
 							pwTrainLabels.println(label);
 						}
+
 					}
 				}
 			}
@@ -170,25 +187,25 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append("20-22").append(END_LINE);
 		sb.append("22-24").append(END_LINE);
 
-		sb.append("monday").append(END_LINE);
-		sb.append("tuesday").append(END_LINE);
-		sb.append("wednesday").append(END_LINE);
-		sb.append("thursday").append(END_LINE);
-		sb.append("friday").append(END_LINE);
-		sb.append("saturday").append(END_LINE);
-		sb.append("sunday").append(END_LINE);
-		sb.append("january").append(END_LINE);
-		sb.append("february").append(END_LINE);
-		sb.append("march").append(END_LINE);
-		sb.append("april").append(END_LINE);
-		sb.append("may").append(END_LINE);
-		sb.append("june").append(END_LINE);
-		sb.append("july").append(END_LINE);
-		sb.append("august").append(END_LINE);
-		sb.append("september").append(END_LINE);
-		sb.append("october").append(END_LINE);
-		sb.append("november").append(END_LINE);
-		sb.append("december").append(END_LINE);
+		// sb.append("monday").append(END_LINE);
+		// sb.append("tuesday").append(END_LINE);
+		// sb.append("wednesday").append(END_LINE);
+		// sb.append("thursday").append(END_LINE);
+		// sb.append("friday").append(END_LINE);
+		// sb.append("saturday").append(END_LINE);
+		// sb.append("sunday").append(END_LINE);
+		// sb.append("january").append(END_LINE);
+		// sb.append("february").append(END_LINE);
+		// sb.append("march").append(END_LINE);
+		// sb.append("april").append(END_LINE);
+		// sb.append("may").append(END_LINE);
+		// sb.append("june").append(END_LINE);
+		// sb.append("july").append(END_LINE);
+		// sb.append("august").append(END_LINE);
+		// sb.append("september").append(END_LINE);
+		// sb.append("october").append(END_LINE);
+		// sb.append("november").append(END_LINE);
+		// sb.append("december").append(END_LINE);
 		for (final String segment : uniqueSegments) {
 			sb.append(segment).append(END_LINE);
 		}
@@ -206,8 +223,8 @@ public class PerSegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append(1).append(SEPARATOR);
 		sb.append(segment.getDistance()).append(SEPARATOR);
 		sb.append(getTimeOfDay(segment)).append(SEPARATOR);
-		sb.append(getDayOfWeek(dayOfWeek)).append(SEPARATOR);
-		sb.append(getMonthOfYear(monthOfYear)).append(SEPARATOR);
+		// sb.append(getDayOfWeek(dayOfWeek)).append(SEPARATOR);
+		// sb.append(getMonthOfYear(monthOfYear)).append(SEPARATOR);
 		sb.append(getSegment(segment.getId(), uniqueSegments))
 				.append(SEPARATOR);
 		sb.append(getTrip(tripInstance.getTripId(), uniqueTripIds)).append(

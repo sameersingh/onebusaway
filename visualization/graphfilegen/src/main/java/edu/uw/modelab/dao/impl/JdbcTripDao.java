@@ -57,6 +57,8 @@ public class JdbcTripDao implements TripDao {
 
 	private static final String SELECT_TRIP_IDS = "select id from trip";
 
+	private static final String SELECT_TRIP_IDS_LIMIT = "select id from trip limit ?";
+
 	public JdbcTripDao(final DataSource dataSource,
 			final TripInstanceDao tripInstanceDao) {
 		this.template = new JdbcTemplate(dataSource);
@@ -272,4 +274,10 @@ public class JdbcTripDao implements TripDao {
 		return tripIds;
 	}
 
+	@Override
+	public List<Integer> getTripIds(final int amount) {
+		final List<Integer> tripIds = template.queryForList(
+				SELECT_TRIP_IDS_LIMIT, new Object[] { amount }, Integer.class);
+		return tripIds;
+	}
 }

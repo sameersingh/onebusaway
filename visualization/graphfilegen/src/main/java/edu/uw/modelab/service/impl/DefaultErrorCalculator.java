@@ -21,6 +21,7 @@ import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DistanceAlongTripCalculator;
 import edu.uw.modelab.service.ErrorCalculator;
+import edu.uw.modelab.service.TestSetCondition;
 import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.utils.Utils;
 
@@ -39,6 +40,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	private final Map<String, Double> yTestValues;
 	private final TripDao tripDao;
 	private final TimeService timeService;
+	private final TestSetCondition testSetCondition;
 	private final String yhatTrainFileName;
 	private final String yHatTestFileName;
 	private final String yTrainFileName;
@@ -49,11 +51,13 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	public DefaultErrorCalculator(final TripDao tripDao,
 			final TimeService timeService,
 			final DistanceAlongTripCalculator distanceAlongTripCalculator,
+			final TestSetCondition testSetCondition,
 			final String yhatTrainFileName, final String yHatTestFileName,
 			final String yTrainFileName, final String yTestFileName) {
 		this.tripDao = tripDao;
 		this.timeService = timeService;
 		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
+		this.testSetCondition = testSetCondition;
 		this.yhatTrainFileName = yhatTrainFileName;
 		this.yHatTestFileName = yHatTestFileName;
 		this.yTrainFileName = yTrainFileName;
@@ -312,12 +316,7 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 			final Set<TripInstance> instances = trip.getInstances();
 			for (final TripInstance tripInstance : instances) {
 				final long serviceDate = tripInstance.getServiceDate();
-				final int monthOfYear = Utils.monthOfYear(serviceDate);
-				final int year = Utils.year(serviceDate);
-				// october september 2013 for testing
-				// ugly stuff, coupled with featureFileCreator
-				if ((year == 2013)
-						&& ((monthOfYear == 10) || (monthOfYear == 9))) {
+				if (testSetCondition.isForTest(serviceDate)) {
 					testTrip.addInstance(tripInstance);
 					tripsTest.add(testTrip);
 				} else {

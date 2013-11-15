@@ -146,12 +146,14 @@
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="delayCalculator" />
 		<constructor-arg ref="distanceAlongTripCalculator" />
+		<constructor-arg ref="testSetCondition" />
 	</bean>
 
 	<bean id="errorCalculator" class="edu.uw.modelab.service.impl.DefaultErrorCalculator" init-method="init" >
 		<constructor-arg ref="tripDao" />
 		<constructor-arg ref="timeService" />
 		<constructor-arg ref= "distanceAlongTripCalculator" />
+		<constructor-arg ref="testSetCondition" />
 		<constructor-arg value="${yhat.train.file}" />
 		<constructor-arg value="${yhat.test.file}" />
 		<constructor-arg value="${y.train.file}" />
@@ -164,7 +166,9 @@
 		<constructor-arg ref="routeDao" />
 	</bean>
 	
-	<bean id="distanceAlongTripCalculator" class="edu.uw.modelab.service.impl.DefaultDistanceAlongTripCalculator">
-	</bean>
+	<bean id="distanceAlongTripCalculator" class="edu.uw.modelab.service.impl.DefaultDistanceAlongTripCalculator" />
+
+	<bean id="testSetCondition" class="edu.uw.modelab.service.impl.DayOfMonthTestSetCondition" />
+
 	
 </beans> 

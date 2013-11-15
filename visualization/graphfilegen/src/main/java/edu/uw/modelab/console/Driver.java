@@ -1,10 +1,10 @@
 package edu.uw.modelab.console;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.uw.modelab.dao.TripDao;
 import edu.uw.modelab.dao.populators.RoutesPopulator;
 import edu.uw.modelab.dao.populators.StopTimesPopulator;
 import edu.uw.modelab.dao.populators.StopsPopulator;
@@ -20,10 +20,13 @@ public class Driver {
 		final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext(
 				"classpath:app-context.xml");
 		instantiatePopulators(appContext);
-		final List<Integer> trips = getTrips();
+		final long start = System.currentTimeMillis();
+		final List<Integer> trips = getTrips(appContext);
 		// visualization(appContext, trips);
-		// createFeatures(appContext, trips);
-		calculateErrors(appContext, trips);
+		createFeatures(appContext, trips);
+		final long end = System.currentTimeMillis();
+		System.out.println((end - start) / 1000);
+		// calculateErrors(appContext, trips);
 	}
 
 	private void calculateErrors(
@@ -45,14 +48,17 @@ public class Driver {
 		featureFileCreator.createFeatures(trips);
 	}
 
-	private List<Integer> getTrips() {
-		final List<Integer> trips = Arrays.asList(new Integer[] { 21673115,
-				21673118, 21670614, 21670616, 21542721, 21542723, 21672958,
-				21672960, 18918481, 18919624, 21759759, 21759766, 21767755,
-				23726161, 21704210, 21650159, 21650162, 20157477, 23240137,
-				23240144, 23775546, 23775576, 23240059, 23240085 });
+	private List<Integer> getTrips(
+			final ClassPathXmlApplicationContext appContext) {
+		// final List<Integer> trips = Arrays.asList(new Integer[] { 21673115,
+		// 21673118, 21670614, 21670616, 21542721, 21542723, 21672958,
+		// 21672960, 18918481, 18919624, 21759759, 21759766, 21767755,
+		// 23726161, 21704210, 21650159, 21650162, 20157477, 23240137,
+		// 23240144, 23775546, 23775576, 23240059, 23240085 });
 		// final List<Integer> trips = Arrays.asList(new Integer[] { 21767755
 		// });
+		final List<Integer> trips = appContext
+				.getBean("tripDao", TripDao.class).getTripIds(4000);
 		return trips;
 	}
 

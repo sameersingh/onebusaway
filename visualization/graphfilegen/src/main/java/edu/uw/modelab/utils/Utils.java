@@ -81,6 +81,12 @@ public class Utils {
 		return dt.getDayOfWeek();
 	}
 
+	public static int dayOfMonth(final long timestamp) {
+		final DateTime dt = new DateTime(timestamp,
+				DateTimeZone.forID("America/Los_Angeles"));
+		return dt.getDayOfMonth();
+	}
+
 	public static int monthOfYear(final long timestamp) {
 		final DateTime dt = new DateTime(timestamp,
 				DateTimeZone.forID("America/Los_Angeles"));
@@ -139,7 +145,10 @@ public class Utils {
 	}
 
 	public static void main(final String[] args) {
-		// System.out.println(Utils.dayOfWeek(1372662000000L));
+		System.out.println(Utils.dayOfMonth(1377586800000L));
+		System.out.println(Utils.dayOfMonth(1377846000000L));
+		System.out.println(Utils.dayOfMonth(1377932400000L));
+
 		// System.out.println(Utils.dayOfWeek(1379574000000L));
 		// System.out.println(Utils.diff("10:51:00", "10:50:00"));
 		// System.out.println(Utils.time(1372662000000L, "10:50:00"));
@@ -167,13 +176,13 @@ public class Utils {
 		// System.out.println(Utils.toHHMMssPST(1372701385000L));
 		// System.out.println(Utils.toHHMMssPST(1372701653000L));
 
-		System.out.println(Utils.getTimeOfDayVector("01:50:00", "2:10:00"));
-		System.out.println(Utils.getTimeOfDayVector("01:55:00", "2:10:00"));
-		System.out.println(Utils.getTimeOfDayVector("01:55:00", "2:15:00"));
-		System.out.println(Utils.getTimeOfDayVector("07:55:00", "8:15:00"));
-		System.out.println(Utils.getTimeOfDayVector("23:50:00", "24:10:00"));
+		// System.out.println(Utils.getTimeOfDayVector("01:50:00", "2:10:00"));
+		// System.out.println(Utils.getTimeOfDayVector("01:55:00", "2:10:00"));
+		// System.out.println(Utils.getTimeOfDayVector("01:55:00", "2:15:00"));
+		// System.out.println(Utils.getTimeOfDayVector("07:55:00", "8:15:00"));
+		// System.out.println(Utils.getTimeOfDayVector("23:50:00", "24:10:00"));
 
-		System.out.println(Utils.year(1380265200000L));
+		// System.out.println(Utils.year(1380265200000L));
 
 	}
 
@@ -216,8 +225,13 @@ public class Utils {
 			return 11;
 		} else if ((hours >= 24) && (hours < 26)) {
 			return 0;
+		} else if ((hours >= 26) && (hours < 28)) {
+			return 1;
+		} else if ((hours >= 28) && (hours < 30)) {
+			return 2;
 		}
-		throw new RuntimeException("Unable to determine time of day");
+		throw new RuntimeException("Unable to determine time of day, hours"
+				+ hours);
 	}
 
 	public static String getTimeOfDayVector(final String from, final String to) {
