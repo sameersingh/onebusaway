@@ -184,70 +184,8 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 	@Override
 	public void calculateObaAndModeError(final List<Integer> tripIds,
 			final int k) {
-
 		final Set<Trip> trips = tripDao.getTripsIn(tripIds);
-		for (final Trip trip : trips) {
-			distanceAlongTripCalculator.addDistancesAlongTrip(trip);
-		}
-		final Set<Trip> tripsTrain = new LinkedHashSet<>(trips.size());
-		final Set<Trip> tripsTest = new LinkedHashSet<>(trips.size());
-		splitDataset(trips, tripsTrain, tripsTest);
-
-		// final List<Double> errorsObaTrain = new ArrayList<>();
-		// final List<Double> errorsModeTrain = new ArrayList<>();
-		// final List<Double> diffObaTrain = new ArrayList<>();
-		// final List<Double> diffModeTrain = new ArrayList<>();
-		// for (final Trip tripTrain : tripsTrain) {
-		// doCalculations(tripTrain, k, errorsObaTrain, errorsModeTrain,
-		// diffObaTrain, diffModeTrain,
-		// yHatTrainPerSegmentPerTripInstancePerTrip);
-		// }
-		//
-		// double sumErrorsObaTrain = 0;
-		// for (final Double errorObaTrain : errorsObaTrain) {
-		// sumErrorsObaTrain += errorObaTrain;
-		// }
-		// double sumErrorsModeTrain = 0;
-		// for (final Double errorModeTrain : errorsModeTrain) {
-		// sumErrorsModeTrain += errorModeTrain;
-		// }
-		//
-		// final double errorObaTrainK = Math.sqrt(sumErrorsObaTrain
-		// / errorsObaTrain.size());
-		// final double errorModeTrainK = Math.sqrt(sumErrorsModeTrain
-		// / errorsModeTrain.size());
-		//
-		// System.out.println(errorObaTrainK + "\t" + errorModeTrainK);
-
-		// ----------------
-
-		final List<Double> errorsObaTest = new ArrayList<>();
-		final List<Double> errorsModeTest = new ArrayList<>();
-		final List<Double> diffObaTest = new ArrayList<>();
-		final List<Double> diffModeTest = new ArrayList<>();
-		for (final Trip tripTest : tripsTest) {
-			doCalculations(tripTest, k, errorsObaTest, errorsModeTest,
-					diffObaTest, diffModeTest, yHatTestValues, yTestValues);
-		}
-
-		double sumErrorsObaTest = 0;
-		for (final Double errorObaTest : errorsObaTest) {
-			sumErrorsObaTest += errorObaTest;
-		}
-		double sumErrorsModeTest = 0;
-		for (final Double errorModeTest : errorsModeTest) {
-			sumErrorsModeTest += errorModeTest;
-		}
-
-		final double errorObaTestK = Math.sqrt(sumErrorsObaTest
-				/ errorsObaTest.size());
-		final double errorModeTestK = Math.sqrt(sumErrorsModeTest
-				/ errorsModeTest.size());
-
-		System.out.println(errorObaTestK + "\t" + errorModeTestK);
-
-		// binErrors("oba", diffObaTest);
-		// binErrors("mode", diffModeTest);
+		calculateObaAndModeError(trips, k);
 	}
 
 	private void doCalculations(final Trip trip, final int k,
@@ -391,5 +329,72 @@ public class DefaultErrorCalculator implements ErrorCalculator {
 		for (final int element : bins) {
 			System.out.println(element);
 		}
+	}
+
+	@Override
+	public void calculateObaAndModeError(final Set<Trip> trips, final int k) {
+		for (final Trip trip : trips) {
+			distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+		}
+		final Set<Trip> tripsTrain = new LinkedHashSet<>(trips.size());
+		final Set<Trip> tripsTest = new LinkedHashSet<>(trips.size());
+		splitDataset(trips, tripsTrain, tripsTest);
+
+		// final List<Double> errorsObaTrain = new ArrayList<>();
+		// final List<Double> errorsModeTrain = new ArrayList<>();
+		// final List<Double> diffObaTrain = new ArrayList<>();
+		// final List<Double> diffModeTrain = new ArrayList<>();
+		// for (final Trip tripTrain : tripsTrain) {
+		// doCalculations(tripTrain, k, errorsObaTrain, errorsModeTrain,
+		// diffObaTrain, diffModeTrain,
+		// yHatTrainPerSegmentPerTripInstancePerTrip);
+		// }
+		//
+		// double sumErrorsObaTrain = 0;
+		// for (final Double errorObaTrain : errorsObaTrain) {
+		// sumErrorsObaTrain += errorObaTrain;
+		// }
+		// double sumErrorsModeTrain = 0;
+		// for (final Double errorModeTrain : errorsModeTrain) {
+		// sumErrorsModeTrain += errorModeTrain;
+		// }
+		//
+		// final double errorObaTrainK = Math.sqrt(sumErrorsObaTrain
+		// / errorsObaTrain.size());
+		// final double errorModeTrainK = Math.sqrt(sumErrorsModeTrain
+		// / errorsModeTrain.size());
+		//
+		// System.out.println(errorObaTrainK + "\t" + errorModeTrainK);
+
+		// ----------------
+
+		final List<Double> errorsObaTest = new ArrayList<>();
+		final List<Double> errorsModeTest = new ArrayList<>();
+		final List<Double> diffObaTest = new ArrayList<>();
+		final List<Double> diffModeTest = new ArrayList<>();
+		for (final Trip tripTest : tripsTest) {
+			doCalculations(tripTest, k, errorsObaTest, errorsModeTest,
+					diffObaTest, diffModeTest, yHatTestValues, yTestValues);
+		}
+
+		double sumErrorsObaTest = 0;
+		for (final Double errorObaTest : errorsObaTest) {
+			sumErrorsObaTest += errorObaTest;
+		}
+		double sumErrorsModeTest = 0;
+		for (final Double errorModeTest : errorsModeTest) {
+			sumErrorsModeTest += errorModeTest;
+		}
+
+		final double errorObaTestK = Math.sqrt(sumErrorsObaTest
+				/ errorsObaTest.size());
+		final double errorModeTestK = Math.sqrt(sumErrorsModeTest
+				/ errorsModeTest.size());
+
+		System.out.println(errorObaTestK + "\t" + errorModeTestK);
+
+		// binErrors("oba", diffObaTest);
+		// binErrors("mode", diffModeTest);
+
 	}
 }

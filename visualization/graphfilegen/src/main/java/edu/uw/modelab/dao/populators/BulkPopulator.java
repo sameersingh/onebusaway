@@ -43,6 +43,7 @@ public abstract class BulkPopulator {
 					while ((line = br.readLine()) != null) {
 						tokensPerLine.add(line.split(separator));
 					}
+					LOG.info("Populating file {}...", file.getName());
 					doPopulate(tokensPerLine);
 				} catch (final IOException exc) {
 					LOG.error("Exception reading input file. Message {}",

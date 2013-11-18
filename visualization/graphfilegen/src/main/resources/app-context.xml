@@ -54,46 +54,6 @@
 		<constructor-arg value="${oba.input.folder}" />
 		<constructor-arg value="${oba.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
-		<constructor-arg>
-			<util:map>
-				<entry key="21767755">
-					<util:map>
-						<entry key="DAT">
-							<bean class="edu.uw.modelab.utils.Threshold">
-								<constructor-arg value="100" />
-								<constructor-arg value="23500" />
-							</bean>
-						</entry>
-					</util:map>
-				</entry>
-				<entry key="18113498">
-					<util:map>
-						<entry key="DAT">
-							<bean class="edu.uw.modelab.utils.Threshold">
-								<constructor-arg value="100" />
-								<constructor-arg value="92000" />
-							</bean>
-						</entry>
-					</util:map>
-				</entry>
-				<entry key="18113497">
-					<util:map>
-						<entry key="SD">
-							<bean class="edu.uw.modelab.utils.Threshold">
-								<constructor-arg value="-2000" />
-								<constructor-arg value="2000" />
-							</bean>
-						</entry>
-						<entry key="DAT">
-							<bean class="edu.uw.modelab.utils.Threshold">
-								<constructor-arg value="100" />
-								<constructor-arg value="92000" />
-							</bean>
-						</entry>
-					</util:map>
-				</entry>
-			</util:map>
-		</constructor-arg>
 	</bean>
 	
 	<bean id="routeDao" class="edu.uw.modelab.dao.impl.JdbcRouteDao">
@@ -168,7 +128,7 @@
 	
 	<bean id="distanceAlongTripCalculator" class="edu.uw.modelab.service.impl.DefaultDistanceAlongTripCalculator" />
 
-	<bean id="testSetCondition" class="edu.uw.modelab.service.impl.DayOfMonthTestSetCondition" />
+	<bean id="testSetCondition" class="edu.uw.modelab.service.impl.MonthTestSetCondition" />
 
 	
 </beans> 

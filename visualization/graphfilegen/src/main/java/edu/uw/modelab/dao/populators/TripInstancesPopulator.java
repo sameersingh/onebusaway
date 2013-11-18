@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -18,7 +17,6 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import edu.uw.modelab.utils.EllipticalMercator;
-import edu.uw.modelab.utils.Threshold;
 
 public class TripInstancesPopulator extends BulkPopulator {
 
@@ -26,23 +24,20 @@ public class TripInstancesPopulator extends BulkPopulator {
 			.getLogger(TripInstancesPopulator.class);
 
 	private static final String SQL = "insert into trip_instance (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon, y, x) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-	private static final String SQL_ALL_TRIP_IDS = "select id from trip";
+	private static final String SELECT_TRIP_IDS_LIMIT = "select id from trip limit 100";
 	private final JdbcTemplate template;
-	private final Map<Integer, Map<String, Threshold>> preprocessors;
 
 	public TripInstancesPopulator(final String folder, final boolean enabled,
-			final DataSource dataSource,
-			final Map<Integer, Map<String, Threshold>> preprocessors) {
+			final DataSource dataSource) {
 		super(folder, enabled, "\t");
 		this.template = new JdbcTemplate(dataSource);
-		this.preprocessors = preprocessors;
 	}
 
 	@Override
 	protected void doPopulate(final List<String[]> tokens) {
-		// in order not to get garbage here
-		final List<Integer> tripIds = template.queryForList(SQL_ALL_TRIP_IDS,
-				Integer.class);
+		// just insert realtime info of trips you will use
+		final List<Integer> tripIds = template.queryForList(
+				SELECT_TRIP_IDS_LIMIT, Integer.class);
 		final Set<TripInstanceInsertObject> tripInstances = new HashSet<TripInstanceInsertObject>(
 				tokens.size());
 		CollectionUtils.forAllDo(tokens, new Closure() {
@@ -53,51 +48,20 @@ public class TripInstancesPopulator extends BulkPopulator {
 				try {
 					tripId = Integer.valueOf(strTokens[2]);
 					if (!tripIds.contains(tripId)) {
-						LOG.warn("Trip id is not in the database, discarding register...");
+						LOG.warn("Trip id {} not used, discarding register...",
+								tripId);
 						return;
 					}
 				} catch (final Exception exc) {
-					LOG.warn("Trip id cannot be converted to integer, discarding register...");
+					LOG.warn(
+							"Trip id {} cannot be converted to integer, discarding register...",
+							strTokens[2]);
 					return;
 				}
 				try {
 					final double schedDeviation = Double.valueOf(strTokens[4]);
-					if ((schedDeviation < -2000) || (schedDeviation > 2000)) {
-						LOG.warn(
-								"Ignoring register, scheduled deviation is {} ",
-								schedDeviation);
-						return;
-					}
-
 					final double distanceAlongTrip = Double
 							.valueOf(strTokens[3]);
-					final Map<String, Threshold> preprocessor = preprocessors
-							.get(tripId);
-					// do a better preprocessing thing here
-					if (preprocessor != null) {
-						final Threshold distanceAlongTripThreshold = preprocessor
-								.get("DAT");
-
-						if ((distanceAlongTrip < distanceAlongTripThreshold
-								.getMin())
-								|| (distanceAlongTrip > distanceAlongTripThreshold
-										.getMax())) {
-							LOG.warn(
-									"Ignoring register, beginning or end of trip - distance {} ",
-									distanceAlongTrip);
-							return;
-						}
-					} else {
-						// at least remove final the start final of trips
-						if (distanceAlongTrip < 100) {
-							LOG.warn(
-									"Ignoring register, beginning of trip - distance {} ",
-									distanceAlongTrip);
-							return;
-						}
-					}
-
-					// do this per route
 					final double lat = Double.valueOf(strTokens[5]);
 					final double lon = Double.valueOf(strTokens[6]);
 					final double y = EllipticalMercator.mercY(lat);

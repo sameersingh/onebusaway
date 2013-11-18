@@ -1,6 +1,7 @@
 package edu.uw.modelab.console;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -10,6 +11,7 @@ import edu.uw.modelab.dao.populators.StopTimesPopulator;
 import edu.uw.modelab.dao.populators.StopsPopulator;
 import edu.uw.modelab.dao.populators.TripInstancesPopulator;
 import edu.uw.modelab.dao.populators.TripsPopulator;
+import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.service.ErrorCalculator;
 import edu.uw.modelab.service.FeatureFileCreator;
 import edu.uw.modelab.service.FileCreator;
@@ -19,21 +21,23 @@ public class Driver {
 	public Driver() {
 		final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext(
 				"classpath:app-context.xml");
-		instantiatePopulators(appContext);
 		final long start = System.currentTimeMillis();
-		final List<Integer> trips = getTrips(appContext);
-		// visualization(appContext, trips);
-		createFeatures(appContext, trips);
+		instantiatePopulators(appContext);
+		final List<Integer> tripIds = getTripIds(appContext);
+		// visualization(appContext, tripIds);
+		// createFeatures(appContext, tripIds);
+		calculateErrors(appContext, tripIds);
 		final long end = System.currentTimeMillis();
-		System.out.println((end - start) / 1000);
-		// calculateErrors(appContext, trips);
+		System.out.println("Time spent: " + ((end - start) / 1000));
 	}
 
 	private void calculateErrors(
 			final ClassPathXmlApplicationContext appContext,
-			final List<Integer> trips) {
+			final List<Integer> tripIds) {
 		final ErrorCalculator errorCalculator = appContext.getBean(
 				"errorCalculator", ErrorCalculator.class);
+		final Set<Trip> trips = appContext.getBean("tripDao", TripDao.class)
+				.getTripsIn(tripIds);
 		// errorCalculator.calculateObaAndModeError(trips, 1);
 		for (int i = 1; i < 26; i++) {
 			errorCalculator.calculateObaAndModeError(trips, i);
@@ -48,7 +52,7 @@ public class Driver {
 		featureFileCreator.createFeatures(trips);
 	}
 
-	private List<Integer> getTrips(
+	private List<Integer> getTripIds(
 			final ClassPathXmlApplicationContext appContext) {
 		// final List<Integer> trips = Arrays.asList(new Integer[] { 21673115,
 		// 21673118, 21670614, 21670616, 21542721, 21542723, 21672958,
@@ -58,7 +62,7 @@ public class Driver {
 		// final List<Integer> trips = Arrays.asList(new Integer[] { 21767755
 		// });
 		final List<Integer> trips = appContext
-				.getBean("tripDao", TripDao.class).getTripIds(4000);
+				.getBean("tripDao", TripDao.class).getTripIds(100);
 		return trips;
 	}
 
