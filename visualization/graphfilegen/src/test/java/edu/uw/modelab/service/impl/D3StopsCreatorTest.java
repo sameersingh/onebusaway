@@ -9,11 +9,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.uw.modelab.pojo.Stop;
-import edu.uw.modelab.service.FileCreator;
+import edu.uw.modelab.visualization.VisualizationFileCreator;
 
 public class D3StopsCreatorTest {
 
-	private FileCreator fileCreator;
+	private VisualizationFileCreator fileCreator;
 
 	// private Dao mockDao;
 

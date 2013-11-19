@@ -26,31 +26,31 @@
         <property name="password" value="${db.pass}"/>
     </bean>
 
-	<bean id="routesPopulator" class="edu.uw.modelab.dao.populators.RoutesPopulator" init-method="populate">
+	<bean id="routesPopulator" class="edu.uw.modelab.dao.impl.populators.RoutesPopulator" init-method="populate">
 		<constructor-arg value="${gtfs.input.folder}/routes.txt" />
 		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-	<bean id="tripsPopulator" class="edu.uw.modelab.dao.populators.TripsPopulator" init-method="populate">
+	<bean id="tripsPopulator" class="edu.uw.modelab.dao.impl.populators.TripsPopulator" init-method="populate">
 		<constructor-arg value="${gtfs.input.folder}/trips.txt" />
 		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-	<bean id="stopsPopulator" class="edu.uw.modelab.dao.populators.StopsPopulator" init-method="populate">
+	<bean id="stopsPopulator" class="edu.uw.modelab.dao.impl.populators.StopsPopulator" init-method="populate">
 		<constructor-arg value="${gtfs.input.folder}/stops.txt" />
 		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 	
-	<bean id="stopTimesPopulator" class="edu.uw.modelab.dao.populators.StopTimesPopulator" init-method="populate">
+	<bean id="stopTimesPopulator" class="edu.uw.modelab.dao.impl.populators.StopTimesPopulator" init-method="populate">
 		<constructor-arg value="${gtfs.input.folder}/stop_times.txt" />
 		<constructor-arg value="${gtfs.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-	<bean id="tripInstancesPopulator" class="edu.uw.modelab.dao.populators.TripInstancesPopulator" init-method="populate">
+	<bean id="tripInstancesPopulator" class="edu.uw.modelab.dao.impl.populators.TripInstancesPopulator" init-method="populate">
 		<constructor-arg value="${oba.input.folder}" />
 		<constructor-arg value="${oba.populator.enabled}" />
 		<constructor-arg ref="dataSource" />
@@ -78,57 +78,53 @@
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-	<bean id="stopsCreator" class="edu.uw.modelab.service.impl.D3StopsCreator">
+	<bean id="stopsCreator" class="edu.uw.modelab.visualization.impl.D3StopsCreator">
 		<constructor-arg value="${output.folder}/stops.json" />
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="timeService" />
-		<constructor-arg ref= "distanceAlongTripCalculator" />
-		<constructor-arg ref="errorCalculator" />
+		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref= "distanceAlongTripPopulator" />
+		<constructor-arg ref="errorService" />
 	</bean>
 	
-	<bean id="tripInstancesCreator" class="edu.uw.modelab.service.impl.D3TripInstancesCreator">
+	<bean id="tripInstancesCreator" class="edu.uw.modelab.visualization.impl.D3TripInstancesCreator">
 		<constructor-arg value="${output.folder}/trip_instances.json" />
 		<constructor-arg ref="tripInstanceDao" />
 	</bean>
 	
-	<bean id="delayCalculator" class="edu.uw.modelab.service.impl.DefaultDelayCalculator">
-		<constructor-arg ref="timeService" />
-	</bean>
+	<bean id="timeEstimator" class="edu.uw.modelab.service.impl.TimeEstimatorImpl" />
 	
-	<bean id="timeService" class="edu.uw.modelab.service.impl.DefaultTimeService" />
-	
-	<bean id="featureFileCreator" class="edu.uw.modelab.service.impl.PerSegmentFeatureFileCreator" >
+	<bean id="featureFileCreator" class="edu.uw.modelab.feature.impl.SegmentFeatureFileCreator" >
 		<constructor-arg value="${output.folder}/features_training.dat" />
 		<constructor-arg value="${output.folder}/features_test.dat" />
 		<constructor-arg value="${output.folder}/labels_training.txt" />
 		<constructor-arg value="${output.folder}/labels_test.txt" />
 		<constructor-arg value="${output.folder}/features_names.txt" />
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="delayCalculator" />
-		<constructor-arg ref="distanceAlongTripCalculator" />
-		<constructor-arg ref="testSetCondition" />
+		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref="distanceAlongTripPopulator" />
+		<constructor-arg ref="datasetSplitCondition" />
 	</bean>
 
-	<bean id="errorCalculator" class="edu.uw.modelab.service.impl.DefaultErrorCalculator" init-method="init" >
+	<bean id="errorService" class="edu.uw.modelab.service.impl.ErrorServiceImpl" init-method="init" >
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="timeService" />
-		<constructor-arg ref= "distanceAlongTripCalculator" />
-		<constructor-arg ref="testSetCondition" />
+		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref= "distanceAlongTripPopulator" />
+		<constructor-arg ref="datasetSplitCondition" />
 		<constructor-arg value="${yhat.train.file}" />
 		<constructor-arg value="${yhat.test.file}" />
 		<constructor-arg value="${y.train.file}" />
 		<constructor-arg value="${y.test.file}" />
 	</bean>
 	
-	<bean id="dotCreator" class="edu.uw.modelab.service.impl.DotCreator">
+	<bean id="dotCreator" class="edu.uw.modelab.visualization.impl.DotCreator">
 		<constructor-arg value="${output.folder}/oba.dot" />
 		<constructor-arg ref="stopDao" />
 		<constructor-arg ref="routeDao" />
 	</bean>
 	
-	<bean id="distanceAlongTripCalculator" class="edu.uw.modelab.service.impl.DefaultDistanceAlongTripCalculator" />
+	<bean id="distanceAlongTripPopulator" class="edu.uw.modelab.service.impl.DistanceAlongTripPopulatorImpl" />
 
-	<bean id="testSetCondition" class="edu.uw.modelab.service.impl.MonthTestSetCondition" />
+	<bean id="datasetSplitCondition" class="edu.uw.modelab.feature.impl.MonthDatasetSplitCondition" />
 
 	
 </beans> 

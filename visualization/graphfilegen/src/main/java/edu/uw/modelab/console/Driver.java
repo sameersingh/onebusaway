@@ -1,22 +1,29 @@
 package edu.uw.modelab.console;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.uw.modelab.dao.TripDao;
-import edu.uw.modelab.dao.populators.RoutesPopulator;
-import edu.uw.modelab.dao.populators.StopTimesPopulator;
-import edu.uw.modelab.dao.populators.StopsPopulator;
-import edu.uw.modelab.dao.populators.TripInstancesPopulator;
-import edu.uw.modelab.dao.populators.TripsPopulator;
+import edu.uw.modelab.dao.impl.populators.RoutesPopulator;
+import edu.uw.modelab.dao.impl.populators.StopTimesPopulator;
+import edu.uw.modelab.dao.impl.populators.StopsPopulator;
+import edu.uw.modelab.dao.impl.populators.TripInstancesPopulator;
+import edu.uw.modelab.dao.impl.populators.TripsPopulator;
+import edu.uw.modelab.error.pojo.Dataset;
+import edu.uw.modelab.error.pojo.RootMeanSquareError;
+import edu.uw.modelab.feature.FeatureFileCreator;
 import edu.uw.modelab.pojo.Trip;
-import edu.uw.modelab.service.ErrorCalculator;
-import edu.uw.modelab.service.FeatureFileCreator;
-import edu.uw.modelab.service.FileCreator;
+import edu.uw.modelab.service.ErrorService;
+import edu.uw.modelab.visualization.VisualizationFileCreator;
 
 public class Driver {
+
+	private static final Logger LOG = LoggerFactory.getLogger(Driver.class);
 
 	public Driver() {
 		final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext(
@@ -28,19 +35,20 @@ public class Driver {
 		// createFeatures(appContext, tripIds);
 		calculateErrors(appContext, tripIds);
 		final long end = System.currentTimeMillis();
-		System.out.println("Time spent: " + ((end - start) / 1000));
+		LOG.info("Time spent: " + ((end - start) / 1000));
 	}
 
 	private void calculateErrors(
 			final ClassPathXmlApplicationContext appContext,
 			final List<Integer> tripIds) {
-		final ErrorCalculator errorCalculator = appContext.getBean(
-				"errorCalculator", ErrorCalculator.class);
+		final ErrorService errorService = appContext.getBean("errorService",
+				ErrorService.class);
 		final Set<Trip> trips = appContext.getBean("tripDao", TripDao.class)
 				.getTripsIn(tripIds);
-		// errorCalculator.calculateObaAndModeError(trips, 1);
 		for (int i = 1; i < 26; i++) {
-			errorCalculator.calculateObaAndModeError(trips, i);
+			final Map<Dataset, RootMeanSquareError> errors = errorService
+					.getErrors(trips, i);
+			System.out.println(errors.get(Dataset.TRAIN));
 		}
 	}
 
@@ -75,12 +83,13 @@ public class Driver {
 	private void createTripInstances(
 			final ClassPathXmlApplicationContext appContext,
 			final List<Integer> trips) {
-		appContext.getBean("tripInstancesCreator", FileCreator.class)
-				.createForTrips(trips);
+		appContext.getBean("tripInstancesCreator",
+				VisualizationFileCreator.class).createForTrips(trips);
 	}
 
 	private void createStops(final ClassPathXmlApplicationContext appContext) {
-		appContext.getBean("stopsCreator", FileCreator.class).create();
+		appContext.getBean("stopsCreator", VisualizationFileCreator.class)
+				.create();
 	}
 
 	private void instantiatePopulators(
