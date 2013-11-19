@@ -81,7 +81,7 @@
 	<bean id="stopsCreator" class="edu.uw.modelab.visualization.impl.D3StopsCreator">
 		<constructor-arg value="${output.folder}/stops.json" />
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref="timeService" />
 		<constructor-arg ref= "distanceAlongTripPopulator" />
 		<constructor-arg ref="errorService" />
 	</bean>
@@ -91,7 +91,7 @@
 		<constructor-arg ref="tripInstanceDao" />
 	</bean>
 	
-	<bean id="timeEstimator" class="edu.uw.modelab.service.impl.TimeEstimatorImpl" />
+	<bean id="timeService" class="edu.uw.modelab.service.impl.TimeServiceImpl" />
 	
 	<bean id="featureFileCreator" class="edu.uw.modelab.feature.impl.SegmentFeatureFileCreator" >
 		<constructor-arg value="${output.folder}/features_training.dat" />
@@ -100,14 +100,14 @@
 		<constructor-arg value="${output.folder}/labels_test.txt" />
 		<constructor-arg value="${output.folder}/features_names.txt" />
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref="timeService" />
 		<constructor-arg ref="distanceAlongTripPopulator" />
 		<constructor-arg ref="datasetSplitCondition" />
 	</bean>
 
 	<bean id="errorService" class="edu.uw.modelab.service.impl.ErrorServiceImpl" init-method="init" >
 		<constructor-arg ref="tripDao" />
-		<constructor-arg ref="timeEstimator" />
+		<constructor-arg ref="timeService" />
 		<constructor-arg ref= "distanceAlongTripPopulator" />
 		<constructor-arg ref="datasetSplitCondition" />
 		<constructor-arg value="${yhat.train.file}" />

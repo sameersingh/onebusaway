@@ -20,7 +20,7 @@ import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DistanceAlongTripPopulator;
 import edu.uw.modelab.service.ErrorService;
-import edu.uw.modelab.service.TimeEstimator;
+import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.utils.Utils;
 import edu.uw.modelab.visualization.pojo.TripInstanceData;
 
@@ -35,7 +35,7 @@ public class D3StopsCreator extends D3Creator {
 
 	private final Map<Integer, Integer> stopIdsIndexes;
 	private final TripDao tripDao;
-	private final TimeEstimator timeEstimator;
+	private final TimeService timeEstimator;
 	private final DistanceAlongTripPopulator distanceAlongTripCalculator;
 	private final ErrorService errorCalculator;
 
@@ -44,7 +44,7 @@ public class D3StopsCreator extends D3Creator {
 	private Trip trip = null;
 
 	public D3StopsCreator(final String filename, final TripDao tripDao,
-			final TimeEstimator timeEstimator,
+			final TimeService timeEstimator,
 			final DistanceAlongTripPopulator distanceAlongTripCalculator,
 			final ErrorService errorCalculator) {
 		super(filename);

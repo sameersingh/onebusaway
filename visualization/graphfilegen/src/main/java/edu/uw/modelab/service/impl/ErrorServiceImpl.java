@@ -20,12 +20,11 @@ import edu.uw.modelab.error.pojo.Dataset;
 import edu.uw.modelab.error.pojo.RootMeanSquareError;
 import edu.uw.modelab.feature.DatasetSplitCondition;
 import edu.uw.modelab.pojo.Segment;
-import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DistanceAlongTripPopulator;
 import edu.uw.modelab.service.ErrorService;
-import edu.uw.modelab.service.TimeEstimator;
+import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.utils.Utils;
 
 /**
@@ -42,7 +41,7 @@ public class ErrorServiceImpl implements ErrorService {
 	private final Map<String, Double> yTrainValues;
 	private final Map<String, Double> yTestValues;
 	private final TripDao tripDao;
-	private final TimeEstimator timeEstimator;
+	private final TimeService timeService;
 	private final DatasetSplitCondition datasetSplitCondition;
 	private final String yhatTrainFileName;
 	private final String yHatTestFileName;
@@ -52,13 +51,13 @@ public class ErrorServiceImpl implements ErrorService {
 	private final DistanceAlongTripPopulator distanceAlongTripPopulator;
 
 	public ErrorServiceImpl(final TripDao tripDao,
-			final TimeEstimator timeEstimator,
+			final TimeService timeService,
 			final DistanceAlongTripPopulator distanceAlongTripPopulator,
 			final DatasetSplitCondition datasetSplitCondition,
 			final String yhatTrainFileName, final String yHatTestFileName,
 			final String yTrainFileName, final String yTestFileName) {
 		this.tripDao = tripDao;
-		this.timeEstimator = timeEstimator;
+		this.timeService = timeService;
 		this.distanceAlongTripPopulator = distanceAlongTripPopulator;
 		this.datasetSplitCondition = datasetSplitCondition;
 		this.yhatTrainFileName = yhatTrainFileName;
@@ -102,6 +101,28 @@ public class ErrorServiceImpl implements ErrorService {
 	}
 
 	@Override
+	public Map<Dataset, RootMeanSquareError> getErrors(final Set<Trip> trips,
+			final int k) {
+
+		final Map<Dataset, RootMeanSquareError> errors = new HashMap<>();
+		for (final Trip trip : trips) {
+			distanceAlongTripPopulator.addDistancesAlongTrip(trip);
+		}
+		final Set<Trip> tripsTrain = new LinkedHashSet<>(trips.size());
+		final Set<Trip> tripsTest = new LinkedHashSet<>(trips.size());
+		splitDataset(trips, tripsTrain, tripsTest);
+
+		final RootMeanSquareError training = getError(tripsTrain, k,
+				yTrainValues, yHatTrainValues);
+		final RootMeanSquareError test = getError(tripsTest, k, yTestValues,
+				yHatTestValues);
+
+		errors.put(Dataset.TRAIN, training);
+		errors.put(Dataset.TEST, test);
+		return errors;
+	}
+
+	@Override
 	// does not depend on k... constant. Error if there was no delay
 	public Map<Dataset, Double> getScheduledError(final int tripId) {
 		final Trip trip = tripDao.getTripById(tripId);
@@ -126,14 +147,18 @@ public class ErrorServiceImpl implements ErrorService {
 				double actual_I = 0;
 				double sched_I = 0;
 				if (segment.isFirst()) {
-					sched_I = getScheduled(segment, tripInstance);
+					sched_I = timeService.getScheduledTime(tripInstance,
+							segment.getFrom());
 					actual_I = sched_I;
 				} else if (i == (numberOfSegments - 1)) {
-					sched_I = getScheduledLast(segment, tripInstance);
-					actual_I = getActualLast(segment, tripInstance);
+					sched_I = timeService.getScheduledTime(tripInstance,
+							segment.getTo());
+					actual_I = timeService.getActualTime(tripInstance,
+							segment.getTo());
 				} else {
-					actual_I = getActual(segment, tripInstance);
-					sched_I = getScheduled(segment, tripInstance);
+					actual_I = timeService.getActualTime(tripInstance, segment);
+					sched_I = timeService.getScheduledTime(tripInstance,
+							segment.getFrom());
 				}
 				i++;
 				final double errSchedule = Math.pow(
@@ -150,7 +175,6 @@ public class ErrorServiceImpl implements ErrorService {
 				/ errorsSchedule.size());
 		LOG.info("schedule error: " + errorSchedule);
 		return Collections.singletonMap(Dataset.TEST, errorSchedule);
-
 	}
 
 	@Override
@@ -165,10 +189,12 @@ public class ErrorServiceImpl implements ErrorService {
 			final String segmentJSched = segment.getFrom().getStopTime()
 					.getSchedArrivalTime();
 			final long scheduledDiff = Utils.diff(segmentISched, segmentJSched);
-			final long actual_I = getActualLast(segment, tripInstance);
+			final long actual_I = timeService.getActualTime(tripInstance,
+					segment.getTo());
 
 			final long t_true_I = actual_I;
-			final long actual_J = getActual(segment, tripInstance);
+			final long actual_J = timeService.getActualTime(tripInstance,
+					segment);
 			final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
 			final String key_J = Utils.label(tripInstance, segment);
 			final double y_hat_J_sec = yHatTestValues.get(key_J);
@@ -207,8 +233,8 @@ public class ErrorServiceImpl implements ErrorService {
 			int j = 0;
 			int i = k;
 			while (i <= numberOfSegments) {
-				final long scheduledDiff = getScheduledDiff(
-						segments.get(i - 1), segments.get(j));
+				final long scheduledDiff = timeService.getScheduledTimeDiff(
+						segments.get(j).getFrom(), segments.get(i - 1).getTo());
 				// old stuff, seems that I wasn't considering the s segments
 				// between the stops
 				// long actual_I = 0;
@@ -218,7 +244,8 @@ public class ErrorServiceImpl implements ErrorService {
 				// actual_I = getActual(segments.get(i), tripInstance);
 				// }
 				// final long t_true_I = actual_I;
-				final long actual_J = getActual(segments.get(j), tripInstance);
+				final long actual_J = timeService.getActualTime(tripInstance,
+						segments.get(j));
 				final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
 				int s = j;
 				long y_hat_S = 0;
@@ -269,49 +296,6 @@ public class ErrorServiceImpl implements ErrorService {
 		}
 	}
 
-	private long getActual(final Segment segment,
-			final TripInstance tripInstance) {
-		long result = 0;
-		final Stop stop = segment.getFrom();
-		if (segment.isFirst()) {
-			// assume from actual is equal to scheduled one
-			final String actual = stop.getStopTime().getSchedArrivalTime();
-			result = Utils.time(tripInstance.getServiceDate(), actual);
-		} else {
-			result = timeEstimator.getActualTime(tripInstance, stop);
-		}
-		return result;
-	}
-
-	private long getActualLast(final Segment segment,
-			final TripInstance tripInstance) {
-		final Stop stop = segment.getTo();
-		final long result = timeEstimator.getActualTime(tripInstance, stop);
-		return result;
-	}
-
-	private long getScheduled(final Segment segment,
-			final TripInstance tripInstance) {
-		final Stop stop = segment.getFrom();
-		final String scheduled = stop.getStopTime().getSchedArrivalTime();
-		return Utils.time(tripInstance.getServiceDate(), scheduled);
-	}
-
-	private long getScheduledLast(final Segment segment,
-			final TripInstance tripInstance) {
-		final Stop stop = segment.getTo();
-		final String scheduled = stop.getStopTime().getSchedArrivalTime();
-		return Utils.time(tripInstance.getServiceDate(), scheduled);
-	}
-
-	private long getScheduledDiff(final Segment segmentI, final Segment segmentJ) {
-		final String segmentISched = segmentI.getTo().getStopTime()
-				.getSchedArrivalTime();
-		final String segmentJSched = segmentJ.getFrom().getStopTime()
-				.getSchedArrivalTime();
-		return Utils.diff(segmentISched, segmentJSched);
-	}
-
 	private void binErrors(final String name, final List<Double> errors) {
 		final int bins[] = new int[6];
 		for (final Double error : errors) {
@@ -333,29 +317,6 @@ public class ErrorServiceImpl implements ErrorService {
 		for (final int element : bins) {
 			System.out.println(element);
 		}
-	}
-
-	@Override
-	public Map<Dataset, RootMeanSquareError> getErrors(final Set<Trip> trips,
-			final int k) {
-
-		final Map<Dataset, RootMeanSquareError> errors = new HashMap<>();
-
-		for (final Trip trip : trips) {
-			distanceAlongTripPopulator.addDistancesAlongTrip(trip);
-		}
-		final Set<Trip> tripsTrain = new LinkedHashSet<>(trips.size());
-		final Set<Trip> tripsTest = new LinkedHashSet<>(trips.size());
-		splitDataset(trips, tripsTrain, tripsTest);
-
-		final RootMeanSquareError training = getError(tripsTrain, k,
-				yTrainValues, yHatTrainValues);
-		final RootMeanSquareError test = getError(tripsTest, k, yTestValues,
-				yHatTestValues);
-
-		errors.put(Dataset.TRAIN, training);
-		errors.put(Dataset.TEST, test);
-		return errors;
 	}
 
 	private RootMeanSquareError getError(final Set<Trip> trips, final int k,

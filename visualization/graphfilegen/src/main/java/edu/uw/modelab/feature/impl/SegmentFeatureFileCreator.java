@@ -20,7 +20,7 @@ import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DistanceAlongTripPopulator;
-import edu.uw.modelab.service.TimeEstimator;
+import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.utils.Utils;
 
 public class SegmentFeatureFileCreator implements FeatureFileCreator {
@@ -37,16 +37,16 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 	private final String labelsFileTraining;
 	private final String labelsFileTest;
 	private final TripDao tripDao;
-	private final TimeEstimator timeEstimator;
-	private final DistanceAlongTripPopulator distanceAlongTripCalculator;
-	private final DatasetSplitCondition testSetCondition;
+	private final TimeService timeEstimator;
+	private final DistanceAlongTripPopulator distanceAlongTripPopulator;
+	private final DatasetSplitCondition datasetSplitCondition;
 
 	public SegmentFeatureFileCreator(final String featureFileTraining,
 			final String featureFileTest, final String labelsFileTraining,
 			final String labelsFileTest, final String featureNames,
-			final TripDao tripDao, final TimeEstimator timeEstimator,
-			final DistanceAlongTripPopulator distanceAlongTripCalculator,
-			final DatasetSplitCondition testSetCondition) {
+			final TripDao tripDao, final TimeService timeEstimator,
+			final DistanceAlongTripPopulator distanceAlongTripPopulator,
+			final DatasetSplitCondition datasetSplitCondition) {
 		this.featureFileTraining = featureFileTraining;
 		this.featureFileTest = featureFileTest;
 		this.labelsFileTraining = labelsFileTraining;
@@ -54,8 +54,8 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		this.featureNames = featureNames;
 		this.tripDao = tripDao;
 		this.timeEstimator = timeEstimator;
-		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
-		this.testSetCondition = testSetCondition;
+		this.distanceAlongTripPopulator = distanceAlongTripPopulator;
+		this.datasetSplitCondition = datasetSplitCondition;
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 
 	private void doCreateFeatures(final Set<Trip> trips) {
 		for (final Trip trip : trips) {
-			distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+			distanceAlongTripPopulator.addDistancesAlongTrip(trip);
 		}
 
 		PrintWriter pwTrain = null;
@@ -123,7 +123,7 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 					final long serviceDate = tripInstance.getServiceDate();
 					final int dayOfWeek = Utils.dayOfWeek(serviceDate);
 					final int monthOfYear = Utils.monthOfYear(serviceDate);
-					if (testSetCondition.isForTest(serviceDate)) {
+					if (datasetSplitCondition.isForTest(serviceDate)) {
 						for (final Segment segment : segments) {
 							final String label = Utils.label(tripInstance,
 									segment);

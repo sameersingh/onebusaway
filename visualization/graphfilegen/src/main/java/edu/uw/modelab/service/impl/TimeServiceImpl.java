@@ -11,17 +11,17 @@ import edu.uw.modelab.pojo.RealtimePosition;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.TripInstance;
-import edu.uw.modelab.service.TimeEstimator;
+import edu.uw.modelab.service.TimeService;
 import edu.uw.modelab.utils.Utils;
 
 /**
  * Calculates the actual arrival times based on distance along trip
  * 
  */
-public class TimeEstimatorImpl implements TimeEstimator {
+public class TimeServiceImpl implements TimeService {
 
 	private static final Logger LOG = LoggerFactory
-			.getLogger(TimeEstimatorImpl.class);
+			.getLogger(TimeServiceImpl.class);
 
 	@Override
 	public long getActualTimesDiff(final TripInstance tripInstance,
@@ -61,6 +61,35 @@ public class TimeEstimatorImpl implements TimeEstimator {
 		// LOG.info("Segment {} arrived " + (delay < 0 ? "late" : "before")
 		// + " {} seconds", segment.name(), delay);
 		return delay;
+	}
+
+	@Override
+	public long getActualTime(final TripInstance tripInstance,
+			final Segment segment) {
+		long result = 0;
+		final Stop stop = segment.getFrom();
+		if (segment.isFirst()) {
+			// assume from actual is equal to scheduled one
+			final String actual = stop.getStopTime().getSchedArrivalTime();
+			result = Utils.time(tripInstance.getServiceDate(), actual);
+		} else {
+			result = getActualTime(tripInstance, stop);
+		}
+		return result;
+	}
+
+	@Override
+	public long getScheduledTime(final TripInstance tripInstance,
+			final Stop stop) {
+		final String scheduled = stop.getStopTime().getSchedArrivalTime();
+		return Utils.time(tripInstance.getServiceDate(), scheduled);
+	}
+
+	@Override
+	public long getScheduledTimeDiff(final Stop from, final Stop to) {
+		final String toSched = to.getStopTime().getSchedArrivalTime();
+		final String fromSched = from.getStopTime().getSchedArrivalTime();
+		return Utils.diff(toSched, fromSched);
 	}
 
 	private long getActualArrivalTimeBasedOnDistanceAlongTrip(final Stop stop,

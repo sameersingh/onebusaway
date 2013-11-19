@@ -48,7 +48,7 @@ public class Driver {
 		for (int i = 1; i < 26; i++) {
 			final Map<Dataset, RootMeanSquareError> errors = errorService
 					.getErrors(trips, i);
-			System.out.println(errors.get(Dataset.TRAIN));
+			System.out.println(errors.get(Dataset.TEST));
 		}
 	}
 
