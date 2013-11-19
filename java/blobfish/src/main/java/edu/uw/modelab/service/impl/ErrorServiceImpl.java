@@ -105,12 +105,14 @@ public class ErrorServiceImpl implements ErrorService {
 			final int k) {
 
 		final Map<Dataset, RootMeanSquareError> errors = new HashMap<>();
+		final Set<Trip> clonedTrips = new LinkedHashSet<>(trips.size());
 		for (final Trip trip : trips) {
-			distanceAlongTripPopulator.addDistancesAlongTrip(trip);
+			clonedTrips.add(distanceAlongTripPopulator
+					.getTripWithDistancesAlongTrip(trip));
 		}
-		final Set<Trip> tripsTrain = new LinkedHashSet<>(trips.size());
-		final Set<Trip> tripsTest = new LinkedHashSet<>(trips.size());
-		splitDataset(trips, tripsTrain, tripsTest);
+		final Set<Trip> tripsTrain = new LinkedHashSet<>(clonedTrips.size());
+		final Set<Trip> tripsTest = new LinkedHashSet<>(clonedTrips.size());
+		splitDataset(clonedTrips, tripsTrain, tripsTest);
 
 		final RootMeanSquareError training = getError(tripsTrain, k,
 				yTrainValues, yHatTrainValues);
@@ -126,9 +128,10 @@ public class ErrorServiceImpl implements ErrorService {
 	// does not depend on k... constant. Error if there was no delay
 	public Map<Dataset, Double> getScheduledError(final int tripId) {
 		final Trip trip = tripDao.getTripById(tripId);
-		distanceAlongTripPopulator.addDistancesAlongTrip(trip);
+		final Trip clonedTrip = distanceAlongTripPopulator
+				.getTripWithDistancesAlongTrip(trip);
 		final Set<Trip> trips = new LinkedHashSet<>();
-		trips.add(trip);
+		trips.add(clonedTrip);
 		final Set<Trip> tripsTrain = new LinkedHashSet<>(trips.size());
 		final Set<Trip> tripsTest = new LinkedHashSet<>(trips.size());
 		splitDataset(trips, tripsTrain, tripsTest);

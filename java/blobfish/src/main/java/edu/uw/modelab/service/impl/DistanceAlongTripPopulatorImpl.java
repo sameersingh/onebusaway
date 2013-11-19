@@ -36,17 +36,19 @@ public class DistanceAlongTripPopulatorImpl implements
 	}
 
 	@Override
-	public void addDistancesAlongTrip(final Trip trip) {
+	public Trip getTripWithDistancesAlongTrip(final Trip trip) {
+		final Trip clone = new Trip(trip);
 		if (filter) {
-			doFilter(trip);
+			doFilter(clone);
 		}
-		final Set<TripInstance> instances = trip.getInstances();
+		final Set<TripInstance> instances = clone.getInstances();
 		if (!instances.isEmpty()) {
-			final Set<Segment> segments = trip.getSegments();
+			final Set<Segment> segments = clone.getSegments();
 			for (final Segment segment : segments) {
 				addDistanceAlongTripToStopsInSegment(segment, instances);
 			}
 		}
+		return clone;
 	}
 
 	private void doFilter(final Trip trip) {
@@ -62,16 +64,15 @@ public class DistanceAlongTripPopulatorImpl implements
 			final Set<TripInstance> instances) {
 		if (segment.isFirst()) {
 			segment.getFrom().setDistanceAlongTrip(0);
-			addBasedOnDistanceAlongTrip(segment, instances);
+			addBasedOnDistanceAlongTrip(segment.getTo(), instances);
 		} else {
-			// only need to calculate the to, the from is the previous to
-			addBasedOnDistanceAlongTrip(segment, instances);
+			addBasedOnDistanceAlongTrip(segment.getFrom(), instances);
+			addBasedOnDistanceAlongTrip(segment.getTo(), instances);
 		}
 	}
 
-	private void addBasedOnDistanceAlongTrip(final Segment segment,
+	private void addBasedOnDistanceAlongTrip(final Stop stop,
 			final Set<TripInstance> instances) {
-		final Stop stop = segment.getTo();
 		final double toX = stop.getX();
 		final double toY = stop.getY();
 		final List<IndexedEuclideanDistance> euclideanDistances = new ArrayList<>();
@@ -119,8 +120,6 @@ public class DistanceAlongTripPopulatorImpl implements
 		stop.setDistanceAlongTrip(ds);
 		LOG.debug("di {} - ds {} - dj {}", di, ds, dj);
 
-		assert stop.getDistanceAlongTrip() > segment.getFrom()
-				.getDistanceAlongTrip();
 	}
 
 	private class IndexedEuclideanDistance implements

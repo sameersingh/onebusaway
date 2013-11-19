@@ -4,6 +4,6 @@ import edu.uw.modelab.pojo.Trip;
 
 public interface DistanceAlongTripPopulator {
 
-	void addDistancesAlongTrip(Trip trip);
+	Trip getTripWithDistancesAlongTrip(Trip trip);
 
 }

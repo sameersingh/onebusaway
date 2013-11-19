@@ -22,6 +22,18 @@ public class Trip {
 		instances = new LinkedHashSet<>();
 	}
 
+	public Trip(final Trip trip) {
+		this(trip.id, trip.headSign);
+		final Set<Segment> segments = trip.getSegments();
+		for (final Segment segment : segments) {
+			this.addSegment(new Segment(segment));
+		}
+		final Set<TripInstance> instances = trip.getInstances();
+		for (final TripInstance instance : instances) {
+			this.addInstance(new TripInstance(instance));
+		}
+	}
+
 	public void setHeadsign(final String headSign) {
 		this.headSign = headSign;
 	}

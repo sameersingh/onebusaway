@@ -14,13 +14,17 @@ public class RealtimePosition {
 			final double distanceAlongTrip, final double schedDev,
 			final double lat, final double lon, final double y, final double x) {
 		this.timeStamp = timeStamp;
-
 		this.distanceAlongTrip = distanceAlongTrip;
 		this.schedDev = schedDev;
 		this.lat = lat;
 		this.lon = lon;
 		this.y = y;
 		this.x = x;
+	}
+
+	public RealtimePosition(final RealtimePosition rt) {
+		this(rt.timeStamp, rt.distanceAlongTrip, rt.schedDev, rt.lat, rt.lon,
+				rt.y, rt.x);
 	}
 
 	public long getTimeStamp() {

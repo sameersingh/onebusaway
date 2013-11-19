@@ -155,9 +155,10 @@ public class D3StopsCreator extends D3Creator {
 	private void nodesForEachTrip(
 			final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceData>>> stops,
 			final Trip trip) {
-		distanceAlongTripPopulator.addDistancesAlongTrip(trip);
-		final Set<Segment> segments = trip.getSegments();
-		final Set<TripInstance> tripInstances = trip.getInstances();
+		final Trip cloned = distanceAlongTripPopulator
+				.getTripWithDistancesAlongTrip(trip);
+		final Set<Segment> segments = cloned.getSegments();
+		final Set<TripInstance> tripInstances = cloned.getInstances();
 		if (!tripInstances.isEmpty()) {
 			for (final TripInstance tripInstance : tripInstances) {
 				for (final Segment segment : segments) {
@@ -166,7 +167,8 @@ public class D3StopsCreator extends D3Creator {
 						final String fromArrivalTime = from.getStopTime()
 								.getSchedDepartureTime();
 						buildStopsAttributesPerTripInstance(stops,
-								tripInstance, trip, from, fromArrivalTime, 0, 0);
+								tripInstance, cloned, from, fromArrivalTime, 0,
+								0);
 						final Stop to = segment.getTo();
 						final String toArrivalTime = Utils
 								.toHHMMssPST(timeService.getActualTime(
@@ -174,7 +176,7 @@ public class D3StopsCreator extends D3Creator {
 						final long[] obaAndMode = errorService
 								.getObaAndModeErrors(tripInstance, segment);
 						buildStopsAttributesPerTripInstance(stops,
-								tripInstance, trip, to, toArrivalTime,
+								tripInstance, cloned, to, toArrivalTime,
 								obaAndMode[0], obaAndMode[1]);
 					} else {
 						final Stop to = segment.getTo();
@@ -184,7 +186,7 @@ public class D3StopsCreator extends D3Creator {
 						final long[] obaAndMode = errorService
 								.getObaAndModeErrors(tripInstance, segment);
 						buildStopsAttributesPerTripInstance(stops,
-								tripInstance, trip, to, toArrivalTime,
+								tripInstance, cloned, to, toArrivalTime,
 								obaAndMode[0], obaAndMode[1]);
 					}
 				}
@@ -195,14 +197,14 @@ public class D3StopsCreator extends D3Creator {
 			for (final Segment segment : segments) {
 				if (segment.isFirst()) {
 					final Stop from = segment.getFrom();
-					buildStopsWithEmptyAttributesPerTripInstance(stops, trip,
+					buildStopsWithEmptyAttributesPerTripInstance(stops, cloned,
 							from);
 					final Stop to = segment.getTo();
-					buildStopsWithEmptyAttributesPerTripInstance(stops, trip,
+					buildStopsWithEmptyAttributesPerTripInstance(stops, cloned,
 							to);
 				} else {
 					final Stop to = segment.getTo();
-					buildStopsWithEmptyAttributesPerTripInstance(stops, trip,
+					buildStopsWithEmptyAttributesPerTripInstance(stops, cloned,
 							to);
 				}
 			}

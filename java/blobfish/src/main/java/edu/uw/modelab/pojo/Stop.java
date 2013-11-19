@@ -21,6 +21,12 @@ public class Stop {
 		this.x = x;
 	}
 
+	public Stop(final Stop stop) {
+		this(stop.id, stop.name, stop.lat, stop.lon, stop.y, stop.x);
+		this.stopTime = new StopTime(stop.stopTime);
+		this.distanceAlongTrip = stop.distanceAlongTrip;
+	}
+
 	public void setDistanceAlongTrip(final double distanceAlongTrip) {
 		this.distanceAlongTrip = distanceAlongTrip;
 	}

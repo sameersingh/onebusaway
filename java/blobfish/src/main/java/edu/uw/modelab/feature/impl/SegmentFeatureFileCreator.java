@@ -77,8 +77,10 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 	}
 
 	private void doCreateFeatures(final Set<Trip> trips) {
+		final Set<Trip> clonedTrips = new LinkedHashSet<>(trips.size());
 		for (final Trip trip : trips) {
-			distanceAlongTripPopulator.addDistancesAlongTrip(trip);
+			clonedTrips.add(distanceAlongTripPopulator
+					.getTripWithDistancesAlongTrip(trip));
 		}
 
 		PrintWriter pwTrain = null;
@@ -96,7 +98,7 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 
 			final Set<String> uniqueSegments = new LinkedHashSet<>();
 			final Set<Integer> uniqueTripIds = new LinkedHashSet<>();
-			for (final Trip trip : trips) {
+			for (final Trip trip : clonedTrips) {
 				uniqueTripIds.add(trip.getId());
 				final Set<Segment> segments = trip.getSegments();
 				for (final Segment segment : segments) {
@@ -113,7 +115,7 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 					uniqueSegments);
 			final List<Integer> uniqueTripIdsAsList = new ArrayList<>(
 					uniqueTripIds);
-			for (final Trip trip : trips) {
+			for (final Trip trip : clonedTrips) {
 				final Set<TripInstance> tripInstances = trip.getInstances();
 				final Iterator<TripInstance> tripInstancesIt = tripInstances
 						.iterator();

@@ -12,9 +12,14 @@ public class Segment {
 	public Segment(final Stop from, final Stop to) {
 		this.from = from;
 		this.to = to;
-		isFirst = false;
+		this.isFirst = false;
 		this.distance = Utils.euclideanDistance(from.getX(), to.getX(),
 				from.getY(), to.getY());
+	}
+
+	public Segment(final Segment segment) {
+		this(new Stop(segment.from), new Stop(segment.to));
+		this.isFirst = segment.isFirst;
 	}
 
 	public Stop getFrom() {

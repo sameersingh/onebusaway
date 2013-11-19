@@ -7,12 +7,19 @@ public class TripInstance {
 
 	private final long serviceDate;
 	private final int tripId;
-	List<RealtimePosition> realtimes;
+	private List<RealtimePosition> realtimes;
 
 	public TripInstance(final long serviceDate, final int tripId) {
 		this.serviceDate = serviceDate;
 		this.tripId = tripId;
 		realtimes = new ArrayList<>();
+	}
+
+	public TripInstance(final TripInstance instance) {
+		this(instance.serviceDate, instance.tripId);
+		for (final RealtimePosition rt : instance.realtimes) {
+			this.addRealtime(new RealtimePosition(rt));
+		}
 	}
 
 	public void setRealtimes(final List<RealtimePosition> realtimes) {

@@ -13,6 +13,11 @@ public class StopTime {
 		this.stopSequence = stopSequence;
 	}
 
+	public StopTime(final StopTime stopTime) {
+		this(stopTime.schedArrivalTime, stopTime.schedDepartureTime,
+				stopTime.stopSequence);
+	}
+
 	public int getStopSequence() {
 		return stopSequence;
 	}

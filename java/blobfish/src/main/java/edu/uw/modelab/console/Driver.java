@@ -32,8 +32,8 @@ public class Driver {
 		instantiatePopulators(appContext);
 		final List<Integer> tripIds = getTripIds(appContext);
 		// visualization(appContext, tripIds);
-		createFeatures(appContext, tripIds);
-		// calculateErrors(appContext, tripIds);
+		// createFeatures(appContext, tripIds);
+		calculateErrors(appContext, tripIds);
 		final long end = System.currentTimeMillis();
 		LOG.info("Time spent: " + ((end - start) / 1000));
 	}
