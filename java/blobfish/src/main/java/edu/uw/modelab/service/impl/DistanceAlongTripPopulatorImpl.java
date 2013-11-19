@@ -8,6 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.uw.modelab.filter.Filter;
 import edu.uw.modelab.pojo.RealtimePosition;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
@@ -22,14 +23,38 @@ public class DistanceAlongTripPopulatorImpl implements
 	private static final Logger LOG = LoggerFactory
 			.getLogger(DistanceAlongTripPopulatorImpl.class);
 
+	private final Filter<List<RealtimePosition>> poleProblemFilter;
+	private final Filter<Set<TripInstance>> rtpSizeFilter;
+	private final boolean filter;
+
+	public DistanceAlongTripPopulatorImpl(
+			final Filter<List<RealtimePosition>> poleProblemFilter,
+			final Filter<Set<TripInstance>> rtpSizeFilter, final boolean filter) {
+		this.poleProblemFilter = poleProblemFilter;
+		this.rtpSizeFilter = rtpSizeFilter;
+		this.filter = filter;
+	}
+
 	@Override
 	public void addDistancesAlongTrip(final Trip trip) {
+		if (filter) {
+			doFilter(trip);
+		}
 		final Set<TripInstance> instances = trip.getInstances();
 		if (!instances.isEmpty()) {
 			final Set<Segment> segments = trip.getSegments();
 			for (final Segment segment : segments) {
 				addDistanceAlongTripToStopsInSegment(segment, instances);
 			}
+		}
+	}
+
+	private void doFilter(final Trip trip) {
+		trip.setInstances(rtpSizeFilter.filter(trip.getInstances()));
+		final Set<TripInstance> instances = trip.getInstances();
+		for (final TripInstance tripInstance : instances) {
+			tripInstance.setRealtimes(poleProblemFilter.filter(tripInstance
+					.getRealtimes()));
 		}
 	}
 

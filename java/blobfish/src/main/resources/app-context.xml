@@ -122,7 +122,14 @@
 		<constructor-arg ref="routeDao" />
 	</bean>
 	
-	<bean id="distanceAlongTripPopulator" class="edu.uw.modelab.service.impl.DistanceAlongTripPopulatorImpl" />
+	<bean id="distanceAlongTripPopulator" class="edu.uw.modelab.service.impl.DistanceAlongTripPopulatorImpl">
+		<constructor-arg ref="poleProblemFilter" />
+		<constructor-arg ref="realtimePositionSizeFilter" />
+		<constructor-arg value="${data.problems.filter}" />
+	</bean>
+
+	<bean id="poleProblemFilter" class="edu.uw.modelab.filter.impl.PoleProblemFilterImpl" />
+	<bean id="realtimePositionSizeFilter" class="edu.uw.modelab.filter.impl.RealtimePositionsSizeFilterImpl" />
 
 	<bean id="datasetSplitCondition" class="edu.uw.modelab.feature.impl.MonthDatasetSplitCondition" />
 

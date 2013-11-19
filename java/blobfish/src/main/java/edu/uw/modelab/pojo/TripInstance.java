@@ -15,6 +15,10 @@ public class TripInstance {
 		realtimes = new ArrayList<>();
 	}
 
+	public void setRealtimes(final List<RealtimePosition> realtimes) {
+		this.realtimes = realtimes;
+	}
+
 	public void addRealtime(final RealtimePosition realtime) {
 		this.realtimes.add(realtime);
 	}

@@ -9,7 +9,7 @@ public class Trip {
 	private final int id;
 	private String headSign;
 	private Set<Segment> segments;
-	private final Set<TripInstance> instances;
+	private Set<TripInstance> instances;
 
 	public Trip(final int id) {
 		this(id, null);
@@ -48,6 +48,14 @@ public class Trip {
 
 	public void addInstance(final TripInstance instance) {
 		this.instances.add(instance);
+	}
+
+	public void removeInstance(final TripInstance instance) {
+		this.instances.remove(instance);
+	}
+
+	public void setInstances(final Set<TripInstance> instances) {
+		this.instances = instances;
 	}
 
 	public Set<TripInstance> getInstances() {

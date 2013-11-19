@@ -35,23 +35,24 @@ public class D3StopsCreator extends D3Creator {
 
 	private final Map<Integer, Integer> stopIdsIndexes;
 	private final TripDao tripDao;
-	private final TimeService timeEstimator;
-	private final DistanceAlongTripPopulator distanceAlongTripCalculator;
-	private final ErrorService errorCalculator;
+	private final TimeService timeService;
+	// maybe create it without the pole problem filter
+	private final DistanceAlongTripPopulator distanceAlongTripPopulator;
+	private final ErrorService errorService;
 
 	// horrible, I'm in a hurry
 	private Set<Trip> trips = null;
 	private Trip trip = null;
 
 	public D3StopsCreator(final String filename, final TripDao tripDao,
-			final TimeService timeEstimator,
-			final DistanceAlongTripPopulator distanceAlongTripCalculator,
-			final ErrorService errorCalculator) {
+			final TimeService timeService,
+			final DistanceAlongTripPopulator distanceAlongTripPopulator,
+			final ErrorService errorService) {
 		super(filename);
 		this.tripDao = tripDao;
-		this.distanceAlongTripCalculator = distanceAlongTripCalculator;
-		this.timeEstimator = timeEstimator;
-		this.errorCalculator = errorCalculator;
+		this.distanceAlongTripPopulator = distanceAlongTripPopulator;
+		this.timeService = timeService;
+		this.errorService = errorService;
 		stopIdsIndexes = new HashMap<Integer, Integer>(8110);
 	}
 
@@ -154,7 +155,7 @@ public class D3StopsCreator extends D3Creator {
 	private void nodesForEachTrip(
 			final Map<Stop, Map<Trip, Map<TripInstance, TripInstanceData>>> stops,
 			final Trip trip) {
-		distanceAlongTripCalculator.addDistancesAlongTrip(trip);
+		distanceAlongTripPopulator.addDistancesAlongTrip(trip);
 		final Set<Segment> segments = trip.getSegments();
 		final Set<TripInstance> tripInstances = trip.getInstances();
 		if (!tripInstances.isEmpty()) {
@@ -168,9 +169,9 @@ public class D3StopsCreator extends D3Creator {
 								tripInstance, trip, from, fromArrivalTime, 0, 0);
 						final Stop to = segment.getTo();
 						final String toArrivalTime = Utils
-								.toHHMMssPST(timeEstimator.getActualTime(tripInstance,
-										to));
-						final long[] obaAndMode = errorCalculator
+								.toHHMMssPST(timeService.getActualTime(
+										tripInstance, to));
+						final long[] obaAndMode = errorService
 								.getObaAndModeErrors(tripInstance, segment);
 						buildStopsAttributesPerTripInstance(stops,
 								tripInstance, trip, to, toArrivalTime,
@@ -178,9 +179,9 @@ public class D3StopsCreator extends D3Creator {
 					} else {
 						final Stop to = segment.getTo();
 						final String toArrivalTime = Utils
-								.toHHMMssPST(timeEstimator.getActualTime(tripInstance,
-										to));
-						final long[] obaAndMode = errorCalculator
+								.toHHMMssPST(timeService.getActualTime(
+										tripInstance, to));
+						final long[] obaAndMode = errorService
 								.getObaAndModeErrors(tripInstance, segment);
 						buildStopsAttributesPerTripInstance(stops,
 								tripInstance, trip, to, toArrivalTime,
