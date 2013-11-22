@@ -2,7 +2,7 @@ function main(filename, model_order)
 % Autoregression model for a single trip.
 % Based on Ali's code
     [~, X] = preprocess_data(filename);
-    [train, test] =  build_matrix(X, model_order);
+    [train, test, ~] =  build_matrix(X, model_order);
     X_train = train(:, 2:end);
     Y_train = train(:, 1);
     X_test = test(:, 2:end);

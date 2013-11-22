@@ -1,4 +1,4 @@
-function [train, test] = build_matrix(X, model_order)
+function [train, test, valid] = build_matrix(X, model_order)
 %   builds the autoregressive matrix, the first column of the matrix is the
 %   target. For example, if order is 2, then each row will be: x(t) x(t-1) 
 %   x(t-2). In AutoRegression, we try to solve: 
@@ -17,15 +17,18 @@ function [train, test] = build_matrix(X, model_order)
     
     % Split
     total_datapoints = size(dataset,1);
-    train_datapoints = round(total_datapoints * .7);
-    test_datapoints = total_datapoints - train_datapoints;
-    
+    train_datapoints = round(total_datapoints * .5);
+    valid_datapoints = round(total_datapoints * .25);
+    test_datapoints = total_datapoints - train_datapoints - valid_datapoints;
+
     train = dataset(1:train_datapoints, :);
-    test = dataset(train_datapoints+1:end, :);
+    valid = dataset(train_datapoints+1:train_datapoints+valid_datapoints, :);
+    test = dataset(train_datapoints+valid_datapoints+1:end, :);
 
     format long g;
     fprintf('Total Size: %d\n', total_datapoints);
     fprintf('Train Size: %d\n', train_datapoints);
+    fprintf('Validation Size: %d\n', valid_datapoints);
     fprintf('Test Size: %d\n', test_datapoints);
     
 end
