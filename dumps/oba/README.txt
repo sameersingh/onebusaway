@@ -1,0 +1,1 @@
+- perRoute folder contains some trip that correspond to different routes. They were collected from 2012-Sept2013, although not all the trips have entries for every month.

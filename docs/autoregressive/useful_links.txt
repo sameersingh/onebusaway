@@ -1,0 +1,8 @@
+http://blog.minitab.com/blog/adventures-in-statistics/regression-analysis-how-do-i-interpret-r-squared-and-assess-the-goodness-of-fit
+
+http://blog.minitab.com/blog/adventures-in-statistics/multiple-regession-analysis-use-adjusted-r-squared-and-predicted-r-squared-to-include-the-correct-number-of-variables
+
+http://www.mit.tut.fi/staff/Hytti/JClinMonitComput.pdf
+
+http://www.mathworks.com/products/signal/examples.html?file=/products/demos/shipping/signal/lpcardemo.html#10
+
