@@ -24,20 +24,55 @@ public class TripInstancesPopulator extends BulkPopulator {
 			.getLogger(TripInstancesPopulator.class);
 
 	private static final String SQL = "insert into trip_instance (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon, y, x) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-	private static final String SELECT_TRIP_IDS_LIMIT = "select id from trip limit 100";
+	private static final String SELECT_TRIP_IDS_LIMIT = "select id from trip limit 200";
+
 	private final JdbcTemplate template;
+	private final List<Integer> tripIds;
 
 	public TripInstancesPopulator(final String folder, final boolean enabled,
 			final DataSource dataSource) {
 		super(folder, enabled, "\t");
 		this.template = new JdbcTemplate(dataSource);
+		this.tripIds = template.queryForList(SELECT_TRIP_IDS_LIMIT,
+				Integer.class);
 	}
 
 	@Override
 	protected void doPopulate(final List<String[]> tokens) {
-		// just insert realtime info of trips you will use
-		final List<Integer> tripIds = template.queryForList(
-				SELECT_TRIP_IDS_LIMIT, Integer.class);
+		final Set<TripInstanceInsertObject> tripInstances = preprocess(tokens);
+		insert(tripInstances);
+	}
+
+	private void insert(final Set<TripInstanceInsertObject> tripInstances) {
+		final List<TripInstanceInsertObject> tripInstanceList = new ArrayList<TripInstanceInsertObject>(
+				tripInstances);
+		LOG.info("Doing batch insert...");
+		template.batchUpdate(SQL, new BatchPreparedStatementSetter() {
+
+			@Override
+			public void setValues(final PreparedStatement pss, final int i)
+					throws SQLException {
+				final TripInstanceInsertObject tripInstance = tripInstanceList
+						.get(i);
+				pss.setLong(1, tripInstance.getTimeStamp());
+				pss.setLong(2, tripInstance.getServiceDate());
+				pss.setLong(3, tripInstance.getTripId());
+				pss.setDouble(4, tripInstance.getDistanceAlongTrip());
+				pss.setDouble(5, tripInstance.getSchedDev());
+				pss.setDouble(6, tripInstance.getLat());
+				pss.setDouble(7, tripInstance.getLon());
+				pss.setDouble(8, tripInstance.getY());
+				pss.setDouble(9, tripInstance.getX());
+			}
+
+			@Override
+			public int getBatchSize() {
+				return tripInstances.size();
+			}
+		});
+	}
+
+	private Set<TripInstanceInsertObject> preprocess(final List<String[]> tokens) {
 		final Set<TripInstanceInsertObject> tripInstances = new HashSet<TripInstanceInsertObject>(
 				tokens.size());
 		CollectionUtils.forAllDo(tokens, new Closure() {
@@ -77,33 +112,7 @@ public class TripInstancesPopulator extends BulkPopulator {
 				}
 			}
 		});
-
-		final List<TripInstanceInsertObject> tripInstanceList = new ArrayList<TripInstanceInsertObject>(
-				tripInstances);
-
-		template.batchUpdate(SQL, new BatchPreparedStatementSetter() {
-
-			@Override
-			public void setValues(final PreparedStatement pss, final int i)
-					throws SQLException {
-				final TripInstanceInsertObject tripInstance = tripInstanceList
-						.get(i);
-				pss.setLong(1, tripInstance.getTimeStamp());
-				pss.setLong(2, tripInstance.getServiceDate());
-				pss.setLong(3, tripInstance.getTripId());
-				pss.setDouble(4, tripInstance.getDistanceAlongTrip());
-				pss.setDouble(5, tripInstance.getSchedDev());
-				pss.setDouble(6, tripInstance.getLat());
-				pss.setDouble(7, tripInstance.getLon());
-				pss.setDouble(8, tripInstance.getY());
-				pss.setDouble(9, tripInstance.getX());
-			}
-
-			@Override
-			public int getBatchSize() {
-				return tripInstances.size();
-			}
-		});
+		return tripInstances;
 	}
 
 	private class TripInstanceInsertObject {
