@@ -7,7 +7,7 @@ def main():
     np.set_printoptions(threshold=np.nan)
     
     # read training data
-    training_data = np.loadtxt("features_training.dat")
+    training_data = np.loadtxt("training.dat")
     feature_names = open("features_names.txt").read().splitlines()
     y_train = np.array(training_data[:,training_data.shape[1]-1]).reshape(training_data.shape[0],1)
     x_train = np.array(training_data[:,0:training_data.shape[1]-1])
@@ -27,7 +27,7 @@ def main():
     rmse_oba_train = np.sqrt(np.mean(err_oba_train**2))
    
     # read test data
-    test_data = np.loadtxt("features_test.dat")
+    test_data = np.loadtxt("test.dat")
     y_test = np.array(test_data[:,test_data.shape[1]-1]).reshape(test_data.shape[0],1)
     x_test = np.array(test_data[:,0:test_data.shape[1]-1])
     
