@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 
 def main():
     
-    #error("oba_mode_errors_train.dat", "train_error.pdf", 458.96118101939373, "Train")
-    error("oba_mode_errors_test.dat", "test_error.pdf", 421.45747166636295, "Test")
+    #error("oba_our_errors_train.dat", "train_error.png", 0, "Train")
+    error("oba_our_errors_test.dat", "test_error.png", 0, "Test")
 
 
 def error(filename, output_filename, sched_error_value, type):

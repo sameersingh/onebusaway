@@ -31,7 +31,7 @@ def main():
     y_test = np.array(test_data[:,test_data.shape[1]-1]).reshape(test_data.shape[0],1)
     x_test = np.array(test_data[:,0:test_data.shape[1]-1])
     
-    # calculate RMSEs for training data
+    # calculate RMSEs for test data
     y_hat_test = x_test.dot(w)
     err_our_test = y_hat_test - y_test
     rmse_our_test = np.sqrt(np.mean(err_our_test**2))
