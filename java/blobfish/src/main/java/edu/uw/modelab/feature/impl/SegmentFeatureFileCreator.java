@@ -189,25 +189,25 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append("20-22").append(END_LINE);
 		sb.append("22-24").append(END_LINE);
 
-		// sb.append("monday").append(END_LINE);
-		// sb.append("tuesday").append(END_LINE);
-		// sb.append("wednesday").append(END_LINE);
-		// sb.append("thursday").append(END_LINE);
-		// sb.append("friday").append(END_LINE);
-		// sb.append("saturday").append(END_LINE);
-		// sb.append("sunday").append(END_LINE);
-		// sb.append("january").append(END_LINE);
-		// sb.append("february").append(END_LINE);
-		// sb.append("march").append(END_LINE);
-		// sb.append("april").append(END_LINE);
-		// sb.append("may").append(END_LINE);
-		// sb.append("june").append(END_LINE);
-		// sb.append("july").append(END_LINE);
-		// sb.append("august").append(END_LINE);
-		// sb.append("september").append(END_LINE);
-		// sb.append("october").append(END_LINE);
-		// sb.append("november").append(END_LINE);
-		// sb.append("december").append(END_LINE);
+		sb.append("monday").append(END_LINE);
+		sb.append("tuesday").append(END_LINE);
+		sb.append("wednesday").append(END_LINE);
+		sb.append("thursday").append(END_LINE);
+		sb.append("friday").append(END_LINE);
+		sb.append("saturday").append(END_LINE);
+		sb.append("sunday").append(END_LINE);
+		sb.append("january").append(END_LINE);
+		sb.append("february").append(END_LINE);
+		sb.append("march").append(END_LINE);
+		sb.append("april").append(END_LINE);
+		sb.append("may").append(END_LINE);
+		sb.append("june").append(END_LINE);
+		sb.append("july").append(END_LINE);
+		sb.append("august").append(END_LINE);
+		sb.append("september").append(END_LINE);
+		sb.append("october").append(END_LINE);
+		sb.append("november").append(END_LINE);
+		sb.append("december").append(END_LINE);
 		for (final String segment : uniqueSegments) {
 			sb.append(segment).append(END_LINE);
 		}
@@ -225,8 +225,8 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append(1).append(SEPARATOR);
 		sb.append(segment.getDistance()).append(SEPARATOR);
 		sb.append(getTimeOfDay(segment)).append(SEPARATOR);
-		// sb.append(getDayOfWeek(dayOfWeek)).append(SEPARATOR);
-		// sb.append(getMonthOfYear(monthOfYear)).append(SEPARATOR);
+		sb.append(getDayOfWeek(dayOfWeek)).append(SEPARATOR);
+		sb.append(getMonthOfYear(monthOfYear)).append(SEPARATOR);
 		sb.append(getSegment(segment.getId(), uniqueSegments))
 				.append(SEPARATOR);
 		sb.append(getTrip(tripInstance.getTripId(), uniqueTripIds)).append(

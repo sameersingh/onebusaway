@@ -52,12 +52,12 @@ public class DistanceAlongTripPopulatorImpl implements
 	}
 
 	private void doFilter(final Trip trip) {
-		trip.setInstances(rtpSizeFilter.filter(trip.getInstances()));
 		final Set<TripInstance> instances = trip.getInstances();
 		for (final TripInstance tripInstance : instances) {
 			tripInstance.setRealtimes(poleProblemFilter.filter(tripInstance
 					.getRealtimes()));
 		}
+		trip.setInstances(rtpSizeFilter.filter(trip.getInstances()));
 	}
 
 	private void addDistanceAlongTripToStopsInSegment(final Segment segment,

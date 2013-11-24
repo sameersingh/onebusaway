@@ -240,29 +240,30 @@ public class ErrorServiceImpl implements ErrorService {
 						segments.get(j).getFrom(), segments.get(i - 1).getTo());
 				// old stuff, seems that I wasn't considering the s segments
 				// between the stops
-				// long actual_I = 0;
-				// if (i == numberOfSegments) {
-				// actual_I = getActualLast(segments.get(i - 1), tripInstance);
-				// } else {
-				// actual_I = getActual(segments.get(i), tripInstance);
-				// }
-				// final long t_true_I = actual_I;
+				long actual_I = 0;
+				if (i == numberOfSegments) {
+					actual_I = timeService.getActualTime(tripInstance, segments
+							.get(i - 1).getTo());
+				} else {
+					actual_I = timeService.getActualTime(tripInstance, segments
+							.get(i).getFrom());
+				}
+				final long t_true_I = actual_I;
 				final long actual_J = timeService.getActualTime(tripInstance,
 						segments.get(j));
 				final long t_hat_oba_I = actual_J + (scheduledDiff * 1000);
 				int s = j;
 				long y_hat_S = 0;
 				long y_S = 0;
-				while (s < i) {
-					final String key_S = Utils.label(tripInstance,
-							segments.get(s));
-					final double y_hat_S_sec = yHatMap.get(key_S);
-					final double y_S_sec = yMap.get(key_S);
-					y_hat_S += Math.round(y_hat_S_sec) * -1000;
-					y_S += Math.round(y_S_sec) * -1000;
-					s++;
-				}
-				final long t_true_I = t_hat_oba_I + y_S;
+				// while (s < i) {
+				final String key_S = Utils.label(tripInstance, segments.get(j));
+				final double y_hat_S_sec = yHatMap.get(key_S);
+				final double y_S_sec = yMap.get(key_S);
+				y_hat_S += Math.round(y_hat_S_sec) * -1000;
+				y_S += Math.round(y_S_sec) * -1000;
+				s++;
+				// }
+				// final long t_true_I = t_hat_oba_I + y_S;
 				final long t_hat_mode_I = t_hat_oba_I + y_hat_S;
 				final double diffObaI = (t_true_I - t_hat_oba_I) / 1000;
 				final double diffModeI = (t_true_I - t_hat_mode_I) / 1000;
