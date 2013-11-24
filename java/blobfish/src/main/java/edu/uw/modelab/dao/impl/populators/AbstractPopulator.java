@@ -1,8 +1,9 @@
 package edu.uw.modelab.dao.impl.populators;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +32,7 @@ public abstract class AbstractPopulator {
 		if (enabled) {
 			BufferedReader br = null;
 			try {
-				br = new BufferedReader(new InputStreamReader(getClass()
-						.getResourceAsStream(file)));
+				br = new BufferedReader(new FileReader(new File(file)));
 				String line = br.readLine(); // discard first line, headers
 				final List<String[]> tokensPerLine = new ArrayList<String[]>();
 				while ((line = br.readLine()) != null) {

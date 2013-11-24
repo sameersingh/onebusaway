@@ -28,14 +28,11 @@ public class Driver {
 	public Driver() {
 		final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext(
 				"classpath:app-context.xml");
-		final long start = System.currentTimeMillis();
 		instantiatePopulators(appContext);
 		final List<Integer> tripIds = getTripIds(appContext);
 		// visualization(appContext, tripIds);
 		// createFeatures(appContext, tripIds);
-		calculateErrors(appContext, tripIds);
-		final long end = System.currentTimeMillis();
-		LOG.info("Time spent: " + ((end - start) / 1000));
+		// calculateErrors(appContext, tripIds);
 	}
 
 	private void calculateErrors(

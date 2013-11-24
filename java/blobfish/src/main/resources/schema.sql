@@ -10,7 +10,7 @@ create table trip (
      , route_id int not null
      , headsign varchar(50) not null
      , primary key (id) 
-     , constraint fk_route_id foreign key (route_id) references route(id) 
+     , constraint fk_trip_route_id foreign key (route_id) references route(id) 
 ); 
 
 create table stop ( 
@@ -30,8 +30,8 @@ create table stop_time (
       , departure_time varchar(20) not null
       , stop_sequence int not null
       , primary key(trip_id, stop_id)
-      , constraint fk_trip_id foreign key (trip_id) references trip(id)
-      , constraint fk_stop_id foreign key (stop_id) references stop(id)
+      , constraint fk_stop_time_trip_id foreign key (trip_id) references trip(id)
+      , constraint fk_stop_time_stop_id foreign key (stop_id) references stop(id)
 );
 
 create table trip_instance (
@@ -45,6 +45,6 @@ create table trip_instance (
 	  , y decimal not null
 	  , x decimal not null
 	  , primary key(timestamp, service_date, trip_id)
-      , constraint fk_trip_id foreign key (trip_id) references trip(id)
+      , constraint fk_trip_instance_trip_id foreign key (trip_id) references trip(id)
 
 );	  

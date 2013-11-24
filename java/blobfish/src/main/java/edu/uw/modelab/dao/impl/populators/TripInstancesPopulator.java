@@ -24,7 +24,9 @@ public class TripInstancesPopulator extends BulkPopulator {
 			.getLogger(TripInstancesPopulator.class);
 
 	private static final String SQL = "insert into trip_instance (timestamp, service_date, trip_id, distance_trip, sched_deviation, lat, lon, y, x) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-	private static final String SELECT_TRIP_IDS_LIMIT = "select id from trip limit 200";
+	private static final String SELECT_TRIP_IDS = "select id from trip";
+	private static final String SELECT_TRIP_IDS_LIMIT = SELECT_TRIP_IDS
+			+ " limit 200";
 
 	private final JdbcTemplate template;
 	private final List<Integer> tripIds;
@@ -33,8 +35,7 @@ public class TripInstancesPopulator extends BulkPopulator {
 			final DataSource dataSource) {
 		super(folder, enabled, "\t");
 		this.template = new JdbcTemplate(dataSource);
-		this.tripIds = template.queryForList(SELECT_TRIP_IDS_LIMIT,
-				Integer.class);
+		this.tripIds = template.queryForList(SELECT_TRIP_IDS, Integer.class);
 	}
 
 	@Override
@@ -88,9 +89,7 @@ public class TripInstancesPopulator extends BulkPopulator {
 						return;
 					}
 				} catch (final Exception exc) {
-					LOG.warn(
-							"Trip id {} cannot be converted to integer, discarding register...",
-							strTokens[2]);
+					LOG.warn("Trip id cannot be converted to integer, discarding register...");
 					return;
 				}
 				try {
