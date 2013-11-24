@@ -23,4 +23,6 @@ public interface TripDao {
 	Set<Trip> getTrips();
 
 	Set<Trip> getTripsIn(List<Integer> tripIds);
+
+	Map<Integer, Integer> getTripRoutes(List<Integer> tripIds);
 }

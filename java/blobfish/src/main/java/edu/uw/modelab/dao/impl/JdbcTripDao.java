@@ -3,6 +3,7 @@ package edu.uw.modelab.dao.impl;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,6 +59,9 @@ public class JdbcTripDao implements TripDao {
 	private static final String SELECT_TRIP_IDS = "select id from trip";
 
 	private static final String SELECT_TRIP_IDS_LIMIT = "select id from trip limit ?";
+
+	private static final String SELECT_TRIP_ROUTES_IN = "select t.id, t.route_id from trip as t"
+			+ " where t.id in (:tripIds)";
 
 	public JdbcTripDao(final DataSource dataSource,
 			final TripInstanceDao tripInstanceDao) {
@@ -279,5 +283,34 @@ public class JdbcTripDao implements TripDao {
 		final List<Integer> tripIds = template.queryForList(
 				SELECT_TRIP_IDS_LIMIT, new Object[] { amount }, Integer.class);
 		return tripIds;
+	}
+
+	@Override
+	public Map<Integer, Integer> getTripRoutes(final List<Integer> tripIds) {
+		final Map<Integer, Integer> tripRoutes = new HashMap<>();
+		final MapSqlParameterSource parameters = new MapSqlParameterSource(
+				"tripIds", tripIds);
+		namedTemplate.query(SELECT_TRIP_ROUTES_IN, parameters,
+				new TripRoutesRowMapper(tripRoutes));
+		return tripRoutes;
+	}
+
+	private static class TripRoutesRowMapper implements RowMapper<Object> {
+
+		private final Map<Integer, Integer> tripRoutes;
+
+		public TripRoutesRowMapper(final Map<Integer, Integer> tripRoutes) {
+			this.tripRoutes = tripRoutes;
+		}
+
+		@Override
+		public Object mapRow(final ResultSet rs, final int rowNum)
+				throws SQLException {
+
+			final int tripId = rs.getInt(1);
+			final int routeId = rs.getInt(2);
+			tripRoutes.put(tripId, routeId);
+			return null;
+		}
 	}
 }
