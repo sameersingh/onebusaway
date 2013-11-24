@@ -17,6 +17,7 @@ import edu.uw.modelab.dao.TripDao;
 import edu.uw.modelab.feature.DatasetSplitCondition;
 import edu.uw.modelab.feature.FeatureFileCreator;
 import edu.uw.modelab.pojo.Segment;
+import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
 import edu.uw.modelab.pojo.TripInstance;
 import edu.uw.modelab.service.DistanceAlongTripPopulator;
@@ -208,12 +209,13 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append("october").append(END_LINE);
 		sb.append("november").append(END_LINE);
 		sb.append("december").append(END_LINE);
-		for (final String segment : uniqueSegments) {
-			sb.append(segment).append(END_LINE);
-		}
-		for (final Integer trip : uniqueTripIds) {
-			sb.append(trip).append(END_LINE);
-		}
+		// for (final String segment : uniqueSegments) {
+		// sb.append(segment).append(END_LINE);
+		// }
+		// for (final Integer trip : uniqueTripIds) {
+		// sb.append(trip).append(END_LINE);
+		// }
+		sb.append("downtown").append(END_LINE);
 		return sb.toString();
 	}
 
@@ -227,12 +229,19 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append(getTimeOfDay(segment)).append(SEPARATOR);
 		sb.append(getDayOfWeek(dayOfWeek)).append(SEPARATOR);
 		sb.append(getMonthOfYear(monthOfYear)).append(SEPARATOR);
-		sb.append(getSegment(segment.getId(), uniqueSegments))
-				.append(SEPARATOR);
-		sb.append(getTrip(tripInstance.getTripId(), uniqueTripIds)).append(
-				SEPARATOR);
+		// sb.append(getSegment(segment.getId(), uniqueSegments))
+		// .append(SEPARATOR);
+		// sb.append(getTrip(tripInstance.getTripId(), uniqueTripIds)).append(
+		// SEPARATOR);
+		sb.append(getDowntown(segment.getFrom())).append(SEPARATOR);
 		sb.append(timeEstimator.getDelay(segment, tripInstance));
 		return sb.toString();
+	}
+
+	private int getDowntown(final Stop from) {
+		final double kmsFromCityHall = Utils.getDistance(Utils.DOWNTOWN_LAT,
+				Utils.DOWNTOWN_LON, from.getLat(), from.getLon());
+		return kmsFromCityHall < 2.45 ? 1 : 0;
 	}
 
 	private String getSegment(final String id, final List<String> uniqueSegments) {

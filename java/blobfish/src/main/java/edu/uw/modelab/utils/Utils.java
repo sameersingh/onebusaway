@@ -28,6 +28,9 @@ public class Utils {
 	// interval index - end time of the interval
 	private static Map<Integer, String> endTimesPerInterval;
 
+	public static final double REFERENCE_LAT = 47.609982;
+	public static final double REFERENCE_LON = -122.335365;
+
 	static {
 		endTimesPerInterval = new HashMap<Integer, String>();
 		endTimesPerInterval.put(0, "1:59:59");
@@ -144,6 +147,21 @@ public class Utils {
 				+ "_" + segment.getId();
 	}
 
+	public static double getDistance(double lat1, final double lon1,
+			double lat2, final double lon2) {
+		final double R = 6371; // km
+		final double dLat = ((lat2 - lat1) * Math.PI) / 180;
+		final double dLon = ((lon2 - lon1) * Math.PI) / 180;
+		lat1 = (lat1 * Math.PI) / 180;
+		lat2 = (lat2 * Math.PI) / 180;
+		final double a = (Math.sin(dLat / 2) * Math.sin(dLat / 2))
+				+ (Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math
+						.cos(lat2));
+		final double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		final double d = R * c;
+		return d;
+	}
+
 	public static void main(final String[] args) {
 		System.out.println(Utils.dayOfMonth(1377586800000L));
 		System.out.println(Utils.dayOfMonth(1377846000000L));
@@ -183,6 +201,9 @@ public class Utils {
 		// System.out.println(Utils.getTimeOfDayVector("23:50:00", "24:10:00"));
 
 		// System.out.println(Utils.year(1380265200000L));
+
+		System.out.println(Utils.getDistance(47.604253, -122.329913, 47.603253,
+				-122.328913));
 
 	}
 

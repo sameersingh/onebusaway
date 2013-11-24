@@ -62,8 +62,8 @@ public class AutoregressiveOutputRow {
 		for (final Integer previousT : previousXts) {
 			sb.append(previousT).append("\t");
 		}
-		sb.append(distanceAlongTrip).append("\t");
-		sb.append(routeId);
+		sb.append(distanceAlongTrip);
+		// sb.append(routeId);
 		return sb.toString();
 	}
 }

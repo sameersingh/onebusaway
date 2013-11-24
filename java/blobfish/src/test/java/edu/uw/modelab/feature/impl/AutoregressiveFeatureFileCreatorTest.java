@@ -26,7 +26,7 @@ public class AutoregressiveFeatureFileCreatorTest {
 		MockitoAnnotations
 				.initMocks(AutoregressiveFeatureFileCreatorTest.class);
 		featureFileCreator = new AutoregressiveFeatureFileCreator(mockTripDao,
-				"whatever", "whatever", 2);
+				"whatever", "whatever", 2, "output");
 	}
 
 	@Test

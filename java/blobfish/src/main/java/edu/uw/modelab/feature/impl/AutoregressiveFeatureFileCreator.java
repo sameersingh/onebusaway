@@ -2,8 +2,10 @@ package edu.uw.modelab.feature.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,16 +33,18 @@ public class AutoregressiveFeatureFileCreator implements FeatureFileCreator {
 	private Map<Integer, Set<AutoregressiveInputRow>> inputMatrix;
 	private final List<Integer> tripIds;
 	private final int modelOrder;
+	private final String outputFile;
 
 	public AutoregressiveFeatureFileCreator(final TripDao tripDao,
 			final String tripsFilename, final String preprocessFile,
-			final int modelOrder) {
+			final int modelOrder, final String outputFile) {
 		this.tripDao = tripDao;
 		this.tripsFilename = tripsFilename;
 		this.preprocessedFile = preprocessFile;
 		this.modelOrder = modelOrder;
 		this.tripIds = new ArrayList<>();
 		this.inputMatrix = new HashMap<>();
+		this.outputFile = outputFile;
 	}
 
 	void setRouteIdsPerTrip(final Map<Integer, Integer> routeIdsPerTrip) {
@@ -97,10 +101,9 @@ public class AutoregressiveFeatureFileCreator implements FeatureFileCreator {
 		final double timestamp = Double.valueOf(tokens[0]);
 		final double serviceDate = Double.valueOf(tokens[1]);
 		final double distance = Double.valueOf(tokens[3]);
-		final double schedDeviation = Double.valueOf(4);
+		final int schedDeviation = Integer.valueOf(tokens[4]);
 		final AutoregressiveInputRow inputRow = new AutoregressiveInputRow(
-				(long) timestamp, (long) serviceDate, (long) distance,
-				(int) schedDeviation);
+				(long) timestamp, (long) serviceDate, distance, schedDeviation);
 		final double tId = Double.valueOf(tokens[2]);
 		final int tripId = (int) tId;
 		Set<AutoregressiveInputRow> inputRows = inputMatrix.get(tripId);
@@ -116,14 +119,23 @@ public class AutoregressiveFeatureFileCreator implements FeatureFileCreator {
 	@Override
 	public void createFeatures() {
 		dropTripsIfLessEntriesThanOrder();
-		final Set<Integer> keys = inputMatrix.keySet();
-		final List<AutoregressiveOutputRow> outputRows = new ArrayList<>();
-		for (final Integer key : keys) {
-			outputRows
-					.addAll(createOutputRowsForTrip(inputMatrix.get(key), key));
-		}
-		for (final AutoregressiveOutputRow outputRow : outputRows) {
-			System.out.println(outputRow);
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(new File(outputFile));
+			final Set<Integer> keys = inputMatrix.keySet();
+			for (final Integer key : keys) {
+				final List<AutoregressiveOutputRow> outputRows = createOutputRowsForTrip(
+						inputMatrix.get(key), key);
+				for (final AutoregressiveOutputRow outputRow : outputRows) {
+					pw.println(outputRow.toString());
+				}
+			}
+		} catch (final FileNotFoundException e) {
+			LOG.error("Error creating output file. Msg {}", e.getMessage());
+		} finally {
+			if (pw != null) {
+				pw.close();
+			}
 		}
 	}
 
@@ -137,7 +149,7 @@ public class AutoregressiveFeatureFileCreator implements FeatureFileCreator {
 			final AutoregressiveOutputRow outputRow = new AutoregressiveOutputRow();
 			outputRow.setXt(inputRowsList.get(i).getSchedDeviation());
 			outputRow.setDistanceAlongTrip(inputRowsList.get(i).getDistance());
-			outputRow.setRouteId(routeIdsPerTrip.get(tripId));
+			// outputRow.setRouteId(routeIdsPerTrip.get(tripId));
 			int j = i - 1;
 			final List<Integer> previousXts = outputRow.getPreviousXts();
 			while (previousXts.size() < modelOrder) {
