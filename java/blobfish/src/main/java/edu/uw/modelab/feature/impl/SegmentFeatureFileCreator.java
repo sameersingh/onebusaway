@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import edu.uw.modelab.dao.TripDao;
 import edu.uw.modelab.feature.DatasetSplitCondition;
 import edu.uw.modelab.feature.FeatureFileCreator;
+import edu.uw.modelab.feature.NeighborhoodService;
+import edu.uw.modelab.feature.pojo.Neighborhood;
 import edu.uw.modelab.pojo.Segment;
 import edu.uw.modelab.pojo.Stop;
 import edu.uw.modelab.pojo.Trip;
@@ -41,13 +43,15 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 	private final TimeService timeEstimator;
 	private final DistanceAlongTripPopulator distanceAlongTripPopulator;
 	private final DatasetSplitCondition datasetSplitCondition;
+	private final NeighborhoodService neighborhoodService;
 
 	public SegmentFeatureFileCreator(final String featureFileTraining,
 			final String featureFileTest, final String labelsFileTraining,
 			final String labelsFileTest, final String featureNames,
 			final TripDao tripDao, final TimeService timeEstimator,
 			final DistanceAlongTripPopulator distanceAlongTripPopulator,
-			final DatasetSplitCondition datasetSplitCondition) {
+			final DatasetSplitCondition datasetSplitCondition,
+			final NeighborhoodService neighborhoodService) {
 		this.featureFileTraining = featureFileTraining;
 		this.featureFileTest = featureFileTest;
 		this.labelsFileTraining = labelsFileTraining;
@@ -57,6 +61,7 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		this.timeEstimator = timeEstimator;
 		this.distanceAlongTripPopulator = distanceAlongTripPopulator;
 		this.datasetSplitCondition = datasetSplitCondition;
+		this.neighborhoodService = neighborhoodService;
 	}
 
 	@Override
@@ -209,13 +214,17 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append("october").append(END_LINE);
 		sb.append("november").append(END_LINE);
 		sb.append("december").append(END_LINE);
-		// for (final String segment : uniqueSegments) {
-		// sb.append(segment).append(END_LINE);
-		// }
-		// for (final Integer trip : uniqueTripIds) {
-		// sb.append(trip).append(END_LINE);
-		// }
-		sb.append("downtown").append(END_LINE);
+		for (final String segment : uniqueSegments) {
+			sb.append(segment).append(END_LINE);
+		}
+		for (final Integer trip : uniqueTripIds) {
+			sb.append(trip).append(END_LINE);
+		}
+		final List<String> neighborhoodNames = neighborhoodService
+				.getNeighborhoodNames();
+		for (final String neighborhoodName : neighborhoodNames) {
+			sb.append(neighborhoodName).append(END_LINE);
+		}
 		return sb.toString();
 	}
 
@@ -229,19 +238,31 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		sb.append(getTimeOfDay(segment)).append(SEPARATOR);
 		sb.append(getDayOfWeek(dayOfWeek)).append(SEPARATOR);
 		sb.append(getMonthOfYear(monthOfYear)).append(SEPARATOR);
-		// sb.append(getSegment(segment.getId(), uniqueSegments))
-		// .append(SEPARATOR);
-		// sb.append(getTrip(tripInstance.getTripId(), uniqueTripIds)).append(
-		// SEPARATOR);
-		sb.append(getDowntown(segment.getFrom())).append(SEPARATOR);
+		sb.append(getSegment(segment.getId(), uniqueSegments))
+				.append(SEPARATOR);
+		sb.append(getTrip(tripInstance.getTripId(), uniqueTripIds)).append(
+				SEPARATOR);
+		sb.append(getNeighborhood(segment.getFrom())).append(SEPARATOR);
 		sb.append(timeEstimator.getDelay(segment, tripInstance));
 		return sb.toString();
 	}
 
-	private int getDowntown(final Stop from) {
-		final double kmsFromCityHall = Utils.getDistance(Utils.DOWNTOWN_LAT,
-				Utils.DOWNTOWN_LON, from.getLat(), from.getLon());
-		return kmsFromCityHall < 2.45 ? 1 : 0;
+	private String getNeighborhood(final Stop from) {
+		final List<Neighborhood> ns = neighborhoodService.getNeighborhoods();
+		final int[] neighborhoods = new int[ns.size()];
+		for (int i = 0; i < ns.size(); i++) {
+			final Neighborhood neighborhood = ns.get(i);
+			final double distance = Utils.getDistance(from.getLat(),
+					from.getLon(), neighborhood.getLatitude(),
+					neighborhood.getLongitude());
+			neighborhoods[i] = distance <= neighborhood.getRadius() ? 1 : 0;
+		}
+		final StringBuilder sb = new StringBuilder();
+		for (final int neighborhood : neighborhoods) {
+			sb.append(neighborhood + "\t");
+		}
+		sb.deleteCharAt(sb.length() - 1);
+		return sb.toString();
 	}
 
 	private String getSegment(final String id, final List<String> uniqueSegments) {

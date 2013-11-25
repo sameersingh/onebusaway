@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 def main():
     
     #error("oba_our_errors_train.dat", "train_error.png", 0, "Train")
-    error("oba_our_errors_test.dat", "test_error.png", 0, "Test")
+    error("oba_our_errors_test.dat", "test_error.png", 0)
 
 
-def error(filename, output_filename, sched_error_value, type):
+def error(filename, output_filename, sched_error_value):
     data = np.loadtxt(filename)
     k = np.arange(1,data.shape[0]+1,1)
     oba_error = np.array(data[:,0]).reshape(data.shape[0],1)

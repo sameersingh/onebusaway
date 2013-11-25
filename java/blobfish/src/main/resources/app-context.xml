@@ -93,7 +93,7 @@
 	
 	<bean id="timeService" class="edu.uw.modelab.service.impl.TimeServiceImpl" />
 	
-
+ 
 	<bean id="featureFileCreator" class="edu.uw.modelab.feature.impl.SegmentFeatureFileCreator" >
 		<constructor-arg value="${output.folder}/training.dat" />
 		<constructor-arg value="${output.folder}/test.dat" />
@@ -104,6 +104,7 @@
 		<constructor-arg ref="timeService" />
 		<constructor-arg ref="distanceAlongTripPopulator" />
 		<constructor-arg ref="datasetSplitCondition" />
+		<constructor-arg ref="neighborhoodService" />
 	</bean>
 
 <!-- 
@@ -112,6 +113,7 @@
 		<constructor-arg value="${autoregressive.trips.file}" />
 		<constructor-arg value="${autoregressive.preprocessed.file}" />
 		<constructor-arg value="${autoregressive.order}" />
+		<constructor-arg value="${output.folder}/autoregressive.dat" />
 	</bean>
  -->
  
@@ -142,6 +144,10 @@
 	<bean id="realtimePositionSizeFilter" class="edu.uw.modelab.filter.impl.RealtimePositionsSizeFilterImpl" />
 
 	<bean id="datasetSplitCondition" class="edu.uw.modelab.feature.impl.MonthYearDatasetSplitCondition" />
+	
+	<bean id="neighborhoodService" class="edu.uw.modelab.feature.impl.SeattleNeighborhoodService" init-method="init">
+		<constructor-arg value="/seattle_neighborhoods.txt" />
+	</bean>	
 
 	
 </beans> 
