@@ -3,12 +3,15 @@ package edu.uw.modelab.feature.pojo;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.uw.modelab.utils.Utils;
+
 public class AutoregressiveOutputRow {
 
 	private int xt;
 	private final List<Integer> previousXts;
 	private long serviceDate;
 	private double distanceAlongTrip;
+	private String timeOfDay;
 	private int routeId;
 
 	public AutoregressiveOutputRow() {
@@ -55,6 +58,15 @@ public class AutoregressiveOutputRow {
 		this.routeId = routeId;
 	}
 
+	public void setTimeOfDay(final long timestamp) {
+		final String time = Utils.toHHMMssPST(timestamp);
+		this.timeOfDay = Utils.getTimeOfDayVector(time, time);
+	}
+
+	public String getTimeOfDay() {
+		return timeOfDay;
+	}
+
 	@Override
 	// shoud be done with a visitor
 	public String toString() {
@@ -62,8 +74,11 @@ public class AutoregressiveOutputRow {
 		for (final Integer previousT : previousXts) {
 			sb.append(previousT).append("\t");
 		}
-		sb.append(distanceAlongTrip);
+		sb.append(distanceAlongTrip).append("\t");
+		// already has the \t
+		sb.append(timeOfDay);
 		// sb.append(routeId);
 		return sb.toString();
 	}
+
 }

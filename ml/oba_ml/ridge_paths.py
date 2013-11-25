@@ -25,7 +25,7 @@ def main():
     ax = plt.gca()
     ax.set_color_cycle(['b', 'r', 'g', 'c', 'k', 'y', 'm'])
 
-    ax.plot(alphas, coefs)
+    ax.plot(alphas, np.squeeze(coefs))
     ax.set_xscale('log')
     ax.set_xlim(ax.get_xlim()[::-1])  # reverse axis
     plt.xlabel('alpha')

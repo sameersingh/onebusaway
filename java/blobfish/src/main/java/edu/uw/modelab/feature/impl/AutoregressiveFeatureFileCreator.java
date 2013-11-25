@@ -149,6 +149,7 @@ public class AutoregressiveFeatureFileCreator implements FeatureFileCreator {
 			final AutoregressiveOutputRow outputRow = new AutoregressiveOutputRow();
 			outputRow.setXt(inputRowsList.get(i).getSchedDeviation());
 			outputRow.setDistanceAlongTrip(inputRowsList.get(i).getDistance());
+			outputRow.setTimeOfDay(inputRowsList.get(i).getTimestamp());
 			// outputRow.setRouteId(routeIdsPerTrip.get(tripId));
 			int j = i - 1;
 			final List<Integer> previousXts = outputRow.getPreviousXts();
