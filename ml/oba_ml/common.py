@@ -49,7 +49,7 @@ def build_output_files(y_hat_train, y_hat_test, y, y_test):
     np.savetxt("y_hat_test.csv", appended_test, delimiter=",", fmt="%s")
     
     appended_train_y = np.column_stack((feature_names_train, y))
-    np.savetxt("y.csv", appended_train_y, delimiter=",", fmt="%s")
+    np.savetxt("y_train.csv", appended_train_y, delimiter=",", fmt="%s")
     
     appended_test_y = np.column_stack((feature_names_test, y_test))
     np.savetxt("y_test.csv", appended_test_y, delimiter=",", fmt="%s")

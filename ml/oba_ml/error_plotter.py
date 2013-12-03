@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def main():
     
     #error("oba_our_errors_train.dat", "train_error.png", 0, "Train")
-    error("oba_our_errors_test.dat", "test_error.png", 0)
+    error("oba_our_errors_test.dat", "test_error.pdf", 0)
 
 
 def error(filename, output_filename, sched_error_value):

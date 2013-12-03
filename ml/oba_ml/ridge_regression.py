@@ -9,7 +9,7 @@ def main():
     feature_names = get_feature_names()
     x_train, y_train,  = get_data("training.dat")
 
-    clf = linear_model.Ridge(alpha=150)
+    clf = linear_model.Ridge(alpha=1000)
     clf.fit(x_train, y_train)
     #print clf.alpha_
     
