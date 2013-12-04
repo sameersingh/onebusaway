@@ -144,7 +144,7 @@
 	<bean id="poleProblemFilter" class="edu.uw.modelab.filter.impl.PoleProblemFilterImpl" />
 	<bean id="realtimePositionSizeFilter" class="edu.uw.modelab.filter.impl.RealtimePositionsSizeFilterImpl" />
 
-	<bean id="datasetSplitCondition" class="edu.uw.modelab.feature.impl.MonthDatasetSplitCondition" />
+	<bean id="datasetSplitCondition" class="edu.uw.modelab.feature.impl.MonthYearDatasetSplitCondition" />
 	
 	<bean id="neighborhoodService" class="edu.uw.modelab.feature.impl.SeattleNeighborhoodService" init-method="init">
 		<constructor-arg value="/seattle_neighborhoods.txt" />

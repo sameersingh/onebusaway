@@ -9,10 +9,12 @@ def main():
     feature_names = get_feature_names()
     x_train, y_train,  = get_data("training.dat")
 
-    clf = linear_model.Ridge(alpha=100)
+    # run linear regression with l1 regularization
+    clf = linear_model.Lasso(alpha=1000)
     clf.fit(x_train, y_train)
     #print clf.alpha_
-    w = clf.coef_.reshape(clf.coef_.shape[1],1) 
+
+    w = clf.coef_
     y_hat_train = x_train.dot(w)
 
     rmse_our_train, rmse_oba_train = get_rmse(y_train, y_hat_train)

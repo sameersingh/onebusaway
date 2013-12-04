@@ -2,7 +2,6 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import linear_model
-from common import *
 
 def main():
     np.set_printoptions(threshold=np.nan)
@@ -11,7 +10,7 @@ def main():
     
     n_alphas = 100
     alphas = np.logspace(-1, 5, n_alphas)
-    clf = linear_model.Ridge(fit_intercept=True)
+    clf = linear_model.Lasso(fit_intercept=True)
     
     i = 0
     coefs = []

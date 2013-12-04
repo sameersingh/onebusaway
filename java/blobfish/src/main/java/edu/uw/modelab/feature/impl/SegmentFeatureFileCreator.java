@@ -220,11 +220,11 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 		for (final Integer trip : uniqueTripIds) {
 			sb.append(trip).append(END_LINE);
 		}
-		// final List<String> neighborhoodNames = neighborhoodService
-		// .getNeighborhoodNames();
-		// for (final String neighborhoodName : neighborhoodNames) {
-		// sb.append(neighborhoodName).append(END_LINE);
-		// }
+		final List<String> neighborhoodNames = neighborhoodService
+				.getNeighborhoodNames();
+		for (final String neighborhoodName : neighborhoodNames) {
+			sb.append(neighborhoodName).append(END_LINE);
+		}
 		return sb.toString();
 	}
 
@@ -242,7 +242,7 @@ public class SegmentFeatureFileCreator implements FeatureFileCreator {
 				.append(SEPARATOR);
 		sb.append(getTrip(tripInstance.getTripId(), uniqueTripIds)).append(
 				SEPARATOR);
-		// sb.append(getNeighborhood(segment.getFrom())).append(SEPARATOR);
+		sb.append(getNeighborhood(segment.getFrom())).append(SEPARATOR);
 		sb.append(timeEstimator.getDelay(segment, tripInstance));
 		return sb.toString();
 	}

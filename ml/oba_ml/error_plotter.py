@@ -29,8 +29,8 @@ def error(filename, output_filename, sched_error_value):
     plt.plot(k, oba_error, "b", lw=3)
     plt.plot(k, mode_error, "r", lw=3)
     #plt.plot(k, sched_error, "b")
-    plt.xlabel("K = number of segments", fontweight='bold')
-    plt.ylabel("RMSE in seconds", fontweight='bold')
+    plt.xlabel("k (number of segments)", fontweight='bold')
+    plt.ylabel("RMSE (seconds)", fontweight='bold')
     
     plt.legend(['OBA', 'OUR'], loc="lower right")
     plt.savefig(output_filename)
