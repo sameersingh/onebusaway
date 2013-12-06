@@ -347,6 +347,13 @@ public class ErrorServiceImpl implements ErrorService {
 
 		final double errorObaK = Math.sqrt(sumErrorsOba / errorsOba.size());
 		final double errorOurK = Math.sqrt(sumErrorsOur / errorsOur.size());
+
+		// binErrors("OBA", diffOba);
+		// binErrors("OUR", diffOur);
+		// System.out.println(diffOba.size());
+		// System.out.println(diffOur.size());
+
 		return new RootMeanSquareError(errorObaK, errorOurK);
+
 	}
 }

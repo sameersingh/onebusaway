@@ -9,12 +9,12 @@ def main():
     feature_names = get_feature_names()
     x_train, y_train,  = get_data("training.dat")
 
-    clf = linear_model.Ridge(alpha=100)
+    clf = linear_model.Ridge(alpha=1000)
     clf.fit(x_train, y_train)
     #print clf.alpha_
+  
     w = clf.coef_.reshape(clf.coef_.shape[1],1) 
     y_hat_train = x_train.dot(w)
-
     rmse_our_train, rmse_oba_train = get_rmse(y_train, y_hat_train)
     
     x_test, y_test = get_data("test.dat")
@@ -34,6 +34,6 @@ def main():
     print_weights(w, feature_names);
     report_range(y_train)
     report_range(y_test)
-    
+   
 if __name__ == '__main__':
     main()

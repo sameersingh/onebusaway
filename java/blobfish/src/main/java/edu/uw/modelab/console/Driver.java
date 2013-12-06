@@ -1,5 +1,6 @@
 package edu.uw.modelab.console;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class Driver {
 		final List<Integer> tripIds = getTripIds(appContext);
 		// visualization(appContext, tripIds);
 		// createFeatures(appContext, tripIds);
-		// calculateErrors(appContext, tripIds);
+		calculateErrors(appContext, tripIds);
 	}
 
 	private void calculateErrors(
@@ -59,15 +60,18 @@ public class Driver {
 
 	private List<Integer> getTripIds(
 			final ClassPathXmlApplicationContext appContext) {
-		// final List<Integer> trips = Arrays.asList(new Integer[] { 21673115,
-		// 21673118, 21670614, 21670616, 21542721, 21542723, 21672958,
-		// 21672960, 18918481, 18919624, 21759759, 21759766, 21767755,
-		// 23726161, 21704210, 21650159, 21650162, 20157477, 23240137,
-		// 23240144, 23775546, 23775576, 23240059, 23240085 });
+		final List<Integer> trips = Arrays.asList(new Integer[] { 23775697,
+				21673118, 21673115, 21650162, 21542723, 21542721, 23240059,
+				21704210, 23775576, 21670616, 21670614, 18919624, 20157477,
+				23726161, 23726173, 21650159, 18919481, 21759759, 23775546,
+				23240085, 21672958, 23775676, 21672960, 21767755, 21759766,
+				23240144, 23240137
+
+		});
 		// final List<Integer> trips = Arrays.asList(new Integer[] { 21767755
 		// });
-		final List<Integer> trips = appContext
-				.getBean("tripDao", TripDao.class).getTripIds(100);
+		// final List<Integer> trips = appContext
+		// .getBean("tripDao", TripDao.class).getTripIds(100);
 		return trips;
 	}
 
